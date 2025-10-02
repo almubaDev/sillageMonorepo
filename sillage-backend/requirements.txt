@@ -1,0 +1,40 @@
+# FastAPI y servidor
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Base de datos
+sqlalchemy
+asyncpg
+alembic
+psycopg2-binary
+
+# Redis y caché
+redis
+aioredis
+
+# Autenticación y seguridad
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+
+# Validación y serialización
+pydantic
+pydantic[email]
+pydantic-settings
+
+# HTTP y APIs externas
+httpx
+aiohttp
+
+# Utilidades
+python-dateutil
+pytz
+unidecode
+
+# Testing
+pytest
+pytest-asyncio
+
+# CORS
+fastapi-cors
