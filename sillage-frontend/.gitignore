@@ -1,23 +1,23 @@
 # dependencies
-node_modules
+sillage-frontend\node_modules
 
 # next.js build output
-.next
-out
+sillage-frontend\.next
+sillage-frontend\out
 
 # env files
-.env.local
-.env.*
-!.env.example
+sillage-frontend\.env.local
+sillage-frontend\.env.*
+sillage-frontend\!.env.example
 
 # logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+sillage-frontend\npm-debug.log*
+sillage-frontend\yarn-debug.log*
+sillage-frontend\yarn-error.log*
+sillage-frontend\pnpm-debug.log*
 
 # editor directories and files
-.DS_Store
-.vscode/*
-!.vscode/extensions.json
-.idea
+sillage-frontend\.DS_Store
+sillage-frontend\.vscode/*
+sillage-frontend\!.vscode/extensions.json
+sillage-frontend\.idea

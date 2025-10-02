@@ -1,0 +1,54 @@
+# --- Python bytecode & cache ---
+sillage-backend/__pycache__/
+sillage-backend/**/__pycache__/
+sillage-backend/**/*.py[cod]
+sillage-backend/**/*.pyo
+
+# --- Virtualenvs / tooling ---
+sillage-backend/.venv/
+sillage-backend/venv/
+sillage-backend/env/
+sillage-backend/.tox/
+sillage-backend/.ruff_cache/
+sillage-backend/.mypy_cache/
+sillage-backend/.pytest_cache/
+sillage-backend/.cache/
+sillage-backend/.pylint.d/
+
+# --- Builds / dist / packaging ---
+sillage-backend/build/
+sillage-backend/dist/
+sillage-backend/**/*.egg-info/
+
+# --- Env & secrets (conserva un ejemplo) ---
+sillage-backend/.env
+sillage-backend/.env.*
+!sillage-backend/.env.example
+sillage-backend/.python-version
+
+# --- Logs ---
+sillage-backend/**/*.log
+sillage-backend/logs/
+sillage-backend/uvicorn.log
+
+# --- Databases temporales ---
+sillage-backend/**/*.sqlite3
+sillage-backend/**/*.db
+
+# --- Subidas y artefactos de runtime (ajusta a tu estructura) ---
+sillage-backend/app/media/
+sillage-backend/app/uploads/
+sillage-backend/app/staticfiles/
+
+# --- Cobertura / reportes ---
+sillage-backend/.coverage
+sillage-backend/.coverage.*
+sillage-backend/coverage.xml
+sillage-backend/htmlcov/
+
+# --- IDE / SO ---
+sillage-backend/.vscode/
+sillage-backend/.idea/
+sillage-backend/*.code-workspace
+sillage-backend/.DS_Store
+sillage-backend/Thumbs.db
