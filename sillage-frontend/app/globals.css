@@ -3,50 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 40% 98%;
-  --foreground: 222 47% 11%;
-  --primary: 259 94% 51%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 183 47% 63%;
-  --secondary-foreground: 222 47% 11%;
-  --accent: 22 90% 58%;
-  --accent-foreground: 210 40% 98%;
-  --muted: 215 16% 82%;
-  --muted-foreground: 222 47% 11%;
-  --border: 217 16% 84%;
-  --input: 217 16% 84%;
-  --ring: 259 94% 51%;
-  color-scheme: light;
+  --background: 40 30% 96%;
+  --foreground: 0 0% 17%;
+  --primary: 7 39% 74%;
+  --primary-foreground: 0 0% 12%;
+  --secondary: 35 10% 62%;
+  --secondary-foreground: 0 0% 15%;
+  --accent: 46 65% 52%;
+  --accent-foreground: 0 0% 10%;
+  --muted: 35 20% 78%;
+  --muted-foreground: 0 0% 34%;
+  --border: 35 14% 80%;
+  --input: 35 14% 80%;
+  --ring: 7 39% 64%;
+  --bg-alt: 40 28% 92%;
+  --bg-soft: 40 26% 88%;
+  --block: 40 20% 94%;
+  --text-muted: 35 7% 45%;
+  --nav-surface: 40 30% 98%;
+  --nav-border: 7 39% 68%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --primary: 259 94% 71%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 183 47% 43%;
-    --secondary-foreground: 210 40% 98%;
-    --accent: 22 90% 68%;
-    --accent-foreground: 222 47% 11%;
-    --muted: 223 47% 20%;
-    --muted-foreground: 210 40% 98%;
-    --border: 217 33% 32%;
-    --input: 217 33% 32%;
-    --ring: 259 94% 71%;
-    color-scheme: dark;
-  }
+* {
+  box-sizing: border-box;
 }
 
 html {
   font-family: var(--font-sans), system-ui, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
 body {
+  min-height: 100vh;
+  margin: 0;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  min-height: 100vh;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -54,8 +48,11 @@ a {
   text-decoration: none;
 }
 
-main {
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
+button {
+  font: inherit;
+}
+
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary-foreground));
 }

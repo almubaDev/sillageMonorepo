@@ -29,7 +29,17 @@ const config: Config = {
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))"
+        ring: "hsl(var(--ring))",
+        surface: {
+          DEFAULT: "hsl(var(--bg-alt))",
+          soft: "hsl(var(--bg-soft))",
+          block: "hsl(var(--block))"
+        },
+        nav: {
+          surface: "hsl(var(--nav-surface))",
+          border: "hsl(var(--nav-border))"
+        },
+        "muted-text": "hsl(var(--text-muted))"
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
