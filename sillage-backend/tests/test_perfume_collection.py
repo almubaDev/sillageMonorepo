@@ -1,5 +1,5 @@
 import os
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 import pytest_asyncio
@@ -20,7 +20,11 @@ os.environ.setdefault("FLOW_SECRET_KEY", "dummy")
 os.environ.setdefault("FLOW_API_URL", "https://dummy")
 
 from app.main import app
-from app.api.deps import get_db, get_current_active_user
+from app.api.deps import (
+    get_db,
+    get_current_active_user,
+    get_current_subscribed_user,
+)
 from app.core.database import Base
 from app.models.perfume import Perfume
 from app.models.user import User
@@ -109,8 +113,12 @@ async def test_client(db_session):
     async def override_get_current_active_user():
         return user
 
+    async def override_get_current_subscribed_user():
+        return user
+
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_active_user] = override_get_current_active_user
+    app.dependency_overrides[get_current_subscribed_user] = override_get_current_subscribed_user
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -199,3 +207,33 @@ async def test_private_perfume_visible_only_to_owner(test_client):
     search_owner = await client.get("/api/v1/perfumes/search")
     assert search_owner.status_code == 200
     assert any(p["id"] == created_perfume["id"] for p in search_owner.json())
+
+
+@pytest.mark.asyncio
+async def test_create_recommendation_returns_400_when_no_active_perfumes(test_client):
+    client, perfume, _, _ = test_client
+
+    add_response = await client.post(f"/api/v1/perfumes/collection/{perfume.id}")
+    assert add_response.status_code == 200
+
+    delete_response = await client.delete(f"/api/v1/perfumes/collection/{perfume.id}")
+    assert delete_response.status_code == 200
+
+    now = datetime.now(UTC)
+    payload = {
+        "fecha_evento": now.date().isoformat(),
+        "hora_evento": (now + timedelta(hours=1)).time().isoformat(timespec="minutes"),
+        "latitud": 0.0,
+        "longitud": 0.0,
+        "lugar_nombre": "Lugar de prueba",
+        "lugar_tipo": "cerrado",
+        "lugar_descripcion": "Descripción de prueba",
+        "ocasion": "Cena",
+        "expectativa": "Alta",
+        "vestimenta": "Formal",
+    }
+
+    response = await client.post("/api/v1/recommendations/", json=payload)
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Debes tener al menos un perfume en tu colección"
