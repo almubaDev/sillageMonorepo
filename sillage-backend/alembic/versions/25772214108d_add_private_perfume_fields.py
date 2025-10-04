@@ -20,7 +20,7 @@ def upgrade() -> None:
             sa.Column(
                 "is_private",
                 sa.Boolean(),
-                nullable=False,
+                nullable=True,
                 server_default=sa.false(),
             )
         )
@@ -35,8 +35,17 @@ def upgrade() -> None:
             ondelete="SET NULL",
         )
 
+    op.execute("UPDATE perfumes SET is_private = FALSE WHERE is_private IS NULL")
+
     with op.batch_alter_table("perfumes") as batch_op:
-        batch_op.alter_column("is_private", server_default=None)
+        batch_op.alter_column(
+            "is_private", nullable=False, existing_type=sa.Boolean()
+        )
+
+    with op.batch_alter_table("perfumes") as batch_op:
+        batch_op.alter_column(
+            "is_private", server_default=None, existing_type=sa.Boolean()
+        )
 
     with op.batch_alter_table("perfume_collections") as batch_op:
         batch_op.add_column(
