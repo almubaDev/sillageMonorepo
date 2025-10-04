@@ -53,6 +53,9 @@ sillage-backend/*.code-workspace
 sillage-backend/.DS_Store
 sillage-backend/Thumbs.db
 
+#sillage-backend/perfumes_db2.csv
+
+
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
