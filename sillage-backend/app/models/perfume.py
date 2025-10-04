@@ -10,7 +10,8 @@ perfume_collection = Table(
     Base.metadata,
     Column('user_id', Integer, ForeignKey('users.id', ondelete='CASCADE')),
     Column('perfume_id', Integer, ForeignKey('perfumes.id', ondelete='CASCADE')),
-    Column('added_at', DateTime(timezone=True), server_default=func.now())
+    Column('added_at', DateTime(timezone=True), server_default=func.now()),
+    Column('removed_at', DateTime(timezone=True), nullable=True)
 )
 
 

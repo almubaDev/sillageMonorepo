@@ -61,7 +61,8 @@ async def get_my_collection(
         perfume_collection,
         and_(
             perfume_collection.c.perfume_id == Perfume.id,
-            perfume_collection.c.user_id == current_user.id
+            perfume_collection.c.user_id == current_user.id,
+            perfume_collection.c.removed_at.is_(None)
         )
     )
     
@@ -107,18 +108,32 @@ async def add_to_collection(
             )
         )
     )
-    
-    if existing.first():
-        raise HTTPException(status_code=400, detail="El perfume ya está en tu colección")
-    
-    # Agregar a la colección
-    await db.execute(
-        perfume_collection.insert().values(
-            user_id=current_user.id,
-            perfume_id=perfume_id,
-            added_at=datetime.utcnow()
+
+    existing_entry = existing.mappings().first()
+    if existing_entry:
+        if existing_entry["removed_at"] is None:
+            raise HTTPException(status_code=400, detail="El perfume ya está en tu colección")
+
+        await db.execute(
+            perfume_collection.update().where(
+                and_(
+                    perfume_collection.c.user_id == current_user.id,
+                    perfume_collection.c.perfume_id == perfume_id
+                )
+            ).values(
+                removed_at=None,
+                added_at=datetime.utcnow()
+            )
         )
-    )
+    else:
+        # Agregar a la colección
+        await db.execute(
+            perfume_collection.insert().values(
+                user_id=current_user.id,
+                perfume_id=perfume_id,
+                added_at=datetime.utcnow()
+            )
+        )
     await db.commit()
     
     return {"message": "Perfume agregado a tu colección"}
@@ -132,12 +147,15 @@ async def remove_from_collection(
 ):
     """Eliminar un perfume de mi colección"""
     result = await db.execute(
-        perfume_collection.delete().where(
+        perfume_collection.update()
+        .where(
             and_(
                 perfume_collection.c.user_id == current_user.id,
-                perfume_collection.c.perfume_id == perfume_id
+                perfume_collection.c.perfume_id == perfume_id,
+                perfume_collection.c.removed_at.is_(None)
             )
         )
+        .values(removed_at=datetime.utcnow())
     )
     await db.commit()
     
