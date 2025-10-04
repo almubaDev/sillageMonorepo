@@ -26,7 +26,8 @@ async def create_recommendation(
         perfume_collection,
         and_(
             perfume_collection.c.perfume_id == Perfume.id,
-            perfume_collection.c.user_id == current_user.id
+            perfume_collection.c.user_id == current_user.id,
+            perfume_collection.c.removed_at.is_(None)
         )
     )
     
