@@ -27,7 +27,9 @@ class PerfumeInDB(PerfumeBase):
     id: int
     created_at: datetime
     updated_at: Optional[datetime]
-    
+    is_private: bool = False
+    created_by: Optional[int] = None
+
     class Config:
         from_attributes = True
 

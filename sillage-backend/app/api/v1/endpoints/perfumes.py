@@ -24,9 +24,15 @@ async def search_perfumes(
 ):
     """Buscar perfumes en la base de datos"""
     query = select(Perfume)
-    
+
     # Aplicar filtros
     conditions = []
+    conditions.append(
+        or_(
+            Perfume.is_private.is_(False),
+            Perfume.created_by == current_user.id
+        )
+    )
     if q:
         conditions.append(
             or_(
@@ -76,6 +82,8 @@ async def get_my_collection(
             "perfumista": perfume.perfumista,
             "notas": perfume.notas,
             "acordes": perfume.acordes,
+            "is_private": perfume.is_private,
+            "created_by": perfume.created_by,
             "created_at": perfume.created_at,
             "updated_at": perfume.updated_at,
             "added_at": added_at
@@ -95,8 +103,11 @@ async def add_to_collection(
     # Verificar que el perfume existe
     result = await db.execute(select(Perfume).where(Perfume.id == perfume_id))
     perfume = result.scalar_one_or_none()
-    
+
     if not perfume:
+        raise HTTPException(status_code=404, detail="Perfume no encontrado")
+
+    if perfume.is_private and perfume.created_by != current_user.id:
         raise HTTPException(status_code=404, detail="Perfume no encontrado")
     
     # Verificar si ya está en la colección
@@ -173,7 +184,11 @@ async def create_perfume(
 ):
     """Crear un nuevo perfume y agregarlo a la colección"""
     # Crear el perfume
-    new_perfume = Perfume(**perfume_data.dict())
+    new_perfume = Perfume(
+        **perfume_data.model_dump(),
+        is_private=True,
+        created_by=current_user.id
+    )
     db.add(new_perfume)
     await db.flush()  # Para obtener el ID
     
