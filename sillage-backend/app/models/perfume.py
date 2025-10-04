@@ -24,8 +24,8 @@ class Perfume(Base):
     perfumista = Column(String(100), nullable=True)
 
     # Datos JSON para notas y acordes
-    notas = Column(JSON, default=list)
-    acordes = Column(JSON, default=list)
+    notas = Column(JSON, nullable=True, default=None)
+    acordes = Column(JSON, nullable=True, default=None)
 
     is_private = Column(Boolean, nullable=False, default=False)
     created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
