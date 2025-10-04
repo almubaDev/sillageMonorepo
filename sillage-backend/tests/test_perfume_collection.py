@@ -48,6 +48,9 @@ class AsyncSessionWrapper:
     async def rollback(self):
         self._sync_session.rollback()
 
+    async def flush(self):
+        self._sync_session.flush()
+
     async def close(self):
         self._sync_session.close()
 
@@ -91,6 +94,8 @@ async def test_client(db_session):
         notas=["nota"],
         acordes=["acorde"],
         created_at=datetime.now(UTC),
+        is_private=False,
+        created_by=None,
     )
 
     db_session.add_all([user, perfume])
@@ -109,14 +114,14 @@ async def test_client(db_session):
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client, perfume, db_session
+        yield client, perfume, db_session, user
 
     app.dependency_overrides.clear()
 
 
 @pytest.mark.asyncio
 async def test_soft_delete_preserves_perfume_and_allows_readd(test_client):
-    client, perfume, session = test_client
+    client, perfume, session, _ = test_client
 
     response = await client.post(f"/api/v1/perfumes/collection/{perfume.id}")
     assert response.status_code == 200
@@ -137,3 +142,60 @@ async def test_soft_delete_preserves_perfume_and_allows_readd(test_client):
     collection_after_readd = await client.get("/api/v1/perfumes/collection")
     assert collection_after_readd.status_code == 200
     assert len(collection_after_readd.json()) == 1
+
+
+@pytest.mark.asyncio
+async def test_private_perfume_visible_only_to_owner(test_client):
+    client, _, session, owner = test_client
+
+    other_user = User(
+        email="other@example.com",
+        first_name="Other",
+        last_name="User",
+        hashed_password="hashed",
+        is_active=True,
+        suscrito=True,
+        consultas_restantes=5,
+    )
+
+    session.add(other_user)
+    await session.commit()
+    await session.refresh(other_user)
+
+    response = await client.post(
+        "/api/v1/perfumes/",
+        json={
+            "nombre": "Privado",
+            "marca": "Marca",
+            "perfumista": "Autor",
+            "notas": ["nota"],
+            "acordes": ["acorde"],
+        },
+    )
+
+    assert response.status_code == 200
+    created_perfume = response.json()
+    assert created_perfume["is_private"] is True
+    assert created_perfume["created_by"] == owner.id
+
+    collection_response = await client.get("/api/v1/perfumes/collection")
+    assert collection_response.status_code == 200
+    assert any(p["id"] == created_perfume["id"] for p in collection_response.json())
+
+    async def override_other_user():
+        return other_user
+
+    async def override_owner_user():
+        return owner
+
+    app.dependency_overrides[get_current_active_user] = override_other_user
+
+    search_other = await client.get("/api/v1/perfumes/search")
+    assert search_other.status_code == 200
+    assert all(p["id"] != created_perfume["id"] for p in search_other.json())
+
+    app.dependency_overrides[get_current_active_user] = override_owner_user
+
+    search_owner = await client.get("/api/v1/perfumes/search")
+    assert search_owner.status_code == 200
+    assert any(p["id"] == created_perfume["id"] for p in search_owner.json())
