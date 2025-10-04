@@ -7,8 +7,8 @@ class PerfumeBase(BaseModel):
     nombre: str = Field(..., max_length=200)
     marca: str = Field(..., max_length=100)
     perfumista: Optional[str] = Field(None, max_length=100)
-    notas: List[str] = Field(default_factory=list)
-    acordes: List[str] = Field(default_factory=list)
+    notas: Optional[List[str]] = Field(default=None)
+    acordes: Optional[List[str]] = Field(default=None)
 
 
 class PerfumeCreate(PerfumeBase):
