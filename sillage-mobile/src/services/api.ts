@@ -2,8 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Configuración base de la API
-//const API_BASE_URL = 'http://localhost:8000/api/v1';
-const API_BASE_URL = 'https://92t98wk8-8000.brs.devtunnels.ms/api/v1';
+const API_BASE_URL = 'http://localhost:8000/api/v1';
+//const API_BASE_URL = 'https://92t98wk8-8000.brs.devtunnels.ms/api/v1';
 
 // Crear instancia de axios
 const api = axios.create({
