@@ -9,7 +9,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Platform,
   useWindowDimensions,
   View,
   NativeSyntheticEvent,
@@ -267,7 +266,7 @@ export const RecommendScreen = () => {
     [height]
   );
 
-  const mapHeight = Platform.OS === 'web' ? (isLargeScreen ? 420 : 360) : isLargeScreen ? 360 : 280;
+  const mapHeight = isLargeScreen ? 360 : 280;
   const showScrollHint = contentScrollable && !hasScrolled;
 
   return (
