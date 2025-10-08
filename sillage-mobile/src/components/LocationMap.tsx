@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+
 import { Platform, StyleSheet, View, Image, TouchableOpacity, Linking, Text } from 'react-native';
 
 interface LocationMapProps {
