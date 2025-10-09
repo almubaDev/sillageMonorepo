@@ -11,16 +11,9 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeProvider';
-import { RecommendationResponse } from '../../services/recommendationService';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-
-// Definir los tipos de parámetros del Stack
-type RecommendStackParamList = {
-  RecommendForm: undefined;
-  RecommendationResult: {
-    recommendation: RecommendationResponse;
-  };
-};
+import { RecommendStackParamList } from '../../navigation/types';
+import { formatPerfumeName, formatBrand, formatPerfumista } from '../../utils/formatters';
 
 type Props = NativeStackScreenProps<RecommendStackParamList, 'RecommendationResult'>;
 
@@ -88,16 +81,16 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
           </View>
           
           <Text style={[styles.perfumeName, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-            {recommendation.perfume_recomendado.nombre}
+            {formatPerfumeName(recommendation.perfume_recomendado.nombre)}
           </Text>
-          
+
           <Text style={[styles.perfumeBrand, { color: colors.secondary, fontFamily: 'Lato-Bold' }]}>
-            {recommendation.perfume_recomendado.marca}
+            {formatBrand(recommendation.perfume_recomendado.marca)}
           </Text>
 
           {recommendation.perfume_recomendado.perfumista && (
             <Text style={[styles.perfumista, { color: colors.secondary, fontFamily: 'Lato-Italic' }]}>
-              por {recommendation.perfume_recomendado.perfumista}
+              por {formatPerfumista(recommendation.perfume_recomendado.perfumista)}
             </Text>
           )}
 
@@ -110,12 +103,12 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
               </Text>
               <View style={styles.tags}>
                 {recommendation.perfume_recomendado.acordes.slice(0, 5).map((acorde, index) => (
-                  <View key={index} style={[styles.tag, { 
+                  <View key={index} style={[styles.tag, {
                     backgroundColor: colors.bg,
                     borderColor: colors.accent
                   }]}>
                     <Text style={[styles.tagText, { color: colors.accent, fontFamily: 'Lato-Regular' }]}>
-                      {acorde}
+                      {formatPerfumeName(acorde)}
                     </Text>
                   </View>
                 ))}

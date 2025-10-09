@@ -3,18 +3,18 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeProvider';
+import { RecommendStackParamList, RootTabParamList } from './types';
 
 import { CollectionScreen } from '../screens/Collection/CollectionScreen';
 import { RecommendScreen } from '../screens/Recommend/RecommendScreen';
 import { RecommendationResultScreen } from '../screens/Recommend/RecommendationResultScreen';
 import { ProfileScreen } from '../screens/Profile/ProfileScreen';
 
-const Tab = createBottomTabNavigator();
-const RecommendStack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator<RootTabParamList>();
+const RecommendStack = createNativeStackNavigator<RecommendStackParamList>();
 
 // Stack Navigator para Recomendador (incluye la pantalla de resultado)
 function RecommendStackNavigator() {
@@ -55,9 +55,7 @@ function RecommendStackNavigator() {
 
 export const AppNavigator = () => {
   const { colors } = useTheme();
-  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const isMobile = width < 768;
 
   return (
     <Tab.Navigator
@@ -85,7 +83,7 @@ export const AppNavigator = () => {
         },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.secondary,
-        tabBarShowLabel: !isMobile,
+        tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',

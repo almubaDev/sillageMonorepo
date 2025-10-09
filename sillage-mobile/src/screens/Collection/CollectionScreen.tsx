@@ -18,6 +18,7 @@ import { PerfumeCard } from '../../components/PerfumeCard';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { perfumeService, PerfumeInCollection, Perfume } from '../../services/perfumeService';
 import { useFocusEffect } from '@react-navigation/native';
+import { formatPerfumeName, formatBrand } from '../../utils/formatters';
 
 export const CollectionScreen = () => {
   const { colors } = useTheme();
@@ -276,10 +277,10 @@ export const CollectionScreen = () => {
                 >
                   <View style={styles.resultInfo}>
                     <Text style={[styles.resultName, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-                      {item.nombre}
+                      {formatPerfumeName(item.nombre)}
                     </Text>
                     <Text style={[styles.resultBrand, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                      {item.marca}
+                      {formatBrand(item.marca)}
                     </Text>
                   </View>
                   <MaterialCommunityIcons name="plus-circle" size={28} color={colors.accent} />

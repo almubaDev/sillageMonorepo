@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeProvider';
+import { formatPerfumeName, formatBrand } from '../utils/formatters';
 
 interface PerfumeCardProps {
   perfume: {
@@ -34,10 +35,10 @@ export const PerfumeCard: React.FC<PerfumeCardProps> = ({
       <View style={styles.content}>
         <View style={styles.info}>
           <Text style={[styles.name, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-            {perfume.nombre}
+            {formatPerfumeName(perfume.nombre)}
           </Text>
           <Text style={[styles.brand, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            {perfume.marca}
+            {formatBrand(perfume.marca)}
           </Text>
         </View>
 

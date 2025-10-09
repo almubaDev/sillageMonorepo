@@ -5,6 +5,7 @@ import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Te
 import Modal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useAuthContext } from '../../utils/AuthContext';
 import { ProgressBar } from './ProgressBar';
 import { FormNavigation } from './FormNavigation';
 import { Step1Date } from './steps/Step1Date';
@@ -27,6 +28,7 @@ interface Props {
 
 export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
+  const { refreshUser } = useAuthContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RecommendationFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
@@ -114,6 +116,9 @@ export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
       const result = await recommendationService.create(recommendationData);
 
       console.log('✅ Recomendación recibida:', result);
+
+      // Actualizar datos del usuario (incluyendo consultas restantes)
+      await refreshUser();
 
       // Navegar a pantalla de resultado
       navigation.navigate('RecommendationResult', {

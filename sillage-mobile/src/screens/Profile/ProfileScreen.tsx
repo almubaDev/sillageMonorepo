@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthContext } from '../../utils/AuthContext';
 
 export const ProfileScreen = () => {
   const { colors, cyclePalette } = useTheme();
-  const { user, logout } = useAuthContext();
+  const { user, logout, refreshUser } = useAuthContext();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
-  
+
+  // Refrescar datos del usuario cuando se enfoca la pantalla
+  useFocusEffect(
+    useCallback(() => {
+      refreshUser();
+    }, [])
+  );
+
   const handleLogout = async () => {
     await logout();
   };
