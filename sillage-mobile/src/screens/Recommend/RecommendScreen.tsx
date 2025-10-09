@@ -1,5 +1,9 @@
+// sillage-mobile/src/screens/Recommend/RecommendScreen.tsx
+
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Text } from 'react-native';
+import Modal from 'react-native-modal';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeProvider';
 import { ProgressBar } from './ProgressBar';
 import { FormNavigation } from './FormNavigation';
@@ -12,15 +16,21 @@ import { Step6Clothing } from './steps/Step6Clothing';
 import { Step7Summary } from './steps/Step7Summary';
 import { Step8Location } from './steps/Step8Location';
 import { RecommendationFormData, INITIAL_FORM_DATA } from './types';
-import { weatherService } from '../../services/weatherService';
-import { recommendationService, CreateRecommendationRequest } from '../../services/recommendationService';
+import { recommendationService } from '../../services/recommendationService';
+import { CreateRecommendationRequest } from '../../schemas/recommendation';
 
 const TOTAL_STEPS = 8;
 
-export const RecommendScreen = () => {
+interface Props {
+  navigation: any;
+}
+
+export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RecommendationFormData>(INITIAL_FORM_DATA);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const updateFormData = <K extends keyof RecommendationFormData>(
     field: K,
@@ -44,7 +54,7 @@ export const RecommendScreen = () => {
       case 6:
         return formData.vestimenta.trim() !== '';
       case 7:
-        return true; // Resumen siempre puede continuar
+        return true;
       case 8:
         return formData.ubicacion.latitud !== null && formData.ubicacion.longitud !== null;
       default:
@@ -55,72 +65,74 @@ export const RecommendScreen = () => {
   const handleNext = () => {
     if (canGoNext() && currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
+      setError(null);
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      setError(null);
     }
   };
 
   const handleEdit = (step: number) => {
     setCurrentStep(step);
+    setError(null);
   };
 
   const handleSubmit = async () => {
     try {
-      // Validar que tengamos ubicación
-      if (!formData.ubicacion.latitud || !formData.ubicacion.longitud) {
-        Alert.alert('Error', 'Debes seleccionar una ubicación en el mapa');
-        return;
-      }
+      setLoading(true);
+      setError(null);
 
-      // Consultar clima usando las coordenadas seleccionadas
-      Alert.alert('Consultando clima', 'Obteniendo datos meteorológicos...');
-      const weather = await weatherService.getWeather(
-        formData.ubicacion.latitud, 
-        formData.ubicacion.longitud
-      );
-
-      if (!weather) {
-        Alert.alert('Error', 'No se pudo obtener el clima');
+      // Validar que tengamos todos los datos necesarios
+      if (!formData.fecha || !formData.hora || !formData.tipoLugar || 
+          !formData.ubicacion.latitud || !formData.ubicacion.longitud) {
+        setError('Faltan datos requeridos. Por favor completa todos los pasos.');
+        setLoading(false);
         return;
       }
 
       // Preparar datos para el backend
       const recommendationData: CreateRecommendationRequest = {
-        fecha_evento: formData.fecha!.toISOString().split('T')[0],
-        hora_evento: formData.hora!.toTimeString().slice(0, 5),
+        fecha_evento: formData.fecha.toISOString().split('T')[0], // YYYY-MM-DD
+        hora_evento: formData.hora.toTimeString().slice(0, 5), // HH:MM
         latitud: formData.ubicacion.latitud,
         longitud: formData.ubicacion.longitud,
         lugar_nombre: formData.ubicacion.nombre,
-        lugar_tipo: formData.tipoLugar!,
+        lugar_tipo: formData.tipoLugar,
+        lugar_descripcion: formData.ubicacion.direccion,
         ocasion: formData.ocasion,
         expectativa: formData.expectativa,
         vestimenta: formData.vestimenta,
       };
 
-      // Enviar a backend (que consulta Gemini AI)
-      Alert.alert('Procesando', 'Generando tu recomendación con IA...');
+      console.log('📤 Enviando datos al backend:', recommendationData);
+
+      // Llamar al backend (que consulta clima + IA)
       const result = await recommendationService.create(recommendationData);
 
-      // Mostrar resultado
-      Alert.alert(
-        '✨ Recomendación generada',
-        `Te recomendamos: ${result.perfume_recomendado.nombre} de ${result.perfume_recomendado.marca}\n\nClima: ${weather.descripcion}, ${weather.temperatura}°C`,
-        [{ text: 'Ver detalles' }]
-      );
+      console.log('✅ Recomendación recibida:', result);
 
-      // TODO: Navegar a pantalla de resultado
-      console.log('📊 Resultado completo:', result);
+      // Navegar a pantalla de resultado
+      navigation.navigate('RecommendationResult', {
+        recommendation: result,
+      });
+
+      // Resetear formulario
+      setFormData(INITIAL_FORM_DATA);
+      setCurrentStep(1);
       
     } catch (error: any) {
       console.error('❌ Error en recomendación:', error);
-      Alert.alert(
-        'Error', 
-        error.response?.data?.detail || 'Hubo un problema al generar tu recomendación'
-      );
+      
+      // Mostrar error al usuario
+      const errorMessage = error.detail || 'Hubo un problema al generar tu recomendación. Intenta nuevamente.';
+      setError(errorMessage);
+      
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,15 +201,65 @@ export const RecommendScreen = () => {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <ProgressBar currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+      
+      {/* Mostrar error si existe */}
+      {error && (
+        <View style={[styles.errorBanner, { backgroundColor: '#EF444420', borderColor: '#EF4444' }]}>
+          <MaterialCommunityIcons name="alert-circle" size={20} color="#EF4444" />
+          <Text style={[styles.errorText, { color: '#EF4444', fontFamily: 'Lato-Regular' }]}>
+            {error}
+          </Text>
+        </View>
+      )}
+
       <View style={styles.stepContainer}>{renderStep()}</View>
+      
       <FormNavigation
         currentStep={currentStep}
         totalSteps={TOTAL_STEPS}
         onBack={handleBack}
         onNext={handleNext}
         onSubmit={handleSubmit}
-        canGoNext={canGoNext()}
+        canGoNext={canGoNext() && !loading}
       />
+
+      {/* Modal de carga */}
+      <Modal
+        isVisible={loading}
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        backdropOpacity={0.8}
+        style={styles.modal}
+      >
+        <View style={[styles.loadingContainer, { backgroundColor: colors.bg }]}>
+          <View style={[styles.loadingContent, { backgroundColor: colors.accent + '15' }]}>
+            <ActivityIndicator size="large" color={colors.accent} />
+            <Text style={[styles.loadingTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+              Generando tu recomendación
+            </Text>
+            <View style={styles.loadingSteps}>
+              <View style={styles.loadingStep}>
+                <MaterialCommunityIcons name="weather-cloudy" size={20} color={colors.accent} />
+                <Text style={[styles.loadingStepText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
+                  Consultando el clima...
+                </Text>
+              </View>
+              <View style={styles.loadingStep}>
+                <MaterialCommunityIcons name="robot" size={20} color={colors.accent} />
+                <Text style={[styles.loadingStepText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
+                  Analizando con IA...
+                </Text>
+              </View>
+              <View style={styles.loadingStep}>
+                <MaterialCommunityIcons name="bottle-tonic-plus" size={20} color={colors.accent} />
+                <Text style={[styles.loadingStepText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
+                  Seleccionando el perfume perfecto...
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -207,6 +269,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stepContainer: {
+    flex: 1,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+  },
+  modal: {
+    margin: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    width: '90%',
+    maxWidth: 400,
+    borderRadius: 20,
+    padding: 32,
+  },
+  loadingContent: {
+    alignItems: 'center',
+    padding: 24,
+    borderRadius: 16,
+  },
+  loadingTitle: {
+    fontSize: 20,
+    marginTop: 20,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  loadingSteps: {
+    width: '100%',
+    gap: 16,
+  },
+  loadingStep: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingStepText: {
+    fontSize: 14,
     flex: 1,
   },
 });

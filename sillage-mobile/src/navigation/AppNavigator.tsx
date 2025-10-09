@@ -1,5 +1,8 @@
+// sillage-mobile/src/navigation/AppNavigator.tsx
+
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,9 +10,48 @@ import { useTheme } from '../theme/ThemeProvider';
 
 import { CollectionScreen } from '../screens/Collection/CollectionScreen';
 import { RecommendScreen } from '../screens/Recommend/RecommendScreen';
+import { RecommendationResultScreen } from '../screens/Recommend/RecommendationResultScreen';
 import { ProfileScreen } from '../screens/Profile/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
+const RecommendStack = createNativeStackNavigator();
+
+// Stack Navigator para Recomendador (incluye la pantalla de resultado)
+function RecommendStackNavigator() {
+  const { colors } = useTheme();
+  
+  return (
+    <RecommendStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.bg,
+        },
+        headerTintColor: colors.text,
+        headerShadowVisible: false,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 20,
+          fontFamily: 'AlanSans-Bold',
+        },
+      }}
+    >
+      <RecommendStack.Screen
+        name="RecommendForm"
+        component={RecommendScreen}
+        options={{ headerShown: false }}
+      />
+      <RecommendStack.Screen
+        name="RecommendationResult"
+        component={RecommendationResultScreen}
+        options={{
+          headerShown: true,
+          headerBackVisible: false,
+          title: 'Tu Recomendación',
+        }}
+      />
+    </RecommendStack.Navigator>
+  );
+}
 
 export const AppNavigator = () => {
   const { colors } = useTheme();
@@ -74,10 +116,10 @@ export const AppNavigator = () => {
       />
       <Tab.Screen 
         name="Recomendador" 
-        component={RecommendScreen}
+        component={RecommendStackNavigator}
         options={{ 
           tabBarLabel: 'Recomendador',
-          title: 'Recomendador'
+          headerShown: false,
         }}
       />
       <Tab.Screen 
