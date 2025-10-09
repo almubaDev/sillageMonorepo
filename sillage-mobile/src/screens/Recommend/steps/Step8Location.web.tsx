@@ -1,0 +1,343 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '../../../theme/ThemeProvider';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
+interface Step8LocationProps {
+  value: {
+    latitud: number | null;
+    longitud: number | null;
+    nombre: string;
+    direccion: string;
+  };
+  onChange: (location: {
+    latitud: number;
+    longitud: number;
+    nombre: string;
+    direccion: string;
+  }) => void;
+}
+
+export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange }) => {
+  const { colors } = useTheme();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const geocoderRef = useRef<any>(null);
+
+  const defaultLocation = {
+    lat: value.latitud || -33.4489,
+    lng: value.longitud || -70.6693,
+  };
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      if (!window.google) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBYW7kK_nRl4IHm8P5_MPqPDVPbMl7J-n0&libraries=places&language=es`;
+        script.async = true;
+        script.defer = true;
+        script.onload = initMap;
+        document.head.appendChild(script);
+      } else {
+        initMap();
+      }
+    }
+  }, []);
+
+  const initMap = () => {
+    if (!window.google) return;
+
+    const mapElement = document.getElementById('google-map');
+    if (!mapElement) return;
+
+    const map = new window.google.maps.Map(mapElement, {
+      center: defaultLocation,
+      zoom: 13,
+    });
+
+    const marker = new window.google.maps.Marker({
+      map: map,
+      position: defaultLocation,
+      draggable: true,
+      visible: value.latitud !== null && value.longitud !== null,
+    });
+
+    const geocoder = new window.google.maps.Geocoder();
+
+    marker.addListener('dragend', () => {
+      const pos = marker.getPosition();
+      if (pos) {
+        updateLocation(pos.lat(), pos.lng(), geocoder);
+      }
+    });
+
+    map.addListener('click', (e: any) => {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      marker.setPosition({ lat, lng });
+      marker.setVisible(true);
+      map.panTo({ lat, lng });
+      updateLocation(lat, lng, geocoder);
+    });
+
+    mapRef.current = map;
+    markerRef.current = marker;
+    geocoderRef.current = geocoder;
+    setMapLoaded(true);
+
+    if (value.latitud && value.longitud) {
+      const pos = { lat: value.latitud, lng: value.longitud };
+      map.setCenter(pos);
+      marker.setPosition(pos);
+      marker.setVisible(true);
+    }
+  };
+
+  const updateLocation = async (lat: number, lng: number, geocoder: any) => {
+    try {
+      geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
+        if (status === 'OK' && results[0]) {
+          onChange({
+            latitud: lat,
+            longitud: lng,
+            nombre: results[0].address_components?.[0]?.long_name || 'Ubicación seleccionada',
+            direccion: results[0].formatted_address,
+          });
+        } else {
+          onChange({
+            latitud: lat,
+            longitud: lng,
+            nombre: 'Ubicación seleccionada',
+            direccion: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error en geocodificación:', error);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      Alert.alert('Error', 'Escribe una dirección o lugar');
+      return;
+    }
+
+    if (!geocoderRef.current || !mapRef.current || !markerRef.current) {
+      Alert.alert('Error', 'El mapa no está listo');
+      return;
+    }
+
+    try {
+      setSearching(true);
+      geocoderRef.current.geocode({ address: searchQuery }, (results: any, status: any) => {
+        if (status === 'OK' && results[0]) {
+          const location = results[0].geometry.location;
+          const lat = location.lat();
+          const lng = location.lng();
+
+          mapRef.current.setCenter(location);
+          mapRef.current.setZoom(15);
+          markerRef.current.setPosition(location);
+          markerRef.current.setVisible(true);
+
+          onChange({
+            latitud: lat,
+            longitud: lng,
+            nombre: results[0].address_components?.[0]?.long_name || searchQuery,
+            direccion: results[0].formatted_address,
+          });
+          setSearchQuery('');
+        } else {
+          Alert.alert('No encontrado', 'No se encontró la dirección');
+        }
+        setSearching(false);
+      });
+    } catch (error) {
+      console.error('Error en búsqueda:', error);
+      Alert.alert('Error', 'No se pudo buscar la dirección');
+      setSearching(false);
+    }
+  };
+
+  if (Platform.OS !== 'web') {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: colors.text }}>Este componente solo funciona en web</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <MaterialCommunityIcons 
+          name="map-marker-radius" 
+          size={64} 
+          color={colors.accent} 
+        />
+        
+        <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+          ¿Dónde será el evento?
+        </Text>
+        
+        <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+          Busca o toca el mapa para seleccionar
+        </Text>
+      </View>
+
+      <View style={styles.searchBar}>
+        <TextInput
+          style={[styles.searchInput, {
+            backgroundColor: colors.bg,
+            color: colors.text,
+            borderColor: colors.accent,
+            fontFamily: 'Lato-Regular',
+          }]}
+          placeholder="Ej: Providencia 123, Santiago"
+          placeholderTextColor={colors.secondary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch}
+        />
+        <TouchableOpacity
+          style={[styles.searchButton, { backgroundColor: colors.accent }]}
+          onPress={handleSearch}
+          disabled={searching}
+        >
+          {searching ? (
+            <ActivityIndicator size="small" color={colors.bg} />
+          ) : (
+            <MaterialCommunityIcons name="magnify" size={22} color={colors.bg} />
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.mapContainer}>
+        {!mapLoaded && (
+          <View style={styles.loading}>
+            <ActivityIndicator size="large" color={colors.accent} />
+            <Text style={[styles.loadingText, { color: colors.secondary }]}>
+              Cargando mapa...
+            </Text>
+          </View>
+        )}
+        
+        <div 
+          id="google-map" 
+          style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: 12,
+            opacity: mapLoaded ? 1 : 0,
+          }}
+        />
+      </View>
+
+      {value.latitud && value.longitud && (
+        <View style={[styles.selectedContainer, { backgroundColor: colors.accent + '10', borderColor: colors.accent }]}>
+          <MaterialCommunityIcons name="check-circle" size={24} color={colors.accent} />
+          <View style={styles.selectedInfo}>
+            <Text style={[styles.selectedName, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
+              {value.nombre}
+            </Text>
+            <Text style={[styles.selectedAddress, { color: colors.secondary, fontFamily: 'Lato-Regular' }]} numberOfLines={2}>
+              {value.direccion}
+            </Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  searchBar: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  searchInput: {
+    flex: 1,
+    height: 50,
+    borderWidth: 2,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 15,
+  },
+  searchButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mapContainer: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  loading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    fontFamily: 'Lato-Regular',
+  },
+  selectedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 1,
+  },
+  selectedInfo: {
+    flex: 1,
+  },
+  selectedName: {
+    fontSize: 15,
+    marginBottom: 4,
+  },
+  selectedAddress: {
+    fontSize: 12,
+  },
+});
