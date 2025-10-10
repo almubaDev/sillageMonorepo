@@ -28,6 +28,8 @@ export const CollectionScreen = () => {
   const [perfumes, setPerfumes] = useState<PerfumeInCollection[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -44,20 +46,46 @@ export const CollectionScreen = () => {
     notas: '',
     acordes: '',
   });
+  const [createErrors, setCreateErrors] = useState({
+    nombre: '',
+    marca: '',
+  });
 
+  // Cargar colección al montar el componente por primera vez
+  useEffect(() => {
+    loadCollection();
+  }, []);
+
+  // Recargar cuando volvemos a la pantalla (si ya se cargó antes)
   useFocusEffect(
     useCallback(() => {
-      loadCollection();
-    }, [])
+      // Solo recargar si ya hemos cargado datos antes
+      if (hasLoadedOnce) {
+        loadCollection();
+      }
+    }, [hasLoadedOnce])
   );
 
   const loadCollection = async () => {
     try {
-      setLoading(true);
+      setError(null);
+      // Solo mostrar spinner de carga completo si no hay datos aún
+      if (!hasLoadedOnce) {
+        setLoading(true);
+      }
+
       const data = await perfumeService.getMyCollection();
       setPerfumes(data);
+      setHasLoadedOnce(true);
     } catch (error: any) {
-      Alert.alert('Error', 'No se pudo cargar tu colección');
+      console.error('❌ Error cargando colección:', error);
+      const errorMessage = error.response?.data?.detail || 'No se pudo cargar tu colección. Verifica tu conexión.';
+      setError(errorMessage);
+
+      // Solo mostrar Alert si ya habíamos cargado antes y falló
+      if (hasLoadedOnce) {
+        Alert.alert('Error', errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -124,9 +152,33 @@ export const CollectionScreen = () => {
     }
   };
 
+  const validateCreateForm = () => {
+    let errors = { nombre: '', marca: '' };
+    let isValid = true;
+
+    if (!newPerfume.nombre.trim()) {
+      errors.nombre = 'El nombre es requerido';
+      isValid = false;
+    } else if (newPerfume.nombre.trim().length < 2) {
+      errors.nombre = 'Mínimo 2 caracteres';
+      isValid = false;
+    }
+
+    if (!newPerfume.marca.trim()) {
+      errors.marca = 'La marca es requerida';
+      isValid = false;
+    } else if (newPerfume.marca.trim().length < 2) {
+      errors.marca = 'Mínimo 2 caracteres';
+      isValid = false;
+    }
+
+    setCreateErrors(errors);
+    return isValid;
+  };
+
   const handleCreatePerfume = async () => {
-    if (!newPerfume.nombre.trim() || !newPerfume.marca.trim()) {
-      Alert.alert('Error', 'Nombre y marca son obligatorios');
+    // Validar formulario
+    if (!validateCreateForm()) {
       return;
     }
 
@@ -143,21 +195,56 @@ export const CollectionScreen = () => {
       await perfumeService.createPerfume(perfumeData);
       setCreateModalVisible(false);
       setNewPerfume({ nombre: '', marca: '', perfumista: '', notas: '', acordes: '' });
+      setCreateErrors({ nombre: '', marca: '' });
       await loadCollection();
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'No se pudo crear el perfume');
+      const errorMsg = error.response?.data?.detail || 'No se pudo crear el perfume';
+      if (errorMsg.toLowerCase().includes('ya existe')) {
+        Alert.alert('Perfume duplicado', 'Este perfume ya existe en la base de datos. Búscalo para agregarlo a tu colección.');
+      } else {
+        Alert.alert('Error', errorMsg);
+      }
     } finally {
       setCreating(false);
     }
   };
 
-  if (loading) {
+  const updateNewPerfumeField = (field: string, value: string) => {
+    setNewPerfume({ ...newPerfume, [field]: value });
+    // Limpiar error del campo cuando el usuario empieza a escribir
+    if (field === 'nombre' || field === 'marca') {
+      setCreateErrors({ ...createErrors, [field]: '' });
+    }
+  };
+
+  if (loading && !hasLoadedOnce) {
     return (
       <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
         <ActivityIndicator size="large" color={colors.accent} />
         <Text style={[styles.loadingText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
           Cargando tu colección...
         </Text>
+      </View>
+    );
+  }
+
+  // Mostrar error solo si falló la carga inicial
+  if (error && !hasLoadedOnce) {
+    return (
+      <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
+        <MaterialCommunityIcons name="alert-circle" size={64} color={colors.secondary} />
+        <Text style={[styles.errorText, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+          {error}
+        </Text>
+        <TouchableOpacity
+          style={[styles.retryButton, { backgroundColor: colors.accent }]}
+          onPress={loadCollection}
+        >
+          <MaterialCommunityIcons name="refresh" size={20} color={colors.bg} />
+          <Text style={[styles.retryButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
+            Reintentar
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -320,70 +407,84 @@ export const CollectionScreen = () => {
             </TouchableOpacity>
           </View>
 
-          <TextInput
-            style={[styles.input, { 
-              backgroundColor: colors.bg, 
-              color: colors.text, 
-              borderColor: colors.accent,
-              fontFamily: 'Lato-Regular'
-            }]}
-            placeholder="Nombre del perfume *"
-            placeholderTextColor={colors.secondary}
-            value={newPerfume.nombre}
-            onChangeText={(text) => setNewPerfume({ ...newPerfume, nombre: text })}
-          />
+          <Text style={[styles.helpText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            Los campos marcados con * son obligatorios
+          </Text>
+
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={[styles.input, {
+                backgroundColor: colors.bg,
+                color: colors.text,
+                borderColor: createErrors.nombre ? '#EF4444' : colors.accent,
+                fontFamily: 'Lato-Regular'
+              }]}
+              placeholder="Nombre del perfume *"
+              placeholderTextColor={colors.secondary}
+              value={newPerfume.nombre}
+              onChangeText={(text) => updateNewPerfumeField('nombre', text)}
+            />
+            {createErrors.nombre ? (
+              <Text style={[styles.fieldError, { color: '#EF4444' }]}>{createErrors.nombre}</Text>
+            ) : null}
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={[styles.input, {
+                backgroundColor: colors.bg,
+                color: colors.text,
+                borderColor: createErrors.marca ? '#EF4444' : colors.accent,
+                fontFamily: 'Lato-Regular'
+              }]}
+              placeholder="Marca *"
+              placeholderTextColor={colors.secondary}
+              value={newPerfume.marca}
+              onChangeText={(text) => updateNewPerfumeField('marca', text)}
+            />
+            {createErrors.marca ? (
+              <Text style={[styles.fieldError, { color: '#EF4444' }]}>{createErrors.marca}</Text>
+            ) : null}
+          </View>
 
           <TextInput
-            style={[styles.input, { 
-              backgroundColor: colors.bg, 
-              color: colors.text, 
-              borderColor: colors.accent,
-              fontFamily: 'Lato-Regular'
-            }]}
-            placeholder="Marca *"
-            placeholderTextColor={colors.secondary}
-            value={newPerfume.marca}
-            onChangeText={(text) => setNewPerfume({ ...newPerfume, marca: text })}
-          />
-
-          <TextInput
-            style={[styles.input, { 
-              backgroundColor: colors.bg, 
-              color: colors.text, 
+            style={[styles.input, {
+              backgroundColor: colors.bg,
+              color: colors.text,
               borderColor: colors.accent,
               fontFamily: 'Lato-Regular'
             }]}
             placeholder="Perfumista (opcional)"
             placeholderTextColor={colors.secondary}
             value={newPerfume.perfumista}
-            onChangeText={(text) => setNewPerfume({ ...newPerfume, perfumista: text })}
+            onChangeText={(text) => updateNewPerfumeField('perfumista', text)}
           />
 
           <TextInput
-            style={[styles.input, { 
-              backgroundColor: colors.bg, 
-              color: colors.text, 
+            style={[styles.input, {
+              backgroundColor: colors.bg,
+              color: colors.text,
               borderColor: colors.accent,
               fontFamily: 'Lato-Regular'
             }]}
-            placeholder="Acordes (separados por comas)"
+            placeholder="Acordes: Ej. cítrico, amaderado, floral"
             placeholderTextColor={colors.secondary}
             value={newPerfume.acordes}
-            onChangeText={(text) => setNewPerfume({ ...newPerfume, acordes: text })}
+            onChangeText={(text) => updateNewPerfumeField('acordes', text)}
             multiline
           />
 
           <TextInput
-            style={[styles.input, { 
-              backgroundColor: colors.bg, 
-              color: colors.text, 
+            style={[styles.input, {
+              backgroundColor: colors.bg,
+              color: colors.text,
               borderColor: colors.accent,
               fontFamily: 'Lato-Regular'
             }]}
-            placeholder="Notas (separadas por comas)"
+            placeholder="Notas: Ej. bergamota, jazmín, vainilla"
             placeholderTextColor={colors.secondary}
             value={newPerfume.notas}
-            onChangeText={(text) => setNewPerfume({ ...newPerfume, notas: text })}
+            onChangeText={(text) => updateNewPerfumeField('notas', text)}
             multiline
           />
 
@@ -431,6 +532,24 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
+    marginHorizontal: 40,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 24,
+  },
+  retryButtonText: {
+    fontSize: 16,
   },
   listContainer: {
     flex: 1,
@@ -584,5 +703,18 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     fontSize: 16,
+  },
+  helpText: {
+    fontSize: 13,
+    marginBottom: 16,
+    fontStyle: 'italic',
+  },
+  inputWrapper: {
+    marginBottom: 14,
+  },
+  fieldError: {
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });

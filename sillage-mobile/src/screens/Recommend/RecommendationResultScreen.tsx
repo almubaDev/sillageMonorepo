@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useAuthContext } from '../../utils/AuthContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RecommendStackParamList } from '../../navigation/types';
 import { formatPerfumeName, formatBrand, formatPerfumista } from '../../utils/formatters';
@@ -19,9 +20,22 @@ type Props = NativeStackScreenProps<RecommendStackParamList, 'RecommendationResu
 
 export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route }) => {
   const { colors } = useTheme();
+  const { user, refreshUser } = useAuthContext();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const { recommendation } = route.params;
+
+  // Usar consultas restantes de la recomendación si existe, sino del usuario actual
+  const consultasRestantes = recommendation.consultas_restantes !== undefined
+    ? recommendation.consultas_restantes
+    : user?.consultas_restantes;
+
+  useEffect(() => {
+    // Si no hay consultas_restantes en la recomendación, refrescar usuario
+    if (recommendation.consultas_restantes === undefined) {
+      refreshUser();
+    }
+  }, []);
 
   useEffect(() => {
     navigation.setOptions({
@@ -44,6 +58,33 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
     if (temp < 20) return 'weather-cloudy';
     if (temp < 28) return 'weather-partly-cloudy';
     return 'weather-sunny';
+  };
+
+  const cleanAIResponse = (response: string): string => {
+    // Dividir por líneas
+    const lines = response.split('\n');
+
+    // Filtrar líneas vacías del inicio
+    const nonEmptyLines = lines.filter(line => line.trim() !== '');
+
+    if (nonEmptyLines.length === 0) return response;
+
+    // La primera línea no vacía generalmente es el nombre del perfume
+    // Verificar si contiene el nombre del perfume (con o sin guiones)
+    const firstLine = nonEmptyLines[0].toLowerCase().trim();
+    const perfumeName = recommendation.perfume_recomendado?.nombre?.toLowerCase();
+
+    // Si la primera línea contiene el nombre del perfume, eliminarla
+    if (perfumeName && (
+      firstLine.includes(perfumeName) ||
+      firstLine.includes(perfumeName.replace(/-/g, ' '))
+    )) {
+      // Quitar la primera línea y retornar el resto
+      const remainingLines = nonEmptyLines.slice(1);
+      return remainingLines.join('\n').trim();
+    }
+
+    return response.trim();
   };
 
   const handleNewRecommendation = () => {
@@ -140,7 +181,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
           </Text>
         </View>
         <Text style={[styles.explanation, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-          {recommendation.respuesta_ia}
+          {cleanAIResponse(recommendation.respuesta_ia)}
         </Text>
       </View>
 
@@ -209,26 +250,26 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
       </View>
 
       {/* Consultas restantes */}
-      {recommendation.consultas_restantes !== undefined && (
-        <View style={[styles.consultasBox, { 
-          backgroundColor: recommendation.consultas_restantes > 5 
-            ? colors.accent + '10' 
+      {consultasRestantes !== undefined && consultasRestantes !== null && (
+        <View style={[styles.consultasBox, {
+          backgroundColor: (consultasRestantes ?? 0) > 5
+            ? colors.accent + '10'
             : '#EF444420',
-          borderColor: recommendation.consultas_restantes > 5 
-            ? colors.accent 
+          borderColor: (consultasRestantes ?? 0) > 5
+            ? colors.accent
             : '#EF4444'
         }]}>
-          <MaterialCommunityIcons 
-            name="counter" 
-            size={20} 
-            color={recommendation.consultas_restantes > 5 ? colors.accent : '#EF4444'} 
+          <MaterialCommunityIcons
+            name="counter"
+            size={20}
+            color={(consultasRestantes ?? 0) > 5 ? colors.accent : '#EF4444'}
           />
-          <Text style={[styles.consultasText, { 
+          <Text style={[styles.consultasText, {
             color: colors.text,
             fontFamily: 'Lato-Regular'
           }]}>
             Te quedan <Text style={{ fontFamily: 'Lato-Bold' }}>
-              {recommendation.consultas_restantes} consultas
+              {consultasRestantes} {consultasRestantes === 1 ? 'consulta' : 'consultas'}
             </Text> este mes
           </Text>
         </View>

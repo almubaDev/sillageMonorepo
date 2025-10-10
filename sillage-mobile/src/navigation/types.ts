@@ -9,6 +9,14 @@ export type RecommendStackParamList = {
   };
 };
 
+export type ProfileStackParamList = {
+  ProfileMain: undefined;
+  History: undefined;
+  RecommendationResult: {
+    recommendation: RecommendationResponse;
+  };
+};
+
 export type RootTabParamList = {
   Colección: undefined;
   Recomendador: undefined;

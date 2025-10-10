@@ -28,22 +28,77 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const isWeb = Platform.OS === 'web';
   const isDesktop = width >= 1024;
 
+  const validateEmail = (text: string) => {
+    setEmail(text);
+    setEmailError('');
+    setErrorMessage('');
+
+    if (text && !text.includes('@')) {
+      setEmailError('Ingresa un email válido');
+    }
+  };
+
+  const validatePassword = (text: string) => {
+    setPassword(text);
+    setPasswordError('');
+    setErrorMessage('');
+
+    if (text && text.length < 6) {
+      setPasswordError('La contraseña debe tener al menos 6 caracteres');
+    }
+  };
+
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
-      return;
+    // Limpiar errores previos
+    setErrorMessage('');
+    setEmailError('');
+    setPasswordError('');
+
+    // Validaciones
+    let hasError = false;
+
+    if (!email.trim()) {
+      setEmailError('El email es requerido');
+      hasError = true;
+    } else if (!email.includes('@')) {
+      setEmailError('Ingresa un email válido');
+      hasError = true;
     }
 
+    if (!password) {
+      setPasswordError('La contraseña es requerida');
+      hasError = true;
+    } else if (password.length < 6) {
+      setPasswordError('La contraseña debe tener al menos 6 caracteres');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
     setLoading(true);
-    const result = await login({ username: email, password });
+    const result = await login({ username: email.trim(), password });
     setLoading(false);
 
     if (!result.success) {
-      Alert.alert('Error', result.error || 'Error al iniciar sesión');
+      // Mensajes de error más específicos
+      const errorMsg = result.error || 'Error al iniciar sesión';
+
+      if (errorMsg.toLowerCase().includes('incorrectos') || errorMsg.toLowerCase().includes('incorrect')) {
+        setErrorMessage('Email o contraseña incorrectos. Por favor verifica tus credenciales.');
+      } else if (errorMsg.toLowerCase().includes('inactivo') || errorMsg.toLowerCase().includes('inactive')) {
+        setErrorMessage('Tu cuenta está inactiva. Contacta al soporte.');
+      } else if (errorMsg.toLowerCase().includes('conexión') || errorMsg.toLowerCase().includes('connection')) {
+        setErrorMessage('Error de conexión. Verifica tu internet e intenta nuevamente.');
+      } else {
+        setErrorMessage(errorMsg);
+      }
     }
   };
 
@@ -80,6 +135,12 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
               Ingresa tus credenciales para continuar
             </Text>
 
+            {errorMessage ? (
+              <View style={[styles.errorBox, { backgroundColor: '#EF444410', borderColor: '#EF4444' }]}>
+                <Text style={[styles.errorText, { color: '#EF4444' }]}>⚠️ {errorMessage}</Text>
+              </View>
+            ) : null}
+
             <View style={styles.webForm}>
               <View style={styles.inputContainer}>
                 <Text style={[styles.label, { color: colors.text }]}>Correo electrónico</Text>
@@ -89,17 +150,20 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                     {
                       backgroundColor: colors.bg,
                       color: colors.text,
-                      borderColor: colors.accent,
+                      borderColor: emailError ? '#EF4444' : colors.accent,
                     },
                   ]}
                   placeholder="tu@email.com"
                   placeholderTextColor={colors.secondary}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={validateEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
+                {emailError ? (
+                  <Text style={[styles.fieldError, { color: '#EF4444' }]}>{emailError}</Text>
+                ) : null}
               </View>
 
               <View style={styles.inputContainer}>
@@ -110,16 +174,19 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                     {
                       backgroundColor: colors.bg,
                       color: colors.text,
-                      borderColor: colors.accent,
+                      borderColor: passwordError ? '#EF4444' : colors.accent,
                     },
                   ]}
                   placeholder="••••••••"
                   placeholderTextColor={colors.secondary}
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={validatePassword}
                   secureTextEntry
                   autoCapitalize="none"
                 />
+                {passwordError ? (
+                  <Text style={[styles.fieldError, { color: '#EF4444' }]}>{passwordError}</Text>
+                ) : null}
               </View>
 
               <TouchableOpacity
@@ -176,6 +243,12 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             Tu esencia también habla por ti
           </Text>
 
+          {errorMessage ? (
+            <View style={[styles.errorBox, { backgroundColor: '#EF444410', borderColor: '#EF4444' }]}>
+              <Text style={[styles.errorText, { color: '#EF4444' }]}>⚠️ {errorMessage}</Text>
+            </View>
+          ) : null}
+
           <View style={styles.form}>
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: colors.text }]}>Email</Text>
@@ -185,17 +258,20 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   {
                     backgroundColor: colors.bg,
                     color: colors.text,
-                    borderColor: colors.accent,
+                    borderColor: emailError ? '#EF4444' : colors.accent,
                   },
                 ]}
                 placeholder="correo@ejemplo.com"
                 placeholderTextColor={colors.secondary}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={validateEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
               />
+              {emailError ? (
+                <Text style={[styles.fieldError, { color: '#EF4444' }]}>{emailError}</Text>
+              ) : null}
             </View>
 
             <View style={styles.inputContainer}>
@@ -206,16 +282,19 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                   {
                     backgroundColor: colors.bg,
                     color: colors.text,
-                    borderColor: colors.accent,
+                    borderColor: passwordError ? '#EF4444' : colors.accent,
                   },
                 ]}
                 placeholder="••••••••"
                 placeholderTextColor={colors.secondary}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={validatePassword}
                 secureTextEntry
                 autoCapitalize="none"
               />
+              {passwordError ? (
+                <Text style={[styles.fieldError, { color: '#EF4444' }]}>{passwordError}</Text>
+              ) : null}
             </View>
 
             <TouchableOpacity
@@ -411,5 +490,22 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  errorBox: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  errorText: {
+    fontSize: 14,
+    fontWeight: '500',
+    lineHeight: 20,
+  },
+  fieldError: {
+    fontSize: 12,
+    marginTop: 6,
+    marginLeft: 4,
+    fontWeight: '500',
   },
 });

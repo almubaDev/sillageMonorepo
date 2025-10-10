@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { authService, User, LoginCredentials, RegisterData } from '../services/authService';
+import { setUnauthorizedCallback } from '../services/api';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -8,6 +9,13 @@ export const useAuth = () => {
 
   useEffect(() => {
     checkAuth();
+
+    // Registrar callback para manejar token expirado
+    setUnauthorizedCallback(() => {
+      console.log('🔓 Sesión expirada - cerrando sesión');
+      setUser(null);
+      setIsAuthenticated(false);
+    });
   }, []);
 
   const checkAuth = async () => {

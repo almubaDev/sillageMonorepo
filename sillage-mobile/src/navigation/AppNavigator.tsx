@@ -6,20 +6,22 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeProvider';
-import { RecommendStackParamList, RootTabParamList } from './types';
+import { RecommendStackParamList, ProfileStackParamList, RootTabParamList } from './types';
 
 import { CollectionScreen } from '../screens/Collection/CollectionScreen';
 import { RecommendScreen } from '../screens/Recommend/RecommendScreen';
 import { RecommendationResultScreen } from '../screens/Recommend/RecommendationResultScreen';
 import { ProfileScreen } from '../screens/Profile/ProfileScreen';
+import { HistoryScreen } from '../screens/History/HistoryScreen';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const RecommendStack = createNativeStackNavigator<RecommendStackParamList>();
+const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
 
 // Stack Navigator para Recomendador (incluye la pantalla de resultado)
 function RecommendStackNavigator() {
   const { colors } = useTheme();
-  
+
   return (
     <RecommendStack.Navigator
       screenOptions={{
@@ -50,6 +52,50 @@ function RecommendStackNavigator() {
         }}
       />
     </RecommendStack.Navigator>
+  );
+}
+
+// Stack Navigator para Perfil (incluye historial y pantalla de resultado)
+function ProfileStackNavigator() {
+  const { colors } = useTheme();
+
+  return (
+    <ProfileStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.bg,
+        },
+        headerTintColor: colors.text,
+        headerShadowVisible: false,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 20,
+          fontFamily: 'AlanSans-Bold',
+        },
+      }}
+    >
+      <ProfileStack.Screen
+        name="ProfileMain"
+        component={ProfileScreen}
+        options={{ headerShown: false }}
+      />
+      <ProfileStack.Screen
+        name="History"
+        component={HistoryScreen}
+        options={{
+          headerShown: true,
+          title: 'Historial de Consultas',
+        }}
+      />
+      <ProfileStack.Screen
+        name="RecommendationResult"
+        component={RecommendationResultScreen}
+        options={{
+          headerShown: true,
+          title: 'Detalle de Consulta',
+        }}
+      />
+    </ProfileStack.Navigator>
   );
 }
 
@@ -120,12 +166,12 @@ export const AppNavigator = () => {
           headerShown: false,
         }}
       />
-      <Tab.Screen 
-        name="Perfil" 
-        component={ProfileScreen}
-        options={{ 
+      <Tab.Screen
+        name="Perfil"
+        component={ProfileStackNavigator}
+        options={{
           tabBarLabel: 'Perfil',
-          title: 'Mi Perfil'
+          headerShown: false,
         }}
       />
     </Tab.Navigator>

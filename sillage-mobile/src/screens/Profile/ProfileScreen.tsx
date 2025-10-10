@@ -2,10 +2,14 @@ import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ProfileStackParamList } from '../../navigation/types';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthContext } from '../../utils/AuthContext';
 
-export const ProfileScreen = () => {
+type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileMain'>;
+
+export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const { colors, cyclePalette } = useTheme();
   const { user, logout, refreshUser } = useAuthContext();
   const { width } = useWindowDimensions();
@@ -20,6 +24,10 @@ export const ProfileScreen = () => {
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleGoToHistory = () => {
+    navigation.navigate('History');
   };
   
   return (
@@ -70,6 +78,16 @@ export const ProfileScreen = () => {
 
       {/* Acciones */}
       <View style={styles.actions}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: colors.accent }]}
+          onPress={handleGoToHistory}
+        >
+          <MaterialCommunityIcons name="history" size={22} color={colors.bg} />
+          <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
+            Ver Historial
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.accent }]}
           onPress={cyclePalette}

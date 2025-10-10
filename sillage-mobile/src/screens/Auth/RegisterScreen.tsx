@@ -33,39 +33,135 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     last_name: '',
   });
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    first_name: '',
+    last_name: '',
+  });
 
   const isWeb = Platform.OS === 'web';
   const isDesktop = width >= 1024;
 
-  const handleRegister = async () => {
-    const { email, password, confirmPassword, first_name, last_name } = formData;
+  const validateField = (field: string, value: string) => {
+    let error = '';
 
-    if (!email || !password || !first_name || !last_name) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
-      return;
+    switch (field) {
+      case 'email':
+        if (value && !value.includes('@')) {
+          error = 'Ingresa un email válido';
+        }
+        break;
+      case 'password':
+        if (value && value.length < 6) {
+          error = 'Mínimo 6 caracteres';
+        }
+        break;
+      case 'confirmPassword':
+        if (value && value !== formData.password) {
+          error = 'Las contraseñas no coinciden';
+        }
+        break;
+      case 'first_name':
+        if (value && value.length < 2) {
+          error = 'Mínimo 2 caracteres';
+        }
+        break;
+      case 'last_name':
+        if (value && value.length < 2) {
+          error = 'Mínimo 2 caracteres';
+        }
+        break;
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
-
-    setLoading(true);
-    const result = await register({ email, password, first_name, last_name });
-    setLoading(false);
-
-    if (!result.success) {
-      Alert.alert('Error', result.error || 'Error al registrarse');
-    }
+    setErrors(prev => ({ ...prev, [field]: error }));
   };
 
   const updateField = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
+    setErrorMessage('');
+    validateField(field, value);
+
+    // Si es confirmPassword, también revalidar cuando se escribe la contraseña
+    if (field === 'password' && formData.confirmPassword) {
+      validateField('confirmPassword', formData.confirmPassword);
+    }
+  };
+
+  const handleRegister = async () => {
+    const { email, password, confirmPassword, first_name, last_name } = formData;
+
+    // Limpiar errores previos
+    setErrorMessage('');
+    let newErrors = { email: '', password: '', confirmPassword: '', first_name: '', last_name: '' };
+    let hasError = false;
+
+    // Validar campos
+    if (!first_name.trim()) {
+      newErrors.first_name = 'El nombre es requerido';
+      hasError = true;
+    } else if (first_name.trim().length < 2) {
+      newErrors.first_name = 'Mínimo 2 caracteres';
+      hasError = true;
+    }
+
+    if (!last_name.trim()) {
+      newErrors.last_name = 'El apellido es requerido';
+      hasError = true;
+    } else if (last_name.trim().length < 2) {
+      newErrors.last_name = 'Mínimo 2 caracteres';
+      hasError = true;
+    }
+
+    if (!email.trim()) {
+      newErrors.email = 'El email es requerido';
+      hasError = true;
+    } else if (!email.includes('@')) {
+      newErrors.email = 'Ingresa un email válido';
+      hasError = true;
+    }
+
+    if (!password) {
+      newErrors.password = 'La contraseña es requerida';
+      hasError = true;
+    } else if (password.length < 6) {
+      newErrors.password = 'Mínimo 6 caracteres';
+      hasError = true;
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Confirma tu contraseña';
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      hasError = true;
+    }
+
+    setErrors(newErrors);
+    if (hasError) return;
+
+    setLoading(true);
+    const result = await register({
+      email: email.trim(),
+      password,
+      first_name: first_name.trim(),
+      last_name: last_name.trim()
+    });
+    setLoading(false);
+
+    if (!result.success) {
+      const errorMsg = result.error || 'Error al registrarse';
+
+      if (errorMsg.toLowerCase().includes('ya registrado') || errorMsg.toLowerCase().includes('already exists')) {
+        setErrorMessage('Este email ya está registrado. Intenta iniciar sesión o usa otro email.');
+      } else if (errorMsg.toLowerCase().includes('conexión') || errorMsg.toLowerCase().includes('connection')) {
+        setErrorMessage('Error de conexión. Verifica tu internet e intenta nuevamente.');
+      } else {
+        setErrorMessage(errorMsg);
+      }
+    }
   };
 
   if (isWeb && isDesktop) {

@@ -5,7 +5,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 //const API_BASE_URL = 'https://92t98wk8-8000.brs.devtunnels.ms/api/v1';
 
+// Variable para almacenar el callback de logout
+let onUnauthorizedCallback: (() => void) | null = null;
 
+// Función para registrar el callback de logout
+export const setUnauthorizedCallback = (callback: () => void) => {
+  onUnauthorizedCallback = callback;
+};
 
 // Crear instancia de axios
 const api = axios.create({
@@ -35,9 +41,16 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
+      console.log('🔒 Token expirado o inválido - cerrando sesión automáticamente');
+
+      // Limpiar el almacenamiento
       await AsyncStorage.removeItem('access_token');
-      // Aquí podrías redirigir al login
+      await AsyncStorage.removeItem('user');
+
+      // Llamar al callback de logout si está registrado
+      if (onUnauthorizedCallback) {
+        onUnauthorizedCallback();
+      }
     }
     return Promise.reject(error);
   }
