@@ -113,51 +113,51 @@ export default function ConsultationsScreen() {
   };
 
   const handleOpenGiftModal = (user: AdminUser) => {
-    console.log('🎁 Abriendo modal de regalo para:', user);
+    // console.log('🎁 Abriendo modal de regalo para:', user);
     setSelectedUser(user);
     setQuantity('');
     setReason('');
     setGiftModalVisible(true);
-    console.log('🎁 Modal visible set to true');
+    // console.log('🎁 Modal visible set to true');
   };
 
   const handleGiftConsultations = async () => {
-    console.log('🎁 handleGiftConsultations llamado');
-    console.log('🎁 selectedUser:', selectedUser);
-    console.log('🎁 quantity:', quantity);
-    console.log('🎁 quantity.trim():', quantity.trim());
+    // console.log('🎁 handleGiftConsultations llamado');
+    // console.log('🎁 selectedUser:', selectedUser);
+    // console.log('🎁 quantity:', quantity);
+    // console.log('🎁 quantity.trim():', quantity.trim());
 
     if (!selectedUser) {
-      console.log('❌ No hay usuario seleccionado');
+      // console.log('❌ No hay usuario seleccionado');
       Alert.alert('Error', 'No hay usuario seleccionado');
       return;
     }
 
     // Validar que se haya ingresado algo
     if (!quantity || quantity.trim() === '') {
-      console.log('❌ Campo de cantidad vacío');
+      // console.log('❌ Campo de cantidad vacío');
       Alert.alert('Error', 'Por favor ingresa la cantidad de consultas');
       return;
     }
 
     const qty = parseInt(quantity.trim());
-    console.log('🎁 qty parseado:', qty);
+    // console.log('🎁 qty parseado:', qty);
 
     if (isNaN(qty)) {
-      console.log('❌ Cantidad no es un número');
+      // console.log('❌ Cantidad no es un número');
       Alert.alert('Error', 'Por favor ingresa un número válido');
       return;
     }
 
     if (qty <= 0 || qty > 1000) {
-      console.log('❌ Cantidad fuera de rango:', qty);
+      // console.log('❌ Cantidad fuera de rango:', qty);
       Alert.alert('Error', 'La cantidad debe ser entre 1 y 1000');
       return;
     }
 
     try {
       setGifting(true);
-      console.log('🎁 Llamando a adminService.giftConsultations con:', {
+      // console.log('🎁 Llamando a adminService.giftConsultations con:', {
         userId: selectedUser.id,
         quantity: qty,
         reason: reason.trim() || undefined
@@ -168,7 +168,7 @@ export default function ConsultationsScreen() {
         reason: reason.trim() || undefined,
       });
 
-      console.log('✅ Consultas regaladas exitosamente:', result);
+      // console.log('✅ Consultas regaladas exitosamente:', result);
 
       Alert.alert(
         'Éxito',
@@ -411,11 +411,11 @@ export default function ConsultationsScreen() {
       <Modal
         isVisible={giftModalVisible}
         onBackdropPress={() => {
-          console.log('👆 Backdrop presionado');
+          // console.log('👆 Backdrop presionado');
           if (!gifting) setGiftModalVisible(false);
         }}
         onBackButtonPress={() => {
-          console.log('🔙 Back button presionado');
+          // console.log('🔙 Back button presionado');
           if (!gifting) setGiftModalVisible(false);
         }}
         onModalShow={() => console.log('✅ Modal mostrado')}
@@ -449,7 +449,7 @@ export default function ConsultationsScreen() {
               style={adminStyles.input}
               value={quantity}
               onChangeText={(text) => {
-                console.log('📝 Cantidad cambiada a:', text);
+                // console.log('📝 Cantidad cambiada a:', text);
                 setQuantity(text);
               }}
               placeholder="Ej: 10"
@@ -479,7 +479,7 @@ export default function ConsultationsScreen() {
             <TouchableOpacity
               style={[adminStyles.button, adminStyles.buttonSecondary, { flex: 1 }]}
               onPress={() => {
-                console.log('❌ Botón Cancelar presionado');
+                // console.log('❌ Botón Cancelar presionado');
                 setGiftModalVisible(false);
               }}
               disabled={gifting}
@@ -494,11 +494,11 @@ export default function ConsultationsScreen() {
                 gifting ? adminStyles.buttonDisabled : null
               ]}
               onPress={() => {
-                console.log('🔵 Botón Regalar presionado - gifting:', gifting);
+                // console.log('🔵 Botón Regalar presionado - gifting:', gifting);
                 if (!gifting) {
                   handleGiftConsultations();
                 } else {
-                  console.log('⚠️ Botón deshabilitado porque gifting es true');
+                  // console.log('⚠️ Botón deshabilitado porque gifting es true');
                 }
               }}
               disabled={gifting}

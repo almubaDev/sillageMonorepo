@@ -85,8 +85,8 @@ export const PurchaseScreen = () => {
         // Guardar custom_id para después
         setCustomId(paymentData.custom_id);
 
-        console.log('Payment data received:', paymentData);
-        console.log('Formulario:', paymentData.formulario);
+        // console.log('Payment data received:', paymentData);
+        // console.log('Formulario:', paymentData.formulario);
 
         if (Platform.OS === 'web') {
           // En web, crear formulario y enviarlo directamente
@@ -116,7 +116,7 @@ export const PurchaseScreen = () => {
 
   const submitPaymentFormWeb = (formulario: any) => {
     try {
-      console.log('Formulario recibido:', formulario);
+      // console.log('Formulario recibido:', formulario);
 
       // Crear formulario temporal en el DOM
       const form = document.createElement('form');
@@ -175,7 +175,7 @@ export const PurchaseScreen = () => {
 
   const handleWebViewNavigationChange = (navState: any) => {
     const { url } = navState;
-    console.log('WebView navigation:', url);
+    // console.log('WebView navigation:', url);
 
     // Detectar retorno exitoso de PayPal
     if (url.includes('/payment/success') && customId) {
@@ -189,7 +189,7 @@ export const PurchaseScreen = () => {
       setPaymentHTML(null);
       setCustomId(null);
       // Ya estamos en la pantalla de compra, solo cerrar el WebView
-      console.log('Pago cancelado por el usuario');
+      // console.log('Pago cancelado por el usuario');
     }
   };
 

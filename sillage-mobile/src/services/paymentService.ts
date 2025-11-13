@@ -97,10 +97,10 @@ class PaymentService {
    * Obtener todos los paquetes disponibles
    */
   async getPaquetes(paisUsuario: string = 'US'): Promise<PaquetesResponse> {
-    console.log(`📦 Obteniendo paquetes para país: ${paisUsuario}`);
+    // console.log(`📦 Obteniendo paquetes para país: ${paisUsuario}`);
     try {
       const response = await api.get(`/payments/paquetes?pais_usuario=${paisUsuario}`);
-      console.log(`✅ Paquetes obtenidos: ${response.data.paquetes.length}`);
+      // console.log(`✅ Paquetes obtenidos: ${response.data.paquetes.length}`);
       return response.data;
     } catch (error: any) {
       console.error('❌ Error obteniendo paquetes:', error);
@@ -116,14 +116,14 @@ class PaymentService {
     botonPagoId: number,
     paisUsuario: string = 'US'
   ): Promise<GenerarPagoResponse> {
-    console.log(`💳 Generando pago para paquete ${paqueteId}`);
+    // console.log(`💳 Generando pago para paquete ${paqueteId}`);
     try {
       const response = await api.post('/payments/generar-pago', {
         paquete_id: paqueteId,
         boton_pago_id: botonPagoId,
         pais_usuario: paisUsuario,
       });
-      console.log(`✅ Formulario generado. Custom ID: ${response.data.custom_id}`);
+      // console.log(`✅ Formulario generado. Custom ID: ${response.data.custom_id}`);
       return response.data;
     } catch (error: any) {
       console.error('❌ Error generando pago:', error);
@@ -139,12 +139,12 @@ class PaymentService {
     source: string = 'paypal',
     status: string = 'completed'
   ): Promise<VerificarPagoResponse> {
-    console.log(`🔍 Verificando pago: ${customId}`);
+    // console.log(`🔍 Verificando pago: ${customId}`);
     try {
       const response = await api.get(
         `/payments/verificar-pago?ref=${customId}&source=${source}&status=${status}`
       );
-      console.log(`✅ Estado del pago: ${response.data.estado}`);
+      // console.log(`✅ Estado del pago: ${response.data.estado}`);
       return response.data;
     } catch (error: any) {
       console.error('❌ Error verificando pago:', error);
@@ -156,10 +156,10 @@ class PaymentService {
    * Obtener información de consultas del usuario
    */
   async getMisConsultas(): Promise<MisConsultasResponse> {
-    console.log('📊 Obteniendo mis consultas');
+    // console.log('📊 Obteniendo mis consultas');
     try {
       const response = await api.get('/payments/mis-consultas');
-      console.log(`✅ Consultas disponibles: ${response.data.consultas_disponibles}`);
+      // console.log(`✅ Consultas disponibles: ${response.data.consultas_disponibles}`);
       return response.data;
     } catch (error: any) {
       console.error('❌ Error obteniendo consultas:', error);

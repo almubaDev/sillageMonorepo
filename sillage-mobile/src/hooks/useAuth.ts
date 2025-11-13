@@ -12,7 +12,7 @@ export const useAuth = () => {
 
     // Registrar callback para manejar token expirado
     setUnauthorizedCallback(() => {
-      console.log('🔓 Sesión expirada - cerrando sesión');
+      // console.log('🔓 Sesión expirada - cerrando sesión');
       setUser(null);
       setIsAuthenticated(false);
     });
@@ -27,7 +27,7 @@ export const useAuth = () => {
         setIsAuthenticated(true);
       }
     } catch (error) {
-      console.log('Error checking auth:', error);
+      // console.log('Error checking auth:', error);
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,7 @@ export const useAuth = () => {
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {
-      console.log('Error logging out:', error);
+      // console.log('Error logging out:', error);
     }
   };
 
@@ -76,7 +76,7 @@ export const useAuth = () => {
       const userData = await authService.getCurrentUser();
       setUser(userData);
     } catch (error) {
-      console.log('Error refreshing user:', error);
+      // console.log('Error refreshing user:', error);
     }
   };
 

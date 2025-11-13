@@ -41,7 +41,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      console.log('🔒 Token expirado o inválido - cerrando sesión automáticamente');
+      // console.log('🔒 Token expirado o inválido - cerrando sesión automáticamente');
 
       // Limpiar el almacenamiento
       await AsyncStorage.removeItem('access_token');

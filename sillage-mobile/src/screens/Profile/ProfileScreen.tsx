@@ -70,14 +70,14 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleChangePassword = async () => {
-    console.log('🔒 Iniciando cambio de contraseña...');
-    console.log('Contraseña actual:', currentPassword ? '✓' : '✗');
-    console.log('Nueva contraseña:', newPassword ? '✓' : '✗');
-    console.log('Confirmar contraseña:', confirmPassword ? '✓' : '✗');
+    // console.log('🔒 Iniciando cambio de contraseña...');
+    // console.log('Contraseña actual:', currentPassword ? '✓' : '✗');
+    // console.log('Nueva contraseña:', newPassword ? '✓' : '✗');
+    // console.log('Confirmar contraseña:', confirmPassword ? '✓' : '✗');
 
     // Validaciones
     if (!currentPassword || !newPassword || !confirmPassword) {
-      console.log('❌ Validación fallida: campos vacíos');
+      // console.log('❌ Validación fallida: campos vacíos');
       Alert.alert(
         t('profile:password.error'),
         t('profile:password.allFieldsRequired')
@@ -86,7 +86,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     if (newPassword !== confirmPassword) {
-      console.log('❌ Validación fallida: contraseñas no coinciden');
+      // console.log('❌ Validación fallida: contraseñas no coinciden');
       Alert.alert(
         t('profile:password.error'),
         t('profile:password.passwordsDoNotMatch')
@@ -95,7 +95,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     if (newPassword.length < 8) {
-      console.log('❌ Validación fallida: menos de 8 caracteres');
+      // console.log('❌ Validación fallida: menos de 8 caracteres');
       Alert.alert(
         t('profile:password.error'),
         t('profile:password.minLength')
@@ -104,7 +104,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     if (!/[A-Z]/.test(newPassword)) {
-      console.log('❌ Validación fallida: sin mayúscula');
+      // console.log('❌ Validación fallida: sin mayúscula');
       Alert.alert(
         t('profile:password.error'),
         t('profile:password.requireUppercase')
@@ -113,7 +113,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     if (!/[0-9]/.test(newPassword)) {
-      console.log('❌ Validación fallida: sin número');
+      // console.log('❌ Validación fallida: sin número');
       Alert.alert(
         t('profile:password.error'),
         t('profile:password.requireNumber')
@@ -121,15 +121,15 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    console.log('✅ Todas las validaciones pasaron');
+    // console.log('✅ Todas las validaciones pasaron');
 
     try {
       setIsChangingPassword(true);
-      console.log('📡 Llamando al servicio de cambio de contraseña...');
+      // console.log('📡 Llamando al servicio de cambio de contraseña...');
 
       await authService.changePassword(currentPassword, newPassword);
 
-      console.log('✅ Contraseña cambiada exitosamente');
+      // console.log('✅ Contraseña cambiada exitosamente');
 
       // Cerrar modal primero
       setPasswordModalVisible(false);
@@ -157,20 +157,20 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       );
     } finally {
       setIsChangingPassword(false);
-      console.log('🔒 Proceso finalizado');
+      // console.log('🔒 Proceso finalizado');
     }
   };
 
   const handleRedeemCoupon = async () => {
-    console.log('🎫 Iniciando canje de cupón...');
-    console.log('Código:', couponCode ? '✓' : '✗');
+    // console.log('🎫 Iniciando canje de cupón...');
+    // console.log('Código:', couponCode ? '✓' : '✗');
 
     // Limpiar mensaje anterior
     setCouponMessage(null);
 
     // Validación
     if (!couponCode || couponCode.trim().length === 0) {
-      console.log('❌ Validación fallida: código vacío');
+      // console.log('❌ Validación fallida: código vacío');
       setCouponMessage({
         type: 'error',
         title: 'Error',
@@ -181,11 +181,11 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
     try {
       setIsRedeemingCoupon(true);
-      console.log('📡 Llamando al servicio de canje de cupón...');
+      // console.log('📡 Llamando al servicio de canje de cupón...');
 
       const result = await couponService.redeemCoupon(couponCode);
 
-      console.log('✅ Cupón canjeado exitosamente:', result);
+      // console.log('✅ Cupón canjeado exitosamente:', result);
 
       // Refrescar datos del usuario para actualizar consultas_restantes
       await refreshUser();
@@ -229,35 +229,35 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       });
     } finally {
       setIsRedeemingCoupon(false);
-      console.log('🎫 Proceso finalizado');
+      // console.log('🎫 Proceso finalizado');
     }
   };
 
   const handleDeleteAccount = () => {
-    console.log('🗑️🗑️🗑️ ===== BOTÓN ELIMINAR PRESIONADO ===== 🗑️🗑️🗑️');
-    console.log('Email ingresado:', deleteEmail);
-    console.log('Email del usuario:', user?.email);
-    console.log('Contraseña ingresada:', deletePassword ? '✓ (tiene valor)' : '✗ (vacía)');
-    console.log('Estado actual isDeletingAccount:', isDeletingAccount);
-    console.log('Estado actual showDeleteConfirmation:', showDeleteConfirmation);
+    // console.log('🗑️🗑️🗑️ ===== BOTÓN ELIMINAR PRESIONADO ===== 🗑️🗑️🗑️');
+    // console.log('Email ingresado:', deleteEmail);
+    // console.log('Email del usuario:', user?.email);
+    // console.log('Contraseña ingresada:', deletePassword ? '✓ (tiene valor)' : '✗ (vacía)');
+    // console.log('Estado actual isDeletingAccount:', isDeletingAccount);
+    // console.log('Estado actual showDeleteConfirmation:', showDeleteConfirmation);
 
     // Limpiar error anterior
     setDeleteAccountError('');
 
     // Validaciones
     if (!deleteEmail || !deletePassword) {
-      console.log('❌ Validación fallida: campos vacíos');
+      // console.log('❌ Validación fallida: campos vacíos');
       setDeleteAccountError('Por favor ingresa tu email y contraseña para confirmar');
       return;
     }
 
     if (deleteEmail !== user?.email) {
-      console.log('❌ Validación fallida: email no coincide');
+      // console.log('❌ Validación fallida: email no coincide');
       setDeleteAccountError(`El email ingresado no coincide con el de tu cuenta (${user?.email})`);
       return;
     }
 
-    console.log('✅✅✅ Validaciones pasadas, mostrando confirmación');
+    // console.log('✅✅✅ Validaciones pasadas, mostrando confirmación');
     // Mostrar confirmación
     setShowDeleteConfirmation(true);
   };
@@ -265,12 +265,12 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const confirmDeleteAccount = async () => {
     try {
       setIsDeletingAccount(true);
-      console.log('📡 Llamando al servicio de eliminación...');
-      console.log('Contraseña a enviar:', deletePassword ? '***' : 'vacía');
+      // console.log('📡 Llamando al servicio de eliminación...');
+      // console.log('Contraseña a enviar:', deletePassword ? '***' : 'vacía');
 
       await authService.deleteAccount(deletePassword);
 
-      console.log('✅ Cuenta eliminada exitosamente');
+      // console.log('✅ Cuenta eliminada exitosamente');
 
       // Cerrar modales
       setDeleteAccountModalVisible(false);
@@ -891,13 +891,13 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                 <TouchableOpacity
                   style={[styles.modalButton, styles.modalButtonConfirm, { backgroundColor: '#EF4444' }]}
                   onPress={() => {
-                    console.log('🔴🔴🔴 TOUCHABLE PRESIONADO');
-                    console.log('showDeleteConfirmation:', showDeleteConfirmation);
+                    // console.log('🔴🔴🔴 TOUCHABLE PRESIONADO');
+                    // console.log('showDeleteConfirmation:', showDeleteConfirmation);
                     if (showDeleteConfirmation) {
-                      console.log('Llamando a confirmDeleteAccount');
+                      // console.log('Llamando a confirmDeleteAccount');
                       confirmDeleteAccount();
                     } else {
-                      console.log('Llamando a handleDeleteAccount');
+                      // console.log('Llamando a handleDeleteAccount');
                       handleDeleteAccount();
                     }
                   }}

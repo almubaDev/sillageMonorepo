@@ -119,12 +119,12 @@ export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
         idioma: i18n.language, // Enviar idioma actual del usuario
       };
 
-      console.log('📤 Enviando datos al backend:', recommendationData);
+      // console.log('📤 Enviando datos al backend:', recommendationData);
 
       // Llamar al backend (que consulta clima + IA)
       const result = await recommendationService.create(recommendationData);
 
-      console.log('✅ Recomendación recibida:', result);
+      // console.log('✅ Recomendación recibida:', result);
 
       // Actualizar datos del usuario (incluyendo consultas restantes)
       await refreshUser();

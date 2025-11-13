@@ -66,7 +66,7 @@ const getDeviceLanguage = (): string => {
     // Si el idioma está soportado, usarlo; sino, español por defecto
     return ['es', 'en'].includes(languageCode) ? languageCode : 'es';
   } catch (error) {
-    console.log('Error detecting device language, using default (es):', error);
+    // console.log('Error detecting device language, using default (es):', error);
     return 'es';
   }
 };
@@ -79,7 +79,7 @@ const getInitialLanguage = async (): Promise<string> => {
       return savedLanguage;
     }
   } catch (error) {
-    console.log('Error loading saved language:', error);
+    // console.log('Error loading saved language:', error);
   }
 
   return getDeviceLanguage();
@@ -106,7 +106,7 @@ const initI18n = async () => {
       },
     });
 
-  console.log(`🌍 i18n initialized with language: ${initialLanguage}`);
+  // console.log(`🌍 i18n initialized with language: ${initialLanguage}`);
 };
 
 // Cambiar idioma y guardar preferencia
@@ -114,7 +114,7 @@ export const changeLanguage = async (languageCode: string) => {
   try {
     await i18n.changeLanguage(languageCode);
     await AsyncStorage.setItem(LANGUAGE_KEY, languageCode);
-    console.log(`🌍 Language changed to: ${languageCode}`);
+    // console.log(`🌍 Language changed to: ${languageCode}`);
   } catch (error) {
     console.error('Error changing language:', error);
   }

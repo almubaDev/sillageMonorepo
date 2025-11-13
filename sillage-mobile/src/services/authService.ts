@@ -90,16 +90,16 @@ export const authService = {
 
   // Cambiar contraseña
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    console.log('📡 AuthService: Enviando solicitud de cambio de contraseña...');
-    console.log('📡 Endpoint: /password/change-password');
-    console.log('📡 Datos:', { current_password: '***', new_password: '***' });
+    // console.log('📡 AuthService: Enviando solicitud de cambio de contraseña...');
+    // console.log('📡 Endpoint: /password/change-password');
+    // console.log('📡 Datos:', { current_password: '***', new_password: '***' });
 
     try {
       const response = await api.post('/password/change-password', {
         current_password: currentPassword,
         new_password: newPassword,
       });
-      console.log('✅ AuthService: Respuesta exitosa:', response.data);
+      // console.log('✅ AuthService: Respuesta exitosa:', response.data);
       return response.data;
     } catch (error: any) {
       console.error('❌ AuthService: Error en la petición');

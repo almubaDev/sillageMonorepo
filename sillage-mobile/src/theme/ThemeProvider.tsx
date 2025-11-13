@@ -25,7 +25,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setCurrentPalette(saved as PaletteName);
       }
     } catch (error) {
-      console.log('Error loading palette:', error);
+      // console.log('Error loading palette:', error);
     }
   };
 
@@ -34,7 +34,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCurrentPalette(palette);
       await AsyncStorage.setItem('palette', palette);
     } catch (error) {
-      console.log('Error saving palette:', error);
+      // console.log('Error saving palette:', error);
     }
   };
 

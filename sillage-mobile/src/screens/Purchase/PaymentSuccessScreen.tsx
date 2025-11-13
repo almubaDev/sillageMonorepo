@@ -45,13 +45,13 @@ export const PaymentSuccessScreen = () => {
 
   const verificarPago = async () => {
     try {
-      console.log(`🔍 Intento ${attempts + 1}/${maxAttempts} - Verificando pago: ${customId}`);
+      // console.log(`🔍 Intento ${attempts + 1}/${maxAttempts} - Verificando pago: ${customId}`);
 
       const response = await paymentService.verificarPago(customId, 'paypal', 'completed');
 
       if (response.success && response.estado === 'completado') {
         // ✅ Pago completado
-        console.log('✅ Pago completado exitosamente');
+        // console.log('✅ Pago completado exitosamente');
         setPaymentData(response);
         setStatus('completed');
 
@@ -71,14 +71,14 @@ export const PaymentSuccessScreen = () => {
         ]).start();
       } else if (response.estado === 'pendiente') {
         // ⏳ Pago pendiente - Continuar polling
-        console.log('⏳ Pago pendiente, reintentando en 2 segundos...');
+        // console.log('⏳ Pago pendiente, reintentando en 2 segundos...');
         setAttempts((prev) => prev + 1);
 
         if (attempts < maxAttempts) {
           setTimeout(verificarPago, 2000); // Reintentar en 2 segundos
         } else {
           // Timeout
-          console.log('⏰ Timeout: Máximo de intentos alcanzado');
+          // console.log('⏰ Timeout: Máximo de intentos alcanzado');
           setStatus('error');
           setPaymentData({
             success: false,
@@ -89,7 +89,7 @@ export const PaymentSuccessScreen = () => {
         }
       } else {
         // ❌ Error o estado no esperado
-        console.log(`❌ Estado no esperado: ${response.estado}`);
+        // console.log(`❌ Estado no esperado: ${response.estado}`);
         setStatus('error');
         setPaymentData(response);
       }
