@@ -13,10 +13,6 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
-      # Entorno
-      - key: ENVIRONMENT
-        value: production
-
       # Base de datos (automáticas desde Render)
       - key: DATABASE_URL
         fromDatabase:
@@ -30,62 +26,42 @@ services:
       # Seguridad
       - key: SECRET_KEY
         generateValue: true
-      - key: ALGORITHM
-        value: HS256
-      - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: 30
 
-      # APIs externas - CONFIGURAR MANUALMENTE
+      # APIs externas
       - key: OPENWEATHER_API_KEY
-        sync: false
+        value: f3df07cd491790df460045d5478882fc
       - key: GEMINI_API_KEY
-        sync: false
+        value: AIzaSyDk7p-t_bEj1tR77sLamZBr9-dS4GqzHHs
       - key: GOOGLE_MAPS_API_KEY
-        sync: false
+        value: AIzaSyBYW7kK_nRl4IHm8P5_MPqPDVPbMl7J-n0
 
-      # Flow (pagos Chile) - CONFIGURAR MANUALMENTE
+      # Flow (pagos Chile)
       - key: FLOW_API_KEY
-        sync: false
+        value: 23F00F2E-779B-4C7B-9AD0-64E551L7C9FC
       - key: FLOW_SECRET_KEY
-        sync: false
+        value: b15579cf8b18bf709eb98b692845112a357208ac
       - key: FLOW_API_URL
         value: https://www.flow.cl/api
-      - key: FLOW_SANDBOX
-        value: False
 
-      # Server
-      - key: HOST
-        value: 0.0.0.0
-      - key: PORT
-        value: 10000
-
-      # CORS - CONFIGURAR MANUALMENTE
+      # CORS
       - key: ALLOWED_ORIGINS
-        sync: false
+        value: https://sillage.pro,https://www.sillage.pro,https://api.sillage.pro
 
-      # Email - CONFIGURAR MANUALMENTE
-      - key: EMAIL_HOST
-        value: smtp.gmail.com
-      - key: EMAIL_PORT
-        value: 587
-      - key: EMAIL_USE_TLS
-        value: True
+      # Email
       - key: EMAIL_HOST_USER
-        sync: false
+        value: info@consultorabadillo.com
       - key: EMAIL_HOST_PASSWORD
-        sync: false
+        value: iullxaejutmczvrf
       - key: DEFAULT_FROM_EMAIL
-        sync: false
+        value: info@consultorabadillo.com
 
-      # PayPal - CONFIGURAR MANUALMENTE
+      # PayPal
       - key: PAYPAL_BUSINESS_EMAIL
-        sync: false
-      - key: PAYPAL_MODE
-        value: production
+        value: alan.munoz.b@gmail.com
 
-      # Backend URL - ACTUALIZAR DESPUÉS DEL DEPLOY
+      # Backend URL
       - key: BACKEND_URL
-        sync: false
+        value: https://api.sillage.pro
 
 databases:
   # PostgreSQL Database
