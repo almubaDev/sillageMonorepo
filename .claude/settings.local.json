@@ -38,7 +38,9 @@
       "Bash(npx tsc:*)",
       "Read(//c/Users/alanm/OneDrive/Escritorio/workspace/**)",
       "Bash(source venv/Scripts/activate)",
-      "Bash(set PYTHONIOENCODING=utf-8:*)"
+      "Bash(set PYTHONIOENCODING=utf-8:*)",
+      "Bash(git rm:*)",
+      "Bash(git rm --cached !README.md)"
     ],
     "deny": [],
     "ask": []

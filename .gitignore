@@ -1,3 +1,7 @@
+# --- Archivos MD en raíz (excepto README.md) ---
+/*.md
+!README.md
+
 # --- Python bytecode & cache ---
 sillage-backend/__pycache__/
 sillage-backend/**/__pycache__/
