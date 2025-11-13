@@ -13,8 +13,11 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
+      # Entorno
       - key: ENVIRONMENT
         value: production
+
+      # Base de datos (automáticas desde Render)
       - key: DATABASE_URL
         fromDatabase:
           name: sillage-db
@@ -23,32 +26,66 @@ services:
         fromDatabase:
           name: sillage-redis
           property: connectionString
+
+      # Seguridad
       - key: SECRET_KEY
         generateValue: true
-      - key: ALLOWED_ORIGINS
-        sync: false  # Configure manualmente en Render dashboard
-      - key: GEMINI_API_KEY
-        sync: false  # Configure manualmente
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+
+      # APIs externas - CONFIGURAR MANUALMENTE
       - key: OPENWEATHER_API_KEY
-        sync: false  # Configure manualmente
-      - key: PAYPAL_BUSINESS_EMAIL
-        sync: false  # Configure manualmente
-      - key: PAYPAL_URL
-        value: https://www.paypal.com/cgi-bin/webscr
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+
+      # Flow (pagos Chile) - CONFIGURAR MANUALMENTE
+      - key: FLOW_API_KEY
+        sync: false
+      - key: FLOW_SECRET_KEY
+        sync: false
+      - key: FLOW_API_URL
+        value: https://www.flow.cl/api
+      - key: FLOW_SANDBOX
+        value: False
+
+      # Server
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+
+      # CORS - CONFIGURAR MANUALMENTE
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+      # Email - CONFIGURAR MANUALMENTE
       - key: EMAIL_HOST
         value: smtp.gmail.com
       - key: EMAIL_PORT
         value: 587
       - key: EMAIL_USE_TLS
-        value: true
+        value: True
       - key: EMAIL_HOST_USER
-        sync: false  # Configure manualmente
+        sync: false
       - key: EMAIL_HOST_PASSWORD
-        sync: false  # Configure manualmente
-      - key: FRONTEND_URL
-        sync: false  # URL de tu app móvil/web
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+
+      # PayPal - CONFIGURAR MANUALMENTE
+      - key: PAYPAL_BUSINESS_EMAIL
+        sync: false
+      - key: PAYPAL_MODE
+        value: production
+
+      # Backend URL - ACTUALIZAR DESPUÉS DEL DEPLOY
       - key: BACKEND_URL
-        value: https://sillage-backend.onrender.com  # Actualizar con tu dominio
+        sync: false
 
 databases:
   # PostgreSQL Database
