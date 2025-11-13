@@ -2,6 +2,9 @@
 /*.md
 !README.md
 
+# --- Claude Code ---
+.claude/
+
 # --- Python bytecode & cache ---
 sillage-backend/__pycache__/
 sillage-backend/**/__pycache__/
