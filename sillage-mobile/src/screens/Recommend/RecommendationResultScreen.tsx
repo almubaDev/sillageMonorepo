@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthContext } from '../../utils/AuthContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -19,6 +20,7 @@ import { formatPerfumeName, formatBrand, formatPerfumista } from '../../utils/fo
 type Props = NativeStackScreenProps<RecommendStackParamList, 'RecommendationResult'>;
 
 export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { user, refreshUser } = useAuthContext();
   const { width } = useWindowDimensions();
@@ -40,13 +42,14 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => null,
-      headerTitle: 'Tu Recomendación',
+      headerTitle: t('result:headerTitle'),
     });
-  }, [navigation]);
+  }, [navigation, t]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', {
+    const locale = i18n.language === 'en' ? 'en-US' : 'es-ES';
+    return date.toLocaleDateString(locale, {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -81,10 +84,13 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
     )) {
       // Quitar la primera línea y retornar el resto
       const remainingLines = nonEmptyLines.slice(1);
-      return remainingLines.join('\n').trim();
+      const cleanedText = remainingLines.join('\n').trim();
+      // Eliminar TODOS los guiones entre palabras
+      return cleanedText.replace(/-/g, ' ');
     }
 
-    return response.trim();
+    // Eliminar TODOS los guiones entre palabras
+    return response.trim().replace(/-/g, ' ');
   };
 
   const handleNewRecommendation = () => {
@@ -107,7 +113,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
           <MaterialCommunityIcons name="check-circle" size={64} color={colors.accent} />
         </View>
         <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-          ¡Tenemos tu perfume ideal!
+          {t('result:title')}
         </Text>
       </View>
 
@@ -131,7 +137,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
 
           {recommendation.perfume_recomendado.perfumista && (
             <Text style={[styles.perfumista, { color: colors.secondary, fontFamily: 'Lato-Italic' }]}>
-              por {formatPerfumista(recommendation.perfume_recomendado.perfumista)}
+              {t('result:perfume.by')} {formatPerfumista(recommendation.perfume_recomendado.perfumista)}
             </Text>
           )}
 
@@ -140,7 +146,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
            recommendation.perfume_recomendado.acordes.length > 0 && (
             <View style={styles.acordesContainer}>
               <Text style={[styles.sectionLabel, { color: colors.secondary, fontFamily: 'Lato-Bold' }]}>
-                Acordes principales
+                {t('result:perfume.mainAccords')}
               </Text>
               <View style={styles.tags}>
                 {recommendation.perfume_recomendado.acordes.slice(0, 5).map((acorde, index) => (
@@ -158,16 +164,16 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
           )}
         </View>
       ) : (
-        <View style={[styles.perfumeCard, { 
+        <View style={[styles.perfumeCard, {
           backgroundColor: colors.secondary + '15',
           borderColor: colors.secondary
         }]}>
           <MaterialCommunityIcons name="alert-circle" size={48} color={colors.secondary} />
           <Text style={[styles.perfumeName, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-            No se pudo determinar el perfume
+            {t('result:perfume.notFound')}
           </Text>
           <Text style={[styles.perfumeBrand, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            Intenta nuevamente con más información
+            {t('result:perfume.tryAgain')}
           </Text>
         </View>
       )}
@@ -177,7 +183,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
         <View style={styles.sectionHeader}>
           <MaterialCommunityIcons name="robot" size={24} color={colors.accent} />
           <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-            ¿Por qué este perfume?
+            {t('result:sections.whyThisPerfume')}
           </Text>
         </View>
         <Text style={[styles.explanation, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
@@ -190,7 +196,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
         <View style={styles.sectionHeader}>
           <MaterialCommunityIcons name="information" size={24} color={colors.accent} />
           <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-            Contexto del evento
+            {t('result:sections.eventContext')}
           </Text>
         </View>
 
@@ -199,7 +205,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
             <MaterialCommunityIcons name="calendar" size={20} color={colors.accent} />
             <View style={styles.contextText}>
               <Text style={[styles.contextLabel, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                Fecha
+                {t('result:context.date')}
               </Text>
               <Text style={[styles.contextValue, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
                 {formatDate(recommendation.fecha_evento)}
@@ -211,23 +217,23 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
             <MaterialCommunityIcons name="map-marker" size={20} color={colors.accent} />
             <View style={styles.contextText}>
               <Text style={[styles.contextLabel, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                Lugar
+                {t('result:context.place')}
               </Text>
               <Text style={[styles.contextValue, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-                {recommendation.lugar_nombre}
+                {recommendation.lugar_descripcion || recommendation.lugar_nombre}
               </Text>
             </View>
           </View>
 
           <View style={styles.contextItem}>
-            <MaterialCommunityIcons 
-              name={getWeatherIcon(recommendation.temperatura)} 
-              size={20} 
-              color={colors.accent} 
+            <MaterialCommunityIcons
+              name={getWeatherIcon(recommendation.temperatura)}
+              size={20}
+              color={colors.accent}
             />
             <View style={styles.contextText}>
               <Text style={[styles.contextLabel, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                Clima
+                {t('result:context.weather')}
               </Text>
               <Text style={[styles.contextValue, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
                 {recommendation.temperatura}°C - {recommendation.clima_descripcion}
@@ -239,7 +245,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
             <MaterialCommunityIcons name="calendar-star" size={20} color={colors.accent} />
             <View style={styles.contextText}>
               <Text style={[styles.contextLabel, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                Ocasión
+                {t('result:context.occasion')}
               </Text>
               <Text style={[styles.contextValue, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
                 {recommendation.ocasion}
@@ -268,9 +274,19 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
             color: colors.text,
             fontFamily: 'Lato-Regular'
           }]}>
-            Te quedan <Text style={{ fontFamily: 'Lato-Bold' }}>
-              {consultasRestantes} {consultasRestantes === 1 ? 'consulta' : 'consultas'}
-            </Text> este mes
+            {t('result:queries.remaining', {
+              count: consultasRestantes,
+              unit: consultasRestantes === 1 ? t('result:queries.consultation') : t('result:queries.consultations')
+            }).split('<bold>').map((part, index) => {
+              if (index === 0) return part;
+              const [boldText, rest] = part.split('</bold>');
+              return (
+                <React.Fragment key={index}>
+                  <Text style={{ fontFamily: 'Lato-Bold' }}>{boldText}</Text>
+                  {rest}
+                </React.Fragment>
+              );
+            })}
           </Text>
         </View>
       )}
@@ -283,7 +299,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
         >
           <MaterialCommunityIcons name="refresh" size={22} color={colors.bg} />
           <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-            Nueva Recomendación
+            {t('result:actions.newRecommendation')}
           </Text>
         </TouchableOpacity>
 
@@ -293,7 +309,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
         >
           <MaterialCommunityIcons name="view-agenda" size={22} color={colors.accent} />
           <Text style={[styles.buttonText, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
-            Ver mi Colección
+            {t('result:actions.viewCollection')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -403,7 +419,7 @@ const styles = StyleSheet.create({
   },
   contextItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 12,
   },
   contextText: {
@@ -415,6 +431,7 @@ const styles = StyleSheet.create({
   },
   contextValue: {
     fontSize: 14,
+    flexWrap: 'wrap',
   },
   consultasBox: {
     flexDirection: 'row',

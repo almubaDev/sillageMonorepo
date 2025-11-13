@@ -1,0 +1,61 @@
+# Render Blueprint para Sillage
+# Este archivo configura automáticamente todos los servicios necesarios
+
+services:
+  # Backend API (FastAPI)
+  - type: web
+    name: sillage-backend
+    env: python
+    region: oregon
+    plan: free
+    rootDir: sillage-backend
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sillage-db
+          property: connectionString
+      - key: REDIS_URL
+        fromDatabase:
+          name: sillage-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false  # Configure manualmente en Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false  # Configure manualmente
+      - key: OPENWEATHER_API_KEY
+        sync: false  # Configure manualmente
+      - key: PAYPAL_BUSINESS_EMAIL
+        sync: false  # Configure manualmente
+      - key: PAYPAL_URL
+        value: https://www.paypal.com/cgi-bin/webscr
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USE_TLS
+        value: true
+      - key: EMAIL_HOST_USER
+        sync: false  # Configure manualmente
+      - key: EMAIL_HOST_PASSWORD
+        sync: false  # Configure manualmente
+      - key: FRONTEND_URL
+        sync: false  # URL de tu app móvil/web
+      - key: BACKEND_URL
+        value: https://sillage-backend.onrender.com  # Actualizar con tu dominio
+
+databases:
+  # PostgreSQL Database
+  - name: sillage-db
+    databaseName: sillage
+    plan: free  # 1GB free tier
+
+  # Redis Cache
+  - name: sillage-redis
+    plan: free  # 25MB free tier

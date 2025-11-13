@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
+from app.core.database import AsyncSessionLocal
+from app.core.permissions import initialize_default_roles
 from app.utils.cache import cache
 from app.api.v1.api import api_router  # NUEVO
 
@@ -10,12 +12,22 @@ from app.api.v1.api import api_router  # NUEVO
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("🚀 Starting Sillage API...")
+    print("Starting Sillage API...")
     await cache.connect()
-    print("✅ Redis connected")
+    print("Redis connected")
+
+    # Inicializar roles predeterminados
+    try:
+        async with AsyncSessionLocal() as db:
+            await initialize_default_roles(db)
+        print("Default roles initialized")
+    except Exception as e:
+        print(f"Warning: Could not initialize roles: {e}")
+
+    print("Sillage API started successfully")
     yield
     # Shutdown
-    print("👋 Shutting down...")
+    print("Shutting down...")
     await cache.disconnect()
 
 
@@ -28,7 +40,7 @@ app = FastAPI(
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, especificar dominios permitidos
+    allow_origins=settings.cors_origins,  # Configurado desde .env
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

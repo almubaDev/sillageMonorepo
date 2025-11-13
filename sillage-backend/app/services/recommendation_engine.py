@@ -54,10 +54,28 @@ async def generate_recommendation(
     lugar_descripcion: str,
     ocasion: str,
     expectativa: str,
-    vestimenta: str
+    vestimenta: str,
+    idioma: str = "es"
 ) -> Recomendacion:
     """Generar una recomendación completa"""
-    
+
+    print("\n" + "="*80)
+    print("🤖 GENERANDO RECOMENDACIÓN - DATOS RECIBIDOS")
+    print("="*80)
+    print(f"👤 User ID: {user_id}")
+    print(f"📅 Fecha evento: {fecha_evento}")
+    print(f"🕐 Hora evento: {hora_evento}")
+    print(f"📍 Coordenadas: ({latitud}, {longitud})")
+    print(f"📍 Lugar nombre: {lugar_nombre}")
+    print(f"🏢 Lugar tipo: {lugar_tipo}")
+    print(f"📝 Lugar descripción: {lugar_descripcion}")
+    print(f"🎉 Ocasión: {ocasion}")
+    print(f"✨ Expectativa: {expectativa}")
+    print(f"👔 Vestimenta: {vestimenta}")
+    print(f"🌐 Idioma: {idioma}")
+    print(f"🧴 Cantidad de perfumes disponibles: {len(perfumes)}")
+    print("="*80 + "\n")
+
     # Obtener datos del clima
     weather_data = await get_weather_data(
         latitud, longitud, fecha_evento, hora_evento
@@ -69,7 +87,14 @@ async def generate_recommendation(
             'temperatura': 20.0,
             'humedad': 60.0
         }
-    
+
+    print("🌤️  DATOS DEL CLIMA")
+    print("-" * 80)
+    print(f"Descripción: {weather_data['descripcion']}")
+    print(f"Temperatura: {weather_data['temperatura']}°C")
+    print(f"Humedad: {weather_data['humedad']}%")
+    print("-" * 80 + "\n")
+
     # Construir prompt
     prompt = build_prompt(
         perfumes=perfumes,
@@ -83,11 +108,22 @@ async def generate_recommendation(
         vestimenta=vestimenta,
         temperatura=weather_data['temperatura'],
         humedad=weather_data['humedad'],
-        clima_descripcion=weather_data['descripcion']
+        clima_descripcion=weather_data['descripcion'],
+        idioma=idioma
     )
-    
+
+    print("📝 PROMPT COMPLETO ENVIADO A LA IA")
+    print("-" * 80)
+    print(prompt)
+    print("-" * 80 + "\n")
+
     # Obtener recomendación de la IA
     ai_response = await get_ai_recommendation(prompt)
+
+    print("🤖 RESPUESTA DE LA IA")
+    print("-" * 80)
+    print(ai_response)
+    print("-" * 80 + "\n")
     
     # Extraer el perfume recomendado
     recommended_perfume = extract_perfume_name(ai_response, perfumes)

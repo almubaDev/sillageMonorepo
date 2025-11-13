@@ -3,6 +3,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeProvider';
 import { formatPerfumeName, formatBrand } from '../utils/formatters';
 
@@ -24,11 +25,13 @@ interface HistoryCardProps {
 }
 
 export const HistoryCard: React.FC<HistoryCardProps> = ({ recommendation, onPress }) => {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', {
+    const locale = i18n.language === 'en' ? 'en-US' : 'es-ES';
+    return date.toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -63,7 +66,7 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({ recommendation, onPres
             </>
           ) : (
             <Text style={[styles.perfumeName, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-              Sin perfume asignado
+              {t('components:historyCard.noPerfume')}
             </Text>
           )}
         </View>
@@ -106,7 +109,7 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({ recommendation, onPres
       {/* Indicador de ver más */}
       <View style={styles.footer}>
         <Text style={[styles.viewMore, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
-          Ver detalles
+          {t('components:historyCard.viewDetails')}
         </Text>
         <MaterialCommunityIcons name="chevron-right" size={20} color={colors.accent} />
       </View>

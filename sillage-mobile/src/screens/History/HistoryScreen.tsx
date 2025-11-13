@@ -12,9 +12,11 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { HistoryCard } from '../../components/HistoryCard';
 import { recommendationService, RecommendationResponse } from '../../services/recommendationService';
+import { useLanguageChange } from '../../hooks/useLanguageChange';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
@@ -27,6 +29,7 @@ type RootStackParamList = {
 type Props = NativeStackScreenProps<RootStackParamList, 'History'>;
 
 export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
@@ -35,6 +38,11 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Limpiar errores cuando cambia el idioma
+  useLanguageChange(() => {
+    setError(null);
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -50,7 +58,7 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
       setHistory(data);
     } catch (error: any) {
       console.error('Error cargando historial:', error);
-      setError('No se pudo cargar el historial de consultas');
+      setError(t('history:error.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -73,7 +81,7 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
       <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
         <ActivityIndicator size="large" color={colors.accent} />
         <Text style={[styles.loadingText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-          Cargando historial...
+          {t('history:loading')}
         </Text>
       </View>
     );
@@ -96,10 +104,10 @@ export const HistoryScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.empty}>
           <MaterialCommunityIcons name="history" size={80} color={colors.secondary} />
           <Text style={[styles.emptyText, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-            No tienes consultas anteriores
+            {t('history:empty.title')}
           </Text>
           <Text style={[styles.emptySubtext, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            Tus recomendaciones aparecerán aquí
+            {t('history:empty.subtitle')}
           </Text>
         </View>
       ) : (

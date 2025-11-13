@@ -22,6 +22,8 @@ export interface User {
   consultas_restantes: number;
   is_active: boolean;
   is_verified: boolean;
+  is_admin: boolean;
+  is_superuser: boolean;
 }
 
 export interface AuthResponse {
@@ -84,5 +86,55 @@ export const authService = {
   async getUserFromStorage(): Promise<User | null> {
     const userString = await AsyncStorage.getItem('user');
     return userString ? JSON.parse(userString) : null;
+  },
+
+  // Cambiar contraseña
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    console.log('📡 AuthService: Enviando solicitud de cambio de contraseña...');
+    console.log('📡 Endpoint: /password/change-password');
+    console.log('📡 Datos:', { current_password: '***', new_password: '***' });
+
+    try {
+      const response = await api.post('/password/change-password', {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      console.log('✅ AuthService: Respuesta exitosa:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ AuthService: Error en la petición');
+      console.error('❌ Error completo:', error);
+      console.error('❌ Response:', error.response);
+      console.error('❌ Status:', error.response?.status);
+      console.error('❌ Data:', error.response?.data);
+      throw error;
+    }
+  },
+
+  // Solicitar recuperación de contraseña
+  async requestPasswordReset(email: string): Promise<void> {
+    await api.post('/password/request-reset', { email });
+  },
+
+  // Restablecer contraseña con token
+  async resetPassword(email: string, token: string, newPassword: string): Promise<void> {
+    await api.post('/password/reset-password', {
+      email,
+      token,
+      new_password: newPassword,
+    });
+  },
+
+  // Eliminar cuenta
+  async deleteAccount(password: string): Promise<{ message: string; email: string }> {
+    const response = await api.delete('/auth/account', {
+      data: { password },
+    });
+
+    // Limpiar datos locales
+    await AsyncStorage.removeItem('access_token');
+    await AsyncStorage.removeItem('user');
+
+    return response.data;
   },
 };

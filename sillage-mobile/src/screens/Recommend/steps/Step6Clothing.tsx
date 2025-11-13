@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { VESTIMENTAS } from '../types';
 
@@ -10,6 +11,7 @@ interface Step6ClothingProps {
 }
 
 export const Step6Clothing: React.FC<Step6ClothingProps> = ({ value, onChange }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
@@ -22,11 +24,11 @@ export const Step6Clothing: React.FC<Step6ClothingProps> = ({ value, onChange })
       />
       
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-        ¿Qué vestirás?
+        {t('recommend:step6.title')}
       </Text>
-      
+
       <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        El perfume debe complementar tu atuendo
+        {t('recommend:step6.subtitle')}
       </Text>
 
       <View style={styles.options}>
@@ -57,7 +59,7 @@ export const Step6Clothing: React.FC<Step6ClothingProps> = ({ value, onChange })
                   },
                 ]}
               >
-                {vestimenta.label}
+                {t(`recommend:step6.clothing.${vestimenta.id}`)}
               </Text>
               <Text
                 style={[
@@ -65,7 +67,7 @@ export const Step6Clothing: React.FC<Step6ClothingProps> = ({ value, onChange })
                   { color: colors.secondary, fontFamily: 'Lato-Regular' },
                 ]}
               >
-                {vestimenta.description}
+                {t(`recommend:step6.clothing.${vestimenta.id}Desc`)}
               </Text>
             </View>
             {value === vestimenta.id && (

@@ -1,0 +1,78 @@
+{
+  "purchase": {
+    "tabLabel": "Buy",
+    "title": "Buy Consultations",
+    "subtitle": "Choose the package that best fits your needs",
+    "consultations": "consultations",
+    "mostPopular": "Best Value",
+    "selectPackage": "Select package",
+    "discount": "{{percent}}% OFF",
+    "perConsultation": "per consultation",
+    "perQuery": "per consultation",
+    "wasPrice": "Was {{price}}",
+    "payWith": "Pay with",
+    "buyButton": "Pay with PayPal",
+    "processing": "Processing payment...",
+    "loadingPackages": "Loading packages...",
+    "noPackages": "No packages available",
+    "retryLoad": "Retry",
+    "info": "Consultations never expire and you can use them whenever you want. Payments are processed securely through PayPal.",
+    "redirecting": "Redirecting to PayPal..."
+  },
+  "cancelled": {
+    "title": "Payment Cancelled",
+    "message": "You cancelled the payment process. No charges were made."
+  },
+  "success": {
+    "title": "Payment Successful!",
+    "completed": "Your payment has been processed successfully",
+    "processing": "Processing your payment",
+    "verifying": "We are verifying your payment with PayPal. This may take a few seconds...",
+    "pleaseWait": "Please don't close this screen while we verify your payment",
+    "attempt": "Attempt {{current}} of {{max}}",
+    "package": "Package",
+    "consultationsAdded": "Consultations added",
+    "totalConsultations": "Total consultations",
+    "amount": "Amount paid",
+    "continue": "Continue"
+  },
+  "cancel": {
+    "title": "Payment Cancelled",
+    "message": "You have cancelled the payment process",
+    "infoTitle": "What happened?",
+    "infoText": "The payment was not completed. No charges were made to your account. You can try again when you're ready.",
+    "reference": "Transaction reference",
+    "retry": "Try again",
+    "goBack": "Back to profile"
+  },
+  "errors": {
+    "title": "Payment Error",
+    "loadingPackages": "Error loading packages",
+    "generatingPayment": "Error generating payment",
+    "verifyingPayment": "Error verifying payment",
+    "timeout": "Payment verification took too long. Please contact support if money was debited from your account.",
+    "retry": "Retry",
+    "contactSupport": "If the problem persists, please contact support with your transaction reference."
+  },
+  "myConsultations": {
+    "title": "My Consultations",
+    "available": "Available consultations",
+    "buyMore": "Buy more consultations",
+    "history": "Purchase history",
+    "transactions": "Transactions",
+    "noHistory": "You don't have any purchases yet",
+    "noTransactions": "No transactions",
+    "type": {
+      "purchase": "Purchase",
+      "use": "Use",
+      "refund": "Refund",
+      "bonus": "Bonus"
+    },
+    "status": {
+      "pending": "Pending",
+      "completed": "Completed",
+      "failed": "Failed",
+      "refunded": "Refunded"
+    }
+  }
+}

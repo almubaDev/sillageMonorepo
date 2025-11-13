@@ -2,6 +2,8 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LoginScreen } from '../screens/Auth/LoginScreen';
 import { RegisterScreen } from '../screens/Auth/RegisterScreen';
+import { ForgotPasswordScreen } from '../screens/Auth/ForgotPasswordScreen';
+import { ResetPasswordScreen } from '../screens/Auth/ResetPasswordScreen';
 import { useTheme } from '../theme/ThemeProvider';
 
 const Stack = createNativeStackNavigator();
@@ -32,6 +34,16 @@ export const AuthNavigator = () => {
           title: 'Registro',
           headerShown: true,
         }}
+      />
+      <Stack.Screen
+        name="ForgotPassword"
+        component={ForgotPasswordScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ResetPassword"
+        component={ResetPasswordScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

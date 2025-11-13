@@ -1,0 +1,53 @@
+{
+  "title": "My Collection",
+  "tabLabel": "Collection",
+  "loading": "Loading your collection...",
+  "error": {
+    "title": "Loading error",
+    "loadFailed": "Could not load your collection. Check your connection.",
+    "searchFailed": "Error searching perfumes",
+    "deleteFailed": "Could not delete perfume",
+    "createFailed": "Could not create perfume",
+    "retry": "Retry"
+  },
+  "empty": {
+    "title": "Your collection is empty",
+    "subtitle": "Search existing perfumes or create a new one"
+  },
+  "search": {
+    "placeholder": "Search perfume...",
+    "searching": "Searching...",
+    "noResults": "No perfumes found",
+    "noResultsHint": "Try another name or create a new one",
+    "addButton": "Add"
+  },
+  "create": {
+    "title": "Create Perfume",
+    "helpText": "Fields marked with * are required",
+    "namePlaceholder": "Perfume name *",
+    "brandPlaceholder": "Brand *",
+    "perfumerPlaceholder": "Perfumer (optional)",
+    "accordsPlaceholder": "Accords: e.g. citrus, woody, floral",
+    "notesPlaceholder": "Notes: e.g. bergamot, jasmine, vanilla",
+    "button": "Create and Add",
+    "creating": "Creating...",
+    "errors": {
+      "nameRequired": "Name is required",
+      "nameMinLength": "Minimum 2 characters",
+      "brandRequired": "Brand is required",
+      "brandMinLength": "Minimum 2 characters",
+      "duplicateTitle": "Duplicate perfume",
+      "duplicateMessage": "This perfume already exists in the database. Search for it to add it to your collection."
+    }
+  },
+  "delete": {
+    "title": "Delete Perfume",
+    "message": "Are you sure you want to remove this perfume from your collection? This action cannot be undone.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "actions": {
+    "add": "Add Perfume",
+    "create": "Create Perfume"
+  }
+}

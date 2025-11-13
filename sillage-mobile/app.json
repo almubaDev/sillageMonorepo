@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "sillage-mobile",
+    "name": "Sillage",
     "slug": "sillage-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,22 +12,57 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sillage.app",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Sillage necesita tu ubicación para recomendar perfumes basados en el clima de tu zona.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Sillage necesita tu ubicación para recomendar perfumes basados en el clima de tu zona.",
+        "NSPhotoLibraryUsageDescription": "Sillage necesita acceso a tus fotos para personalizar tu perfil."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "package": "com.sillage.app",
+      "versionCode": 1,
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      "expo-localization",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Sillage necesita tu ubicación para recomendar perfumes basados en el clima de tu zona."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID_HERE"
+      }
+    },
+    "owner": "your-expo-username",
+    "updates": {
+      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID_HERE"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }

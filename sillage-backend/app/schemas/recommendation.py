@@ -3,6 +3,7 @@
 from typing import Optional, List
 from datetime import date, time, datetime
 from pydantic import BaseModel, Field, validator
+from app.i18n.config import SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE
 
 
 class RecommendationRequest(BaseModel):
@@ -13,23 +14,31 @@ class RecommendationRequest(BaseModel):
     longitud: float
     lugar_nombre: str = Field(..., max_length=200)
     lugar_tipo: str = Field(..., pattern="^(abierto|cerrado)$")
-    lugar_descripcion: str = Field(..., max_length=300)
+    lugar_descripcion: Optional[str] = Field(None, max_length=300)
     ocasion: str = Field(..., max_length=200)
     expectativa: str = Field(..., max_length=200)
     vestimenta: str = Field(..., max_length=200)
-    
+    idioma: Optional[str] = Field(default=DEFAULT_LANGUAGE)  # Idioma preferido del usuario
+
     @validator('fecha_evento')
     def validate_fecha(cls, v):
         from datetime import date, timedelta
         today = date.today()
         max_date = today + timedelta(days=5)
-        
+
         if v < today:
             raise ValueError('La fecha no puede ser anterior a hoy')
         if v > max_date:
             raise ValueError('Solo puedes solicitar recomendaciones para los próximos 5 días')
-        
+
         return v
+
+    @validator('idioma')
+    def validate_idioma(cls, v):
+        """Valida que el idioma esté soportado dinámicamente"""
+        if v and v not in SUPPORTED_LANGUAGES:
+            raise ValueError(f'Idioma no soportado. Idiomas disponibles: {", ".join(SUPPORTED_LANGUAGES)}')
+        return v or DEFAULT_LANGUAGE
 
 
 class PerfumeRecomendado(BaseModel):
@@ -38,9 +47,9 @@ class PerfumeRecomendado(BaseModel):
     nombre: str
     marca: str
     perfumista: Optional[str] = None
-    notas: List[str] = []
-    acordes: List[str] = []
-    
+    notas: Optional[dict | List[str]] = None
+    acordes: Optional[List[str]] = None
+
     class Config:
         from_attributes = True
 
@@ -55,15 +64,15 @@ class RecommendationResponse(BaseModel):
     ocasion: str
     expectativa: str
     vestimenta: str
-    clima_descripcion: str
-    temperatura: float
-    humedad: float
+    clima_descripcion: Optional[str] = None
+    temperatura: Optional[float] = None
+    humedad: Optional[float] = None
     perfume_recomendado_id: Optional[int] = None
     perfume_recomendado: Optional[PerfumeRecomendado] = None
     explicacion: Optional[str] = None
-    respuesta_ia: str
-    created_at: datetime
+    respuesta_ia: Optional[str] = None
+    created_at: Optional[datetime] = None
     consultas_restantes: Optional[int] = None  # NUEVO: Consultas restantes después de esta
-    
+
     class Config:
         from_attributes = True

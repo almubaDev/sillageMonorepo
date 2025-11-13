@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
-from app.api.deps import get_db, get_current_subscribed_user
+from app.api.deps import get_db, get_current_active_user
 from app.models.user import User
 from app.models.perfume import Perfume, perfume_collection
 from app.models.recommendation import Recomendacion
@@ -19,17 +19,24 @@ router = APIRouter()
 async def create_recommendation(
     request_data: RecommendationRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_subscribed_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Generar una nueva recomendación de perfume usando IA
-    
-    - Requiere suscripción activa
+
+    - Requiere consultas disponibles
     - Verifica que el usuario tenga perfumes en su colección
     - Consulta el clima en la ubicación especificada
     - Usa Gemini AI para generar la recomendación
     - Decrementa las consultas restantes
     """
+
+    # Verificar que el usuario tiene consultas disponibles
+    if current_user.consultas_restantes <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes consultas disponibles. Usa un cupón o adquiere más consultas."
+        )
     
     # Verificar que el usuario tiene perfumes en su colección
     collection_query = select(Perfume).join(
@@ -118,7 +125,7 @@ async def get_recommendation_history(
     limit: int = 10,
     skip: int = 0,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_subscribed_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Obtener historial de recomendaciones del usuario"""
     
@@ -177,7 +184,7 @@ async def get_recommendation_history(
 async def get_recommendation(
     recommendation_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_subscribed_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Obtener una recomendación específica"""
     

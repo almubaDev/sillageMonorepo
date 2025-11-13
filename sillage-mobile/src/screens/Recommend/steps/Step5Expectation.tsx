@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { EXPECTATIVAS } from '../types';
 
@@ -10,6 +11,7 @@ interface Step5ExpectationProps {
 }
 
 export const Step5Expectation: React.FC<Step5ExpectationProps> = ({ value, onChange }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
@@ -22,11 +24,11 @@ export const Step5Expectation: React.FC<Step5ExpectationProps> = ({ value, onCha
       />
       
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-        ¿Cómo quieres sentirte?
+        {t('recommend:step5.title')}
       </Text>
-      
+
       <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        Selecciona la emoción que buscas proyectar
+        {t('recommend:step5.subtitle')}
       </Text>
 
       <View style={styles.grid}>
@@ -52,7 +54,7 @@ export const Step5Expectation: React.FC<Step5ExpectationProps> = ({ value, onCha
                 },
               ]}
             >
-              {expectativa.label}
+              {t(`recommend:step5.expectations.${expectativa.id}`)}
             </Text>
             {value === expectativa.id && (
               <View style={styles.checkMark}>

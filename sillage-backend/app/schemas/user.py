@@ -25,10 +25,11 @@ class UserInDB(UserBase):
     suscrito: bool
     consultas_restantes: int
     is_verified: bool
+    is_admin: bool
     is_superuser: bool
     created_at: datetime
     updated_at: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 

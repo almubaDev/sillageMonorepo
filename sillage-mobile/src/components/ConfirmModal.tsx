@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Modal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeProvider';
 
 interface ConfirmModalProps {
@@ -19,13 +20,17 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   visible,
   title,
   message,
-  confirmText = 'Confirmar',
-  cancelText = 'Cancelar',
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
   type = 'danger',
 }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
+
+  const defaultConfirmText = confirmText || t('components:confirmModal.confirm');
+  const defaultCancelText = cancelText || t('components:confirmModal.cancel');
 
   const getIcon = () => {
     switch (type) {
@@ -70,19 +75,19 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             activeOpacity={0.7}
           >
             <Text style={[styles.cancelText, { color: colors.secondary, fontFamily: 'Lato-Bold' }]}>
-              {cancelText}
+              {defaultCancelText}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.confirmButton, { 
-              backgroundColor: type === 'danger' ? '#EF4444' : colors.accent 
+            style={[styles.button, styles.confirmButton, {
+              backgroundColor: type === 'danger' ? '#EF4444' : colors.accent
             }]}
             onPress={onConfirm}
             activeOpacity={0.7}
           >
             <Text style={[styles.confirmText, { color: '#FFFFFF', fontFamily: 'Lato-Bold' }]}>
-              {confirmText}
+              {defaultConfirmText}
             </Text>
           </TouchableOpacity>
         </View>

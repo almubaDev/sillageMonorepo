@@ -1,0 +1,53 @@
+{
+  "title": "Mi Colección",
+  "tabLabel": "Colección",
+  "loading": "Cargando tu colección...",
+  "error": {
+    "title": "Error al cargar",
+    "loadFailed": "No se pudo cargar tu colección. Verifica tu conexión.",
+    "searchFailed": "Error al buscar perfumes",
+    "deleteFailed": "No se pudo eliminar el perfume",
+    "createFailed": "No se pudo crear el perfume",
+    "retry": "Reintentar"
+  },
+  "empty": {
+    "title": "Tu colección está vacía",
+    "subtitle": "Busca perfumes existentes o crea uno nuevo"
+  },
+  "search": {
+    "placeholder": "Buscar perfume...",
+    "searching": "Buscando...",
+    "noResults": "No se encontraron perfumes",
+    "noResultsHint": "Intenta con otro nombre o crea uno nuevo",
+    "addButton": "Agregar"
+  },
+  "create": {
+    "title": "Crear Perfume",
+    "helpText": "Los campos marcados con * son obligatorios",
+    "namePlaceholder": "Nombre del perfume *",
+    "brandPlaceholder": "Marca *",
+    "perfumerPlaceholder": "Perfumista (opcional)",
+    "accordsPlaceholder": "Acordes: Ej. cítrico, amaderado, floral",
+    "notesPlaceholder": "Notas: Ej. bergamota, jazmín, vainilla",
+    "button": "Crear y Agregar",
+    "creating": "Creando...",
+    "errors": {
+      "nameRequired": "El nombre es requerido",
+      "nameMinLength": "Mínimo 2 caracteres",
+      "brandRequired": "La marca es requerida",
+      "brandMinLength": "Mínimo 2 caracteres",
+      "duplicateTitle": "Perfume duplicado",
+      "duplicateMessage": "Este perfume ya existe en la base de datos. Búscalo para agregarlo a tu colección."
+    }
+  },
+  "delete": {
+    "title": "Eliminar Perfume",
+    "message": "¿Estás seguro de que deseas eliminar este perfume de tu colección? Esta acción no se puede deshacer.",
+    "confirm": "Eliminar",
+    "cancel": "Cancelar"
+  },
+  "actions": {
+    "add": "Agregar Perfume",
+    "create": "Crear Perfume"
+  }
+}

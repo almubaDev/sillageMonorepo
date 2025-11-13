@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler'; // Debe ser la primera importación
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,27 +8,36 @@ import * as Font from 'expo-font';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
 import { AuthProvider } from './src/utils/AuthContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { initI18n } from './src/i18n';
+import './src/i18n'; // Importar para inicializar
 
 function AppContent() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [i18nInitialized, setI18nInitialized] = useState(false);
   const { colors } = useTheme();
 
   useEffect(() => {
-    async function loadFonts() {
-      await Font.loadAsync({
-        'AlanSans-Regular': require('./assets/fonts/AlanSans-Regular.ttf'),
-        'AlanSans-Bold': require('./assets/fonts/AlanSans-Bold.ttf'),
-        'Lato-Regular': require('./assets/fonts/Lato-Regular.ttf'),
-        'Lato-Bold': require('./assets/fonts/Lato-Bold.ttf'),
-        'Lato-Italic': require('./assets/fonts/Lato-Italic.ttf'),
-      });
+    async function loadResources() {
+      // Cargar fuentes e i18n en paralelo
+      await Promise.all([
+        Font.loadAsync({
+          'AlanSans-Regular': require('./assets/fonts/AlanSans-Regular.ttf'),
+          'AlanSans-Bold': require('./assets/fonts/AlanSans-Bold.ttf'),
+          'Lato-Regular': require('./assets/fonts/Lato-Regular.ttf'),
+          'Lato-Bold': require('./assets/fonts/Lato-Bold.ttf'),
+          'Lato-Italic': require('./assets/fonts/Lato-Italic.ttf'),
+        }),
+        initI18n(),
+      ]);
+
       setFontsLoaded(true);
+      setI18nInitialized(true);
     }
 
-    loadFonts();
+    loadResources();
   }, []);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !i18nInitialized) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg }}>
         <ActivityIndicator size="large" color={colors.accent} />

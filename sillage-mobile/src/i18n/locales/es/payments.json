@@ -1,0 +1,78 @@
+{
+  "purchase": {
+    "tabLabel": "Comprar",
+    "title": "Comprar Consultas",
+    "subtitle": "Elige el paquete que mejor se adapte a tus necesidades",
+    "consultations": "consultas",
+    "mostPopular": "Más Conveniente",
+    "selectPackage": "Seleccionar paquete",
+    "discount": "{{percent}}% DESCUENTO",
+    "perConsultation": "por consulta",
+    "perQuery": "por consulta",
+    "wasPrice": "Antes {{price}}",
+    "payWith": "Pagar con",
+    "buyButton": "Pagar con PayPal",
+    "processing": "Procesando pago...",
+    "loadingPackages": "Cargando paquetes...",
+    "noPackages": "No hay paquetes disponibles",
+    "retryLoad": "Reintentar",
+    "info": "Las consultas no expiran y puedes usarlas cuando quieras. Los pagos son procesados de forma segura mediante PayPal.",
+    "redirecting": "Redirigiendo a PayPal..."
+  },
+  "cancelled": {
+    "title": "Pago Cancelado",
+    "message": "Has cancelado el proceso de pago. No se realizó ningún cargo."
+  },
+  "success": {
+    "title": "¡Pago Exitoso!",
+    "completed": "Tu pago ha sido procesado correctamente",
+    "processing": "Procesando tu pago",
+    "verifying": "Estamos verificando tu pago con PayPal. Esto puede tomar unos segundos...",
+    "pleaseWait": "Por favor no cierres esta pantalla mientras verificamos tu pago",
+    "attempt": "Intento {{current}} de {{max}}",
+    "package": "Paquete",
+    "consultationsAdded": "Consultas agregadas",
+    "totalConsultations": "Total de consultas",
+    "amount": "Monto pagado",
+    "continue": "Continuar"
+  },
+  "cancel": {
+    "title": "Pago Cancelado",
+    "message": "Has cancelado el proceso de pago",
+    "infoTitle": "¿Qué pasó?",
+    "infoText": "El pago no se completó. No se realizó ningún cargo a tu cuenta. Puedes intentar nuevamente cuando estés listo.",
+    "reference": "Referencia de transacción",
+    "retry": "Intentar nuevamente",
+    "goBack": "Volver al perfil"
+  },
+  "errors": {
+    "title": "Error en el Pago",
+    "loadingPackages": "Error al cargar los paquetes",
+    "generatingPayment": "Error al generar el pago",
+    "verifyingPayment": "Error al verificar el pago",
+    "timeout": "La verificación del pago tomó demasiado tiempo. Por favor contacta a soporte si el dinero fue debitado de tu cuenta.",
+    "retry": "Reintentar",
+    "contactSupport": "Si el problema persiste, por favor contacta a soporte con la referencia de tu transacción."
+  },
+  "myConsultations": {
+    "title": "Mis Consultas",
+    "available": "Consultas disponibles",
+    "buyMore": "Comprar más consultas",
+    "history": "Historial de compras",
+    "transactions": "Transacciones",
+    "noHistory": "No tienes compras aún",
+    "noTransactions": "No hay transacciones",
+    "type": {
+      "purchase": "Compra",
+      "use": "Uso",
+      "refund": "Reembolso",
+      "bonus": "Bonificación"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "completed": "Completado",
+      "failed": "Fallido",
+      "refunded": "Reembolsado"
+    }
+  }
+}

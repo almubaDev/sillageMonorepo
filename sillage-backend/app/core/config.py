@@ -39,7 +39,39 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Sillage API"
     VERSION: str = "2.0.0"
     API_V1_STR: str = "/api/v1"
-    
+
+    # CORS
+    ALLOWED_ORIGINS: str = "*"  # Comma-separated list of allowed origins
+
+    # Email
+    EMAIL_HOST: str = "smtp.gmail.com"
+    EMAIL_PORT: int = 587
+    EMAIL_USE_TLS: bool = True
+    EMAIL_HOST_USER: str
+    EMAIL_HOST_PASSWORD: str
+    DEFAULT_FROM_EMAIL: str
+
+    # PayPal
+    PAYPAL_BUSINESS_EMAIL: str
+    PAYPAL_MODE: str = "production"  # "production" o "sandbox"
+
+    # Backend URL (para redirecciones de PayPal)
+    BACKEND_URL: str = "http://localhost:8000"
+
+    @property
+    def PAYPAL_URL(self) -> str:
+        """Retorna la URL de PayPal según el modo (sandbox o production)"""
+        if self.PAYPAL_MODE == "sandbox":
+            return "https://www.sandbox.paypal.com/cgi-bin/webscr"
+        return "https://www.paypal.com/cgi-bin/webscr"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        """Parse ALLOWED_ORIGINS into a list"""
+        if self.ALLOWED_ORIGINS == "*":
+            return ["*"]
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
+
     class Config:
         env_file = ".env"
         case_sensitive = True

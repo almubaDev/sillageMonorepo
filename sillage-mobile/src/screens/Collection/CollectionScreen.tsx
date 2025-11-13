@@ -13,17 +13,26 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { PerfumeCard } from '../../components/PerfumeCard';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { perfumeService, PerfumeInCollection, Perfume } from '../../services/perfumeService';
 import { useFocusEffect } from '@react-navigation/native';
 import { formatPerfumeName, formatBrand } from '../../utils/formatters';
+import { useLanguageChange } from '../../hooks/useLanguageChange';
 
 export const CollectionScreen = () => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
+
+  // Limpiar errores cuando cambia el idioma
+  useLanguageChange(() => {
+    setError(null);
+    setCreateErrors({ nombre: '', marca: '' });
+  });
   
   const [perfumes, setPerfumes] = useState<PerfumeInCollection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,12 +88,12 @@ export const CollectionScreen = () => {
       setHasLoadedOnce(true);
     } catch (error: any) {
       console.error('❌ Error cargando colección:', error);
-      const errorMessage = error.response?.data?.detail || 'No se pudo cargar tu colección. Verifica tu conexión.';
+      const errorMessage = error.response?.data?.detail || t('collection:error.loadFailed');
       setError(errorMessage);
 
       // Solo mostrar Alert si ya habíamos cargado antes y falló
       if (hasLoadedOnce) {
-        Alert.alert('Error', errorMessage);
+        Alert.alert(t('collection:error.title'), errorMessage);
       }
     } finally {
       setLoading(false);
@@ -129,8 +138,8 @@ export const CollectionScreen = () => {
       setSearchResults([]);
       await loadCollection();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || 'No se pudo agregar el perfume';
-      Alert.alert('Error', errorMsg);
+      const errorMsg = error.response?.data?.detail || t('collection:error.createFailed');
+      Alert.alert(t('collection:error.title'), errorMsg);
     }
   };
 
@@ -148,7 +157,7 @@ export const CollectionScreen = () => {
       setPerfumeToDelete(null);
       await loadCollection();
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'No se pudo eliminar el perfume');
+      Alert.alert(t('collection:error.title'), error.response?.data?.detail || t('collection:error.deleteFailed'));
     }
   };
 
@@ -157,18 +166,18 @@ export const CollectionScreen = () => {
     let isValid = true;
 
     if (!newPerfume.nombre.trim()) {
-      errors.nombre = 'El nombre es requerido';
+      errors.nombre = t('collection:create.errors.nameRequired');
       isValid = false;
     } else if (newPerfume.nombre.trim().length < 2) {
-      errors.nombre = 'Mínimo 2 caracteres';
+      errors.nombre = t('collection:create.errors.nameMinLength');
       isValid = false;
     }
 
     if (!newPerfume.marca.trim()) {
-      errors.marca = 'La marca es requerida';
+      errors.marca = t('collection:create.errors.brandRequired');
       isValid = false;
     } else if (newPerfume.marca.trim().length < 2) {
-      errors.marca = 'Mínimo 2 caracteres';
+      errors.marca = t('collection:create.errors.brandMinLength');
       isValid = false;
     }
 
@@ -198,11 +207,11 @@ export const CollectionScreen = () => {
       setCreateErrors({ nombre: '', marca: '' });
       await loadCollection();
     } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || 'No se pudo crear el perfume';
+      const errorMsg = error.response?.data?.detail || t('collection:error.createFailed');
       if (errorMsg.toLowerCase().includes('ya existe')) {
-        Alert.alert('Perfume duplicado', 'Este perfume ya existe en la base de datos. Búscalo para agregarlo a tu colección.');
+        Alert.alert(t('collection:create.errors.duplicateTitle'), t('collection:create.errors.duplicateMessage'));
       } else {
-        Alert.alert('Error', errorMsg);
+        Alert.alert(t('collection:error.title'), errorMsg);
       }
     } finally {
       setCreating(false);
@@ -222,7 +231,7 @@ export const CollectionScreen = () => {
       <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
         <ActivityIndicator size="large" color={colors.accent} />
         <Text style={[styles.loadingText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-          Cargando tu colección...
+          {t('collection:loading')}
         </Text>
       </View>
     );
@@ -242,7 +251,7 @@ export const CollectionScreen = () => {
         >
           <MaterialCommunityIcons name="refresh" size={20} color={colors.bg} />
           <Text style={[styles.retryButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-            Reintentar
+            {t('collection:error.retry')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -255,10 +264,10 @@ export const CollectionScreen = () => {
         <View style={styles.empty}>
           <MaterialCommunityIcons name="flask-empty-outline" size={80} color={colors.secondary} />
           <Text style={[styles.emptyText, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-            Tu colección está vacía
+            {t('collection:empty.title')}
           </Text>
           <Text style={[styles.emptySubtext, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            Busca perfumes existentes o crea uno nuevo
+            {t('collection:empty.subtitle')}
           </Text>
         </View>
       ) : (
@@ -332,7 +341,7 @@ export const CollectionScreen = () => {
                   color: colors.text,
                   fontFamily: 'Lato-Regular'
                 }]}
-                placeholder="Buscar perfume..."
+                placeholder={t('collection:search.placeholder')}
                 placeholderTextColor={colors.secondary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -350,7 +359,7 @@ export const CollectionScreen = () => {
             <View style={styles.searchingContainer}>
               <ActivityIndicator color={colors.accent} size="large" />
               <Text style={[styles.searchingText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                Buscando...
+                {t('collection:search.searching')}
               </Text>
             </View>
           ) : (
@@ -378,10 +387,10 @@ export const CollectionScreen = () => {
                   <View style={styles.emptySearch}>
                     <MaterialCommunityIcons name="flask-empty-off-outline" size={64} color={colors.secondary} />
                     <Text style={[styles.emptySearchText, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-                      No se encontraron perfumes
+                      {t('collection:search.noResults')}
                     </Text>
                     <Text style={[styles.emptySearchSubtext, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                      Intenta con otro término o crea uno nuevo
+                      {t('collection:search.noResultsHint')}
                     </Text>
                   </View>
                 ) : null
@@ -400,7 +409,7 @@ export const CollectionScreen = () => {
         <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-              Crear Perfume
+              {t('collection:create.title')}
             </Text>
             <TouchableOpacity onPress={() => setCreateModalVisible(false)}>
               <MaterialCommunityIcons name="close" size={24} color={colors.text} />
@@ -408,7 +417,7 @@ export const CollectionScreen = () => {
           </View>
 
           <Text style={[styles.helpText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            Los campos marcados con * son obligatorios
+            {t('collection:create.helpText')}
           </Text>
 
           <View style={styles.inputWrapper}>
@@ -419,7 +428,7 @@ export const CollectionScreen = () => {
                 borderColor: createErrors.nombre ? '#EF4444' : colors.accent,
                 fontFamily: 'Lato-Regular'
               }]}
-              placeholder="Nombre del perfume *"
+              placeholder={t('collection:create.namePlaceholder')}
               placeholderTextColor={colors.secondary}
               value={newPerfume.nombre}
               onChangeText={(text) => updateNewPerfumeField('nombre', text)}
@@ -437,7 +446,7 @@ export const CollectionScreen = () => {
                 borderColor: createErrors.marca ? '#EF4444' : colors.accent,
                 fontFamily: 'Lato-Regular'
               }]}
-              placeholder="Marca *"
+              placeholder={t('collection:create.brandPlaceholder')}
               placeholderTextColor={colors.secondary}
               value={newPerfume.marca}
               onChangeText={(text) => updateNewPerfumeField('marca', text)}
@@ -454,7 +463,7 @@ export const CollectionScreen = () => {
               borderColor: colors.accent,
               fontFamily: 'Lato-Regular'
             }]}
-            placeholder="Perfumista (opcional)"
+            placeholder={t('collection:create.perfumerPlaceholder')}
             placeholderTextColor={colors.secondary}
             value={newPerfume.perfumista}
             onChangeText={(text) => updateNewPerfumeField('perfumista', text)}
@@ -467,7 +476,7 @@ export const CollectionScreen = () => {
               borderColor: colors.accent,
               fontFamily: 'Lato-Regular'
             }]}
-            placeholder="Acordes: Ej. cítrico, amaderado, floral"
+            placeholder={t('collection:create.accordsPlaceholder')}
             placeholderTextColor={colors.secondary}
             value={newPerfume.acordes}
             onChangeText={(text) => updateNewPerfumeField('acordes', text)}
@@ -481,7 +490,7 @@ export const CollectionScreen = () => {
               borderColor: colors.accent,
               fontFamily: 'Lato-Regular'
             }]}
-            placeholder="Notas: Ej. bergamota, jazmín, vainilla"
+            placeholder={t('collection:create.notesPlaceholder')}
             placeholderTextColor={colors.secondary}
             value={newPerfume.notas}
             onChangeText={(text) => updateNewPerfumeField('notas', text)}
@@ -497,7 +506,7 @@ export const CollectionScreen = () => {
               <ActivityIndicator color={colors.bg} />
             ) : (
               <Text style={[styles.createButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-                Crear y Agregar
+                {creating ? t('collection:create.creating') : t('collection:create.button')}
               </Text>
             )}
           </TouchableOpacity>
@@ -506,10 +515,10 @@ export const CollectionScreen = () => {
 
       <ConfirmModal
         visible={deleteModalVisible}
-        title="Eliminar Perfume"
-        message="¿Estás seguro de que deseas eliminar este perfume de tu colección? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        cancelText="Cancelar"
+        title={t('collection:delete.title')}
+        message={t('collection:delete.message')}
+        confirmText={t('collection:delete.confirm')}
+        cancelText={t('collection:delete.cancel')}
         type="danger"
         onConfirm={confirmDelete}
         onCancel={() => {

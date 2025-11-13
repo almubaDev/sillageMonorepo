@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 
 interface Step2TimeProps {
@@ -10,6 +11,7 @@ interface Step2TimeProps {
 }
 
 export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
 
@@ -33,7 +35,8 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
   };
 
   const formatTime = (time: Date) => {
-    return time.toLocaleTimeString('es-ES', {
+    const locale = i18n.language === 'en' ? 'en-US' : 'es-ES';
+    return time.toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -55,11 +58,11 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
       />
       
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-        ¿A qué hora?
+        {t('recommend:step2.title')}
       </Text>
-      
+
       <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        Selecciona la hora aproximada del evento
+        {t('recommend:step2.subtitle')}
       </Text>
 
       {Platform.OS === 'web' ? (
@@ -97,7 +100,7 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
             >
               <MaterialCommunityIcons name="clock" size={24} color={colors.accent} />
               <Text style={[styles.timeButtonText, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-                {value ? formatTime(value) : 'Seleccionar hora'}
+                {value ? formatTime(value) : t('recommend:step2.selectTime')}
               </Text>
             </TouchableOpacity>
           )}

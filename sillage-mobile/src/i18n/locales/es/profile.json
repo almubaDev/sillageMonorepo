@@ -1,0 +1,52 @@
+{
+  "title": "Mi Perfil",
+  "tabLabel": "Perfil",
+  "subscription": {
+    "label": "Suscripción",
+    "active": "Activa",
+    "inactive": "Inactiva"
+  },
+  "queries": {
+    "label": "Consultas",
+    "remaining": "{{count}} restantes",
+    "remaining_one": "{{count}} restante"
+  },
+  "actions": {
+    "viewHistory": "Ver Historial",
+    "changeTheme": "Cambiar Tema",
+    "changeLanguage": "Cambiar Idioma",
+    "changePassword": "Cambiar Contraseña",
+    "logout": "Cerrar Sesión"
+  },
+  "language": {
+    "title": "Idioma",
+    "current": "Idioma actual",
+    "spanish": "Español",
+    "english": "English"
+  },
+  "password": {
+    "title": "Cambiar Contraseña",
+    "currentPassword": "Contraseña Actual",
+    "newPassword": "Nueva Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "enterCurrent": "Ingresa tu contraseña actual",
+    "enterNew": "Ingresa tu nueva contraseña",
+    "enterConfirm": "Confirma tu nueva contraseña",
+    "requirements": "Requisitos de contraseña:",
+    "req8Chars": "Mínimo 8 caracteres",
+    "reqUppercase": "Al menos una mayúscula",
+    "reqNumber": "Al menos un número",
+    "change": "Cambiar",
+    "changing": "Cambiando...",
+    "cancel": "Cancelar",
+    "error": "Error",
+    "success": "Éxito",
+    "allFieldsRequired": "Todos los campos son obligatorios",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "minLength": "La contraseña debe tener al menos 8 caracteres",
+    "requireUppercase": "La contraseña debe contener al menos una mayúscula",
+    "requireNumber": "La contraseña debe contener al menos un número",
+    "passwordChanged": "Tu contraseña ha sido actualizada exitosamente",
+    "changeFailed": "Error al cambiar la contraseña. Intenta nuevamente."
+  }
+}

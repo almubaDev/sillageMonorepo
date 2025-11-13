@@ -12,15 +12,22 @@ import {
   ScrollView,
   Image,
   useWindowDimensions,
+  Modal,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthContext } from '../../utils/AuthContext';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { useLanguageChange } from '../../hooks/useLanguageChange';
+import { TERMS_AND_CONDITIONS } from '../../constants/termsAndConditions';
 
 interface Props {
   navigation: any;
 }
 
 export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { register } = useAuthContext();
   const { width } = useWindowDimensions();
@@ -40,10 +47,28 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     confirmPassword: '',
     first_name: '',
     last_name: '',
+    terms: '',
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const isWeb = Platform.OS === 'web';
   const isDesktop = width >= 1024;
+
+  // Limpiar errores cuando cambia el idioma
+  useLanguageChange(() => {
+    setErrorMessage('');
+    setErrors({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      first_name: '',
+      last_name: '',
+      terms: '',
+    });
+  });
 
   const validateField = (field: string, value: string) => {
     let error = '';
@@ -51,27 +76,27 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     switch (field) {
       case 'email':
         if (value && !value.includes('@')) {
-          error = 'Ingresa un email válido';
+          error = t('auth:register.errors.emailInvalid');
         }
         break;
       case 'password':
         if (value && value.length < 6) {
-          error = 'Mínimo 6 caracteres';
+          error = t('auth:register.errors.passwordMinLength', { count: 6 });
         }
         break;
       case 'confirmPassword':
         if (value && value !== formData.password) {
-          error = 'Las contraseñas no coinciden';
+          error = t('auth:register.errors.passwordMismatch');
         }
         break;
       case 'first_name':
         if (value && value.length < 2) {
-          error = 'Mínimo 2 caracteres';
+          error = t('auth:register.errors.nameMinLength', { count: 2 });
         }
         break;
       case 'last_name':
         if (value && value.length < 2) {
-          error = 'Mínimo 2 caracteres';
+          error = t('auth:register.errors.nameMinLength', { count: 2 });
         }
         break;
     }
@@ -90,52 +115,65 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const handleTermsChange = () => {
+    setAcceptedTerms(!acceptedTerms);
+    if (errors.terms) {
+      setErrors(prev => ({ ...prev, terms: '' }));
+    }
+  };
+
   const handleRegister = async () => {
     const { email, password, confirmPassword, first_name, last_name } = formData;
 
     // Limpiar errores previos
     setErrorMessage('');
-    let newErrors = { email: '', password: '', confirmPassword: '', first_name: '', last_name: '' };
+    let newErrors = { email: '', password: '', confirmPassword: '', first_name: '', last_name: '', terms: '' };
     let hasError = false;
+
+    // Validar términos y condiciones
+    if (!acceptedTerms) {
+      newErrors.terms = 'Debes aceptar los términos y condiciones para continuar';
+      hasError = true;
+    }
 
     // Validar campos
     if (!first_name.trim()) {
-      newErrors.first_name = 'El nombre es requerido';
+      newErrors.first_name = t('auth:register.errors.firstNameRequired');
       hasError = true;
     } else if (first_name.trim().length < 2) {
-      newErrors.first_name = 'Mínimo 2 caracteres';
+      newErrors.first_name = t('auth:register.errors.nameMinLength', { count: 2 });
       hasError = true;
     }
 
     if (!last_name.trim()) {
-      newErrors.last_name = 'El apellido es requerido';
+      newErrors.last_name = t('auth:register.errors.lastNameRequired');
       hasError = true;
     } else if (last_name.trim().length < 2) {
-      newErrors.last_name = 'Mínimo 2 caracteres';
+      newErrors.last_name = t('auth:register.errors.nameMinLength', { count: 2 });
       hasError = true;
     }
 
     if (!email.trim()) {
-      newErrors.email = 'El email es requerido';
+      newErrors.email = t('auth:register.errors.emailRequired');
       hasError = true;
     } else if (!email.includes('@')) {
-      newErrors.email = 'Ingresa un email válido';
+      newErrors.email = t('auth:register.errors.emailInvalid');
       hasError = true;
     }
 
     if (!password) {
-      newErrors.password = 'La contraseña es requerida';
+      newErrors.password = t('auth:register.errors.passwordRequired');
       hasError = true;
     } else if (password.length < 6) {
-      newErrors.password = 'Mínimo 6 caracteres';
+      newErrors.password = t('auth:register.errors.passwordMinLength', { count: 6 });
       hasError = true;
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Confirma tu contraseña';
+      newErrors.confirmPassword = t('auth:register.errors.confirmPasswordRequired');
       hasError = true;
     } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+      newErrors.confirmPassword = t('auth:register.errors.passwordMismatch');
       hasError = true;
     }
 
@@ -152,12 +190,12 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     setLoading(false);
 
     if (!result.success) {
-      const errorMsg = result.error || 'Error al registrarse';
+      const errorMsg = result.error || t('auth:register.errors.registerFailed');
 
       if (errorMsg.toLowerCase().includes('ya registrado') || errorMsg.toLowerCase().includes('already exists')) {
-        setErrorMessage('Este email ya está registrado. Intenta iniciar sesión o usa otro email.');
+        setErrorMessage(t('auth:register.errors.emailExists'));
       } else if (errorMsg.toLowerCase().includes('conexión') || errorMsg.toLowerCase().includes('connection')) {
-        setErrorMessage('Error de conexión. Verifica tu internet e intenta nuevamente.');
+        setErrorMessage(t('auth:register.errors.connectionError'));
       } else {
         setErrorMessage(errorMsg);
       }
@@ -168,6 +206,7 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
     // DISEÑO WEB DESKTOP (2 COLUMNAS)
     return (
       <View style={[styles.webContainer, { backgroundColor: colors.bg }]}>
+        <LanguageSelector position="top-right" />
         {/* COLUMNA IZQUIERDA - BRANDING */}
         <View style={[styles.brandingSection, { backgroundColor: colors.accent }]}>
           <View style={styles.brandingContent}>
@@ -176,12 +215,12 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               style={styles.webLogo}
               resizeMode="contain"
             />
-            <Text style={[styles.webBrandTitle, { color: colors.bg }]}>Únete a Sillage</Text>
+            <Text style={[styles.webBrandTitle, { color: colors.bg }]}>{t('auth:register.joinSillage')}</Text>
             <Text style={[styles.webBrandSubtitle, { color: colors.bg }]}>
-              Comienza tu viaje olfativo
+              {t('auth:register.tagline')}
             </Text>
             <Text style={[styles.webBrandDescription, { color: colors.bg, opacity: 0.9 }]}>
-              Crea tu colección personal y recibe recomendaciones únicas con inteligencia artificial
+              {t('auth:register.description')}
             </Text>
           </View>
         </View>
@@ -192,15 +231,15 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.formContainer}>
-            <Text style={[styles.webFormTitle, { color: colors.text }]}>Crear cuenta</Text>
+            <Text style={[styles.webFormTitle, { color: colors.text }]}>{t('auth:register.title')}</Text>
             <Text style={[styles.webFormSubtitle, { color: colors.secondary }]}>
-              Completa tus datos para comenzar
+              {t('auth:register.subtitle')}
             </Text>
 
             <View style={styles.webForm}>
               <View style={styles.inputRow}>
                 <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-                  <Text style={[styles.label, { color: colors.text }]}>Nombre</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.firstName')}</Text>
                   <TextInput
                     style={[
                       styles.webInput,
@@ -210,16 +249,19 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                         borderColor: colors.accent,
                       },
                     ]}
-                    placeholder="Tu nombre"
+                    placeholder={t('auth:register.firstNamePlaceholder')}
                     placeholderTextColor={colors.secondary}
                     value={formData.first_name}
                     onChangeText={(value) => updateField('first_name', value)}
                     autoCapitalize="words"
                   />
+                  {errors.first_name && (
+                    <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.first_name}</Text>
+                  )}
                 </View>
 
                 <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-                  <Text style={[styles.label, { color: colors.text }]}>Apellido</Text>
+                  <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.lastName')}</Text>
                   <TextInput
                     style={[
                       styles.webInput,
@@ -229,17 +271,20 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                         borderColor: colors.accent,
                       },
                     ]}
-                    placeholder="Tu apellido"
+                    placeholder={t('auth:register.lastNamePlaceholder')}
                     placeholderTextColor={colors.secondary}
                     value={formData.last_name}
                     onChangeText={(value) => updateField('last_name', value)}
                     autoCapitalize="words"
                   />
+                  {errors.last_name && (
+                    <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.last_name}</Text>
+                  )}
                 </View>
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: colors.text }]}>Correo electrónico</Text>
+                <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.email')}</Text>
                 <TextInput
                   style={[
                     styles.webInput,
@@ -249,7 +294,7 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                       borderColor: colors.accent,
                     },
                   ]}
-                  placeholder="tu@email.com"
+                  placeholder={t('auth:register.emailPlaceholder')}
                   placeholderTextColor={colors.secondary}
                   value={formData.email}
                   onChangeText={(value) => updateField('email', value)}
@@ -257,47 +302,109 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
+                {errors.email && (
+                  <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.email}</Text>
+                )}
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: colors.text }]}>Contraseña</Text>
-                <TextInput
-                  style={[
-                    styles.webInput,
-                    {
-                      backgroundColor: colors.bg,
-                      color: colors.text,
-                      borderColor: colors.accent,
-                    },
-                  ]}
-                  placeholder="Mínimo 6 caracteres"
-                  placeholderTextColor={colors.secondary}
-                  value={formData.password}
-                  onChangeText={(value) => updateField('password', value)}
-                  secureTextEntry
-                  autoCapitalize="none"
-                />
+                <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.password')}</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[
+                      styles.webInput,
+                      styles.passwordInput,
+                      {
+                        backgroundColor: colors.bg,
+                        color: colors.text,
+                        borderColor: colors.accent,
+                      },
+                    ]}
+                    placeholder={t('auth:register.passwordPlaceholder')}
+                    placeholderTextColor={colors.secondary}
+                    value={formData.password}
+                    onChangeText={(value) => updateField('password', value)}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeIcon}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <MaterialCommunityIcons
+                      name={showPassword ? 'eye-off' : 'eye'}
+                      size={24}
+                      color={colors.secondary}
+                    />
+                  </TouchableOpacity>
+                </View>
+                {errors.password && (
+                  <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.password}</Text>
+                )}
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: colors.text }]}>Confirmar contraseña</Text>
-                <TextInput
-                  style={[
-                    styles.webInput,
-                    {
-                      backgroundColor: colors.bg,
-                      color: colors.text,
-                      borderColor: colors.accent,
-                    },
-                  ]}
-                  placeholder="Repite tu contraseña"
-                  placeholderTextColor={colors.secondary}
-                  value={formData.confirmPassword}
-                  onChangeText={(value) => updateField('confirmPassword', value)}
-                  secureTextEntry
-                  autoCapitalize="none"
-                />
+                <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.confirmPassword')}</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[
+                      styles.webInput,
+                      styles.passwordInput,
+                      {
+                        backgroundColor: colors.bg,
+                        color: colors.text,
+                        borderColor: colors.accent,
+                      },
+                    ]}
+                    placeholder={t('auth:register.confirmPasswordPlaceholder')}
+                    placeholderTextColor={colors.secondary}
+                    value={formData.confirmPassword}
+                    onChangeText={(value) => updateField('confirmPassword', value)}
+                    secureTextEntry={!showConfirmPassword}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeIcon}
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <MaterialCommunityIcons
+                      name={showConfirmPassword ? 'eye-off' : 'eye'}
+                      size={24}
+                      color={colors.secondary}
+                    />
+                  </TouchableOpacity>
+                </View>
+                {errors.confirmPassword && (
+                  <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.confirmPassword}</Text>
+                )}
               </View>
+
+              {/* Checkbox de términos y condiciones */}
+              <View style={styles.checkboxContainer}>
+                <TouchableOpacity
+                  onPress={handleTermsChange}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.checkbox, acceptedTerms && { backgroundColor: colors.accent, borderColor: colors.accent }]}>
+                    {acceptedTerms && (
+                      <MaterialCommunityIcons name="check" size={18} color="#FFFFFF" />
+                    )}
+                  </View>
+                </TouchableOpacity>
+                <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <Text style={[styles.checkboxText, { color: colors.text }]}>
+                    Acepto los{' '}
+                  </Text>
+                  <TouchableOpacity onPress={() => setShowTermsModal(true)}>
+                    <Text style={[styles.termsLink, { color: colors.accent }]}>
+                      términos y condiciones del servicio
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {errors.terms && (
+                <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.terms}</Text>
+              )}
 
               <TouchableOpacity
                 style={[styles.webButton, { backgroundColor: colors.accent }]}
@@ -307,13 +414,15 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                 {loading ? (
                   <ActivityIndicator color={colors.bg} />
                 ) : (
-                  <Text style={[styles.buttonText, { color: colors.bg }]}>Crear Cuenta</Text>
+                  <Text style={[styles.buttonText, { color: colors.bg }]}>
+                    {t('auth:register.registerButton')}
+                  </Text>
                 )}
               </TouchableOpacity>
 
               <View style={styles.divider}>
                 <View style={[styles.dividerLine, { backgroundColor: colors.secondary }]} />
-                <Text style={[styles.dividerText, { color: colors.secondary }]}>o</Text>
+                <Text style={[styles.dividerText, { color: colors.secondary }]}>{t('common:or')}</Text>
                 <View style={[styles.dividerLine, { backgroundColor: colors.secondary }]} />
               </View>
 
@@ -322,12 +431,62 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={() => navigation.goBack()}
               >
                 <Text style={[styles.secondaryButtonText, { color: colors.accent }]}>
-                  Ya tengo una cuenta
+                  {t('auth:register.alreadyHaveAccount')}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
+
+        {/* Modal de Términos y Condiciones */}
+        <Modal
+          visible={showTermsModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowTermsModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
+                  Términos y Condiciones
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowTermsModal(false)}
+                  style={styles.closeButton}
+                >
+                  <MaterialCommunityIcons name="close" size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.modalScroll}>
+                <Text style={[styles.termsText, { color: colors.text }]}>
+                  {TERMS_AND_CONDITIONS}
+                </Text>
+              </ScrollView>
+              <View style={styles.modalFooter}>
+                <TouchableOpacity
+                  style={[styles.modalButton, { backgroundColor: colors.accent }]}
+                  onPress={() => {
+                    setAcceptedTerms(true);
+                    setShowTermsModal(false);
+                  }}
+                >
+                  <Text style={[styles.modalButtonText, { color: colors.bg }]}>
+                    Aceptar y Continuar
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButtonSecondary, { borderColor: colors.secondary }]}
+                  onPress={() => setShowTermsModal(false)}
+                >
+                  <Text style={[styles.modalButtonSecondaryText, { color: colors.secondary }]}>
+                    Cerrar
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -338,6 +497,7 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, { backgroundColor: colors.bg }]}
     >
+      <LanguageSelector position="top-right" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.logoContainer}>
@@ -348,14 +508,14 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             />
           </View>
 
-          <Text style={[styles.title, { color: colors.text }]}>Crear Cuenta</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('auth:register.title')}</Text>
           <Text style={[styles.subtitle, { color: colors.secondary }]}>
-            Únete a Sillage
+            {t('auth:register.joinSillage')}
           </Text>
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>Nombre</Text>
+              <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.firstName')}</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -365,16 +525,19 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                     borderColor: colors.accent,
                   },
                 ]}
-                placeholder="Tu nombre"
+                placeholder={t('auth:register.firstNamePlaceholder')}
                 placeholderTextColor={colors.secondary}
                 value={formData.first_name}
                 onChangeText={(value) => updateField('first_name', value)}
                 autoCapitalize="words"
               />
+              {errors.first_name && (
+                <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.first_name}</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>Apellido</Text>
+              <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.lastName')}</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -384,16 +547,19 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                     borderColor: colors.accent,
                   },
                 ]}
-                placeholder="Tu apellido"
+                placeholder={t('auth:register.lastNamePlaceholder')}
                 placeholderTextColor={colors.secondary}
                 value={formData.last_name}
                 onChangeText={(value) => updateField('last_name', value)}
                 autoCapitalize="words"
               />
+              {errors.last_name && (
+                <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.last_name}</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>Email</Text>
+              <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.email')}</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -403,7 +569,7 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                     borderColor: colors.accent,
                   },
                 ]}
-                placeholder="correo@ejemplo.com"
+                placeholder={t('auth:register.emailPlaceholder')}
                 placeholderTextColor={colors.secondary}
                 value={formData.email}
                 onChangeText={(value) => updateField('email', value)}
@@ -411,47 +577,109 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                 autoCapitalize="none"
                 autoCorrect={false}
               />
+              {errors.email && (
+                <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.email}</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>Contraseña</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.bg,
-                    color: colors.text,
-                    borderColor: colors.accent,
-                  },
-                ]}
-                placeholder="Mínimo 6 caracteres"
-                placeholderTextColor={colors.secondary}
-                value={formData.password}
-                onChangeText={(value) => updateField('password', value)}
-                secureTextEntry
-                autoCapitalize="none"
-              />
+              <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.password')}</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[
+                    styles.input,
+                    styles.passwordInput,
+                    {
+                      backgroundColor: colors.bg,
+                      color: colors.text,
+                      borderColor: colors.accent,
+                    },
+                  ]}
+                  placeholder={t('auth:register.passwordPlaceholder')}
+                  placeholderTextColor={colors.secondary}
+                  value={formData.password}
+                  onChangeText={(value) => updateField('password', value)}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <MaterialCommunityIcons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={24}
+                    color={colors.secondary}
+                  />
+                </TouchableOpacity>
+              </View>
+              {errors.password && (
+                <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.password}</Text>
+              )}
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>Confirmar Contraseña</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.bg,
-                    color: colors.text,
-                    borderColor: colors.accent,
-                  },
-                ]}
-                placeholder="Repite tu contraseña"
-                placeholderTextColor={colors.secondary}
-                value={formData.confirmPassword}
-                onChangeText={(value) => updateField('confirmPassword', value)}
-                secureTextEntry
-                autoCapitalize="none"
-              />
+              <Text style={[styles.label, { color: colors.text }]}>{t('auth:register.confirmPassword')}</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[
+                    styles.input,
+                    styles.passwordInput,
+                    {
+                      backgroundColor: colors.bg,
+                      color: colors.text,
+                      borderColor: colors.accent,
+                    },
+                  ]}
+                  placeholder={t('auth:register.confirmPasswordPlaceholder')}
+                  placeholderTextColor={colors.secondary}
+                  value={formData.confirmPassword}
+                  onChangeText={(value) => updateField('confirmPassword', value)}
+                  secureTextEntry={!showConfirmPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <MaterialCommunityIcons
+                    name={showConfirmPassword ? 'eye-off' : 'eye'}
+                    size={24}
+                    color={colors.secondary}
+                  />
+                </TouchableOpacity>
+              </View>
+              {errors.confirmPassword && (
+                <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.confirmPassword}</Text>
+              )}
             </View>
+
+            {/* Checkbox de términos y condiciones */}
+            <View style={styles.checkboxContainer}>
+              <TouchableOpacity
+                onPress={handleTermsChange}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.checkbox, acceptedTerms && { backgroundColor: colors.accent, borderColor: colors.accent }]}>
+                  {acceptedTerms && (
+                    <MaterialCommunityIcons name="check" size={18} color="#FFFFFF" />
+                  )}
+                </View>
+              </TouchableOpacity>
+              <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
+                <Text style={[styles.checkboxText, { color: colors.text }]}>
+                  Acepto los{' '}
+                </Text>
+                <TouchableOpacity onPress={() => setShowTermsModal(true)}>
+                  <Text style={[styles.termsLink, { color: colors.accent }]}>
+                    términos y condiciones del servicio
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {errors.terms && (
+              <Text style={[styles.errorText, { color: '#EF4444', marginTop: 4 }]}>{errors.terms}</Text>
+            )}
 
             <TouchableOpacity
               style={[styles.button, { backgroundColor: colors.accent }]}
@@ -461,13 +689,15 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               {loading ? (
                 <ActivityIndicator color={colors.bg} />
               ) : (
-                <Text style={[styles.buttonText, { color: colors.bg }]}>Registrarse</Text>
+                <Text style={[styles.buttonText, { color: colors.bg }]}>
+                  {t('auth:register.registerButton')}
+                </Text>
               )}
             </TouchableOpacity>
 
             <View style={styles.divider}>
               <View style={[styles.dividerLine, { backgroundColor: colors.secondary }]} />
-              <Text style={[styles.dividerText, { color: colors.secondary }]}>o</Text>
+              <Text style={[styles.dividerText, { color: colors.secondary }]}>{t('common:or')}</Text>
               <View style={[styles.dividerLine, { backgroundColor: colors.secondary }]} />
             </View>
 
@@ -476,12 +706,62 @@ export const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               onPress={() => navigation.goBack()}
             >
               <Text style={[styles.secondaryButtonText, { color: colors.accent }]}>
-                Ya tengo una cuenta
+                {t('auth:register.alreadyHaveAccount')}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
+
+      {/* Modal de Términos y Condiciones */}
+      <Modal
+        visible={showTermsModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowTermsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
+                Términos y Condiciones
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowTermsModal(false)}
+                style={styles.closeButton}
+              >
+                <MaterialCommunityIcons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalScroll}>
+              <Text style={[styles.termsText, { color: colors.text }]}>
+                {TERMS_AND_CONDITIONS}
+              </Text>
+            </ScrollView>
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: colors.accent }]}
+                onPress={() => {
+                  setAcceptedTerms(true);
+                  setShowTermsModal(false);
+                }}
+              >
+                <Text style={[styles.modalButtonText, { color: colors.bg }]}>
+                  Aceptar y Continuar
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButtonSecondary, { borderColor: colors.secondary }]}
+                onPress={() => setShowTermsModal(false)}
+              >
+                <Text style={[styles.modalButtonSecondaryText, { color: colors.secondary }]}>
+                  Cerrar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -650,5 +930,114 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Checkbox
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+    gap: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#CBD5E0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  termsLink: {
+    textDecorationLine: 'underline',
+    fontWeight: '600',
+  },
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    maxWidth: 600,
+    maxHeight: '80%',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  modalScroll: {
+    padding: 20,
+    maxHeight: 400,
+  },
+  termsText: {
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  modalFooter: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    gap: 12,
+  },
+  modalButton: {
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalButtonSecondary: {
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalButtonSecondaryText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  errorText: {
+    fontSize: 13,
+    marginTop: 4,
+  },
+  passwordContainer: {
+    position: 'relative',
+    width: '100%',
+  },
+  passwordInput: {
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    padding: 4,
   },
 });

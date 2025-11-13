@@ -1,0 +1,10 @@
+{
+  "confirmModal": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "historyCard": {
+    "noPerfume": "No perfume assigned",
+    "viewDetails": "View details"
+  }
+}

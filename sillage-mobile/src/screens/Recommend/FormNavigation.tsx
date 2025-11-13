@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 
 interface FormNavigationProps {
@@ -20,6 +21,7 @@ export const FormNavigation: React.FC<FormNavigationProps> = ({
   onSubmit,
   canGoNext,
 }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const isLastStep = currentStep === totalSteps;
 
@@ -32,7 +34,7 @@ export const FormNavigation: React.FC<FormNavigationProps> = ({
         >
           <MaterialCommunityIcons name="arrow-left" size={20} color={colors.secondary} />
           <Text style={[styles.backText, { color: colors.secondary, fontFamily: 'Lato-Bold' }]}>
-            Atrás
+            {t('recommend:navigation.back')}
           </Text>
         </TouchableOpacity>
       )}
@@ -48,7 +50,7 @@ export const FormNavigation: React.FC<FormNavigationProps> = ({
         disabled={!canGoNext}
       >
         <Text style={[styles.nextText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-          {isLastStep ? 'Obtener Recomendación' : 'Continuar'}
+          {isLastStep ? t('recommend:navigation.submit') : t('recommend:navigation.continue')}
         </Text>
         {!isLastStep && (
           <MaterialCommunityIcons name="arrow-right" size={20} color={colors.bg} />

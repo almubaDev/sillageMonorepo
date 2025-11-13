@@ -24,6 +24,7 @@ sillage-backend/**/*.egg-info/
 sillage-backend/.env
 sillage-backend/.env.*
 !sillage-backend/.env.example
+!sillage-backend/.env.production.example
 sillage-backend/.python-version
 
 # --- Logs ---
@@ -90,6 +91,8 @@ sillage-mobile/*.pem
 
 # local env files
 sillage-mobile/.env*.local
+sillage-mobile/.env.production
+!sillage-mobile/.env.production.example
 
 # typescript
 sillage-mobile/*.tsbuildinfo

@@ -1,0 +1,52 @@
+{
+  "title": "My Profile",
+  "tabLabel": "Profile",
+  "subscription": {
+    "label": "Subscription",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "queries": {
+    "label": "Queries",
+    "remaining": "{{count}} remaining",
+    "remaining_one": "{{count}} remaining"
+  },
+  "actions": {
+    "viewHistory": "View History",
+    "changeTheme": "Change Theme",
+    "changeLanguage": "Change Language",
+    "changePassword": "Change Password",
+    "logout": "Log Out"
+  },
+  "language": {
+    "title": "Language",
+    "current": "Current language",
+    "spanish": "Español",
+    "english": "English"
+  },
+  "password": {
+    "title": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "enterCurrent": "Enter your current password",
+    "enterNew": "Enter your new password",
+    "enterConfirm": "Confirm your new password",
+    "requirements": "Password requirements:",
+    "req8Chars": "Minimum 8 characters",
+    "reqUppercase": "At least one uppercase letter",
+    "reqNumber": "At least one number",
+    "change": "Change",
+    "changing": "Changing...",
+    "cancel": "Cancel",
+    "error": "Error",
+    "success": "Success",
+    "allFieldsRequired": "All fields are required",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "minLength": "Password must be at least 8 characters",
+    "requireUppercase": "Password must contain at least one uppercase letter",
+    "requireNumber": "Password must contain at least one number",
+    "passwordChanged": "Your password has been updated successfully",
+    "changeFailed": "Error changing password. Please try again."
+  }
+}

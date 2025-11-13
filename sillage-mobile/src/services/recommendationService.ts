@@ -13,6 +13,7 @@ export interface CreateRecommendationRequest {
   ocasion: string;
   expectativa: string;
   vestimenta: string;
+  idioma?: string; // Idioma preferido del usuario (es, en)
 }
 
 export interface PerfumeRecomendado {

@@ -6,11 +6,13 @@ from sqlalchemy import select, update
 from datetime import datetime
 from typing import Optional
 
-from app.api.deps import get_db
+from app.api.deps import get_db, get_current_active_user
 from app.core.config import settings
 from app.core.security import verify_password, get_password_hash, create_access_token
 from app.models.user import User
 from app.schemas.user import Token, UserCreate, User as UserSchema
+from app.services.email import email_service
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -68,6 +70,15 @@ async def register(
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
+
+    # Enviar email de bienvenida (no bloquear si falla)
+    try:
+        email_service.send_welcome_email(
+            user_email=db_user.email,
+            user_name=db_user.first_name or "Usuario"
+        )
+    except Exception as e:
+        print(f"⚠️ Error enviando email de bienvenida: {str(e)}")
 
     # Determinar tiempo de expiración según cliente
     expire_minutes = get_token_expiration(user_agent)
@@ -136,4 +147,35 @@ async def login(
         "access_token": access_token,
         "token_type": "bearer",
         "user": user
+    }
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str
+
+
+@router.delete("/account", status_code=status.HTTP_200_OK)
+async def delete_account(
+    request: DeleteAccountRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Eliminar cuenta de usuario permanentemente.
+    Requiere contraseña para confirmar.
+    """
+    # Verificar contraseña
+    if not verify_password(request.password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Contraseña incorrecta"
+        )
+
+    # Eliminar el usuario
+    await db.delete(current_user)
+    await db.commit()
+
+    return {
+        "message": "Cuenta eliminada exitosamente",
+        "email": current_user.email
     }

@@ -1,0 +1,113 @@
+{
+  "title": "New Recommendation",
+  "tabLabel": "Recommend",
+  "navigation": {
+    "back": "Back",
+    "continue": "Continue",
+    "submit": "Get Recommendation"
+  },
+  "loading": {
+    "title": "Generating your recommendation",
+    "checkingWeather": "Checking weather...",
+    "analyzingAI": "Analyzing with AI...",
+    "selectingPerfume": "Selecting the perfect perfume..."
+  },
+  "error": {
+    "missingData": "Missing required data. Please complete all steps."
+  },
+  "step1": {
+    "title": "When is the event?",
+    "subtitle": "Select the date (up to 5 days ahead)",
+    "selectDate": "Select date"
+  },
+  "step2": {
+    "title": "What time?",
+    "subtitle": "Select the event time",
+    "selectTime": "Select time"
+  },
+  "step3": {
+    "title": "Type of place?",
+    "subtitle": "Will it be in an open or closed place?",
+    "open": "Open Place",
+    "openDesc": "Outdoors, park, terrace",
+    "closed": "Closed Place",
+    "closedDesc": "Indoor, office, restaurant"
+  },
+  "step4": {
+    "title": "What's the occasion?",
+    "subtitle": "Select the event type",
+    "customPlaceholder": "Describe your occasion...",
+    "confirm": "Confirm",
+    "occasions": {
+      "trabajo": "Work",
+      "cita": "Romantic Date",
+      "fiesta": "Party",
+      "casual": "Casual",
+      "formal": "Formal Event",
+      "deportivo": "Sports Activity",
+      "otro": "Other"
+    }
+  },
+  "step5": {
+    "title": "How do you want to feel?",
+    "subtitle": "Select the expectation you're looking for",
+    "expectations": {
+      "confiado": "Confident",
+      "seductor": "Seductive",
+      "fresco": "Fresh",
+      "elegante": "Elegant",
+      "energico": "Energetic",
+      "relajado": "Relaxed",
+      "profesional": "Professional",
+      "creativo": "Creative"
+    }
+  },
+  "step6": {
+    "title": "What will you wear?",
+    "subtitle": "Select your clothing style",
+    "clothing": {
+      "formal": "Formal",
+      "formalDesc": "Suit, tie",
+      "semiformal": "Semi-formal",
+      "semiformalDesc": "Smart casual",
+      "casual": "Casual",
+      "casualDesc": "Everyday clothes",
+      "deportivo": "Sporty",
+      "deportivoDesc": "Sports clothes"
+    }
+  },
+  "step7": {
+    "title": "Summary of your query",
+    "subtitle": "Review the data before getting your recommendation",
+    "infoMessage": "We will check the weather and analyze your collection to give you the best recommendation",
+    "fields": {
+      "date": "Date",
+      "time": "Time",
+      "placeType": "Place type",
+      "occasion": "Occasion",
+      "expectation": "Expectation",
+      "clothing": "Clothing"
+    },
+    "notDefined": "Not defined",
+    "notDefinedMale": "Not defined",
+    "placeOpen": "Open Place",
+    "placeClosed": "Closed Place"
+  },
+  "step8": {
+    "title": "Where will the event be?",
+    "subtitle": "Search for the location to check the weather",
+    "searchPlaceholder": "Search address or place...",
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "tryAgain": "Try another search term",
+    "selectLocation": "Select a location",
+    "currentLocation": "Use my current location",
+    "gettingLocation": "Getting location...",
+    "errors": {
+      "permissionDenied": "Location permission denied",
+      "notAvailable": "Location not available",
+      "timeout": "Request timeout",
+      "searchFailed": "Failed to search location"
+    }
+  }
+}

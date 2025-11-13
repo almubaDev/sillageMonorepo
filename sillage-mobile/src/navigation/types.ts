@@ -20,5 +20,7 @@ export type ProfileStackParamList = {
 export type RootTabParamList = {
   Colección: undefined;
   Recomendador: undefined;
+  Comprar: undefined;
   Perfil: undefined;
+  Admin?: undefined;
 };

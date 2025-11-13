@@ -1,0 +1,12 @@
+{
+  "title": "Historial",
+  "loading": "Cargando historial...",
+  "error": {
+    "title": "Error",
+    "loadFailed": "No se pudo cargar el historial de consultas"
+  },
+  "empty": {
+    "title": "No tienes consultas anteriores",
+    "subtitle": "Tus recomendaciones aparecerán aquí"
+  }
+}

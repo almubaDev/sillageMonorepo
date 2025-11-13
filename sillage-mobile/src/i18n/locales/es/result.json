@@ -1,0 +1,29 @@
+{
+  "title": "¡Tenemos tu perfume ideal!",
+  "headerTitle": "Tu Recomendación",
+  "perfume": {
+    "by": "por",
+    "mainAccords": "Acordes principales",
+    "notFound": "No se pudo determinar el perfume",
+    "tryAgain": "Intenta nuevamente con más información"
+  },
+  "sections": {
+    "whyThisPerfume": "¿Por qué este perfume?",
+    "eventContext": "Contexto del evento"
+  },
+  "context": {
+    "date": "Fecha",
+    "place": "Lugar",
+    "weather": "Clima",
+    "occasion": "Ocasión"
+  },
+  "queries": {
+    "remaining": "Te quedan <bold>{{count}} {{unit}}</bold> este mes",
+    "consultation": "consulta",
+    "consultations": "consultas"
+  },
+  "actions": {
+    "newRecommendation": "Nueva Recomendación",
+    "viewCollection": "Ver mi Colección"
+  }
+}

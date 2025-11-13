@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { OCASIONES } from '../types';
 
@@ -10,6 +11,7 @@ interface Step4OccasionProps {
 }
 
 export const Step4Occasion: React.FC<Step4OccasionProps> = ({ value, onChange }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const [customValue, setCustomValue] = useState('');
   const [showCustom, setShowCustom] = useState(false);
@@ -39,11 +41,11 @@ export const Step4Occasion: React.FC<Step4OccasionProps> = ({ value, onChange })
       />
       
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-        ¿Cuál es la ocasión?
+        {t('recommend:step4.title')}
       </Text>
-      
+
       <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        Selecciona el tipo de evento
+        {t('recommend:step4.subtitle')}
       </Text>
 
       <View style={styles.grid}>
@@ -73,7 +75,7 @@ export const Step4Occasion: React.FC<Step4OccasionProps> = ({ value, onChange })
                 },
               ]}
             >
-              {ocasion.label}
+              {t(`recommend:step4.occasions.${ocasion.id}`)}
             </Text>
             {value === ocasion.id && (
               <View style={styles.checkMark}>
@@ -93,7 +95,7 @@ export const Step4Occasion: React.FC<Step4OccasionProps> = ({ value, onChange })
               borderColor: colors.accent,
               fontFamily: 'Lato-Regular',
             }]}
-            placeholder="Describe tu ocasión..."
+            placeholder={t('recommend:step4.customPlaceholder')}
             placeholderTextColor={colors.secondary}
             value={customValue}
             onChangeText={setCustomValue}
@@ -104,7 +106,7 @@ export const Step4Occasion: React.FC<Step4OccasionProps> = ({ value, onChange })
             onPress={handleCustomSubmit}
           >
             <Text style={[styles.customButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-              Confirmar
+              {t('recommend:step4.confirm')}
             </Text>
           </TouchableOpacity>
         </View>

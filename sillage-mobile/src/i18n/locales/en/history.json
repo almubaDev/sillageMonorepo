@@ -1,0 +1,12 @@
+{
+  "title": "History",
+  "loading": "Loading history...",
+  "error": {
+    "title": "Error",
+    "loadFailed": "Could not load query history"
+  },
+  "empty": {
+    "title": "No previous queries",
+    "subtitle": "Your recommendations will appear here"
+  }
+}

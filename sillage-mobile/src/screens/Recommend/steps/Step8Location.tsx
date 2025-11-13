@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 
 interface Step8LocationProps {
@@ -20,6 +21,7 @@ interface Step8LocationProps {
 }
 
 export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -42,14 +44,14 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         onChange({
           latitud: latitude,
           longitud: longitude,
-          nombre: data.results[0].address_components?.[0]?.long_name || 'Ubicación seleccionada',
+          nombre: data.results[0].address_components?.[0]?.long_name || t('recommend:step8.selectLocation'),
           direccion: data.results[0].formatted_address,
         });
       } else {
         onChange({
           latitud: latitude,
           longitud: longitude,
-          nombre: 'Ubicación seleccionada',
+          nombre: t('recommend:step8.selectLocation'),
           direccion: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
         });
       }
@@ -58,7 +60,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
       onChange({
         latitud: latitude,
         longitud: longitude,
-        nombre: 'Ubicación seleccionada',
+        nombre: t('recommend:step8.selectLocation'),
         direccion: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
       });
     }
@@ -66,7 +68,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      Alert.alert('Error', 'Escribe una dirección o lugar');
+      Alert.alert(t('recommend:step8.errors.searchFailed'), t('recommend:step8.searchPlaceholder'));
       return;
     }
 
@@ -87,11 +89,11 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         });
         setSearchQuery('');
       } else {
-        Alert.alert('No encontrado', 'No se encontró la dirección');
+        Alert.alert(t('recommend:step8.noResults'), t('recommend:step8.tryAgain'));
       }
     } catch (error) {
       console.error('Error en búsqueda:', error);
-      Alert.alert('Error', 'No se pudo buscar la dirección');
+      Alert.alert(t('recommend:step8.errors.searchFailed'), t('recommend:step8.tryAgain'));
     } finally {
       setSearching(false);
     }
@@ -107,11 +109,11 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         />
         
         <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-          ¿Dónde será el evento?
+          {t('recommend:step8.title')}
         </Text>
-        
+
         <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-          Busca o selecciona en el mapa
+          {t('recommend:step8.subtitle')}
         </Text>
       </View>
 
@@ -123,7 +125,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
             borderColor: colors.accent,
             fontFamily: 'Lato-Regular',
           }]}
-          placeholder="Buscar dirección..."
+          placeholder={t('recommend:step8.searchPlaceholder')}
           placeholderTextColor={colors.secondary}
           value={searchQuery}
           onChangeText={setSearchQuery}

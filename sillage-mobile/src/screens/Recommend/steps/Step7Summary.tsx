@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { RecommendationFormData } from '../types';
 
@@ -10,10 +11,12 @@ interface Step7SummaryProps {
 }
 
 export const Step7Summary: React.FC<Step7SummaryProps> = ({ data, onEdit }) => {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('es-ES', {
+    const locale = i18n.language === 'en' ? 'en-US' : 'es-ES';
+    return date.toLocaleDateString(locale, {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -22,7 +25,8 @@ export const Step7Summary: React.FC<Step7SummaryProps> = ({ data, onEdit }) => {
   };
 
   const formatTime = (time: Date) => {
-    return time.toLocaleTimeString('es-ES', {
+    const locale = i18n.language === 'en' ? 'en-US' : 'es-ES';
+    return time.toLocaleTimeString(locale, {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -32,38 +36,38 @@ export const Step7Summary: React.FC<Step7SummaryProps> = ({ data, onEdit }) => {
     {
       step: 1,
       icon: 'calendar',
-      label: 'Fecha',
-      value: data.fecha ? formatDate(data.fecha) : 'No definida',
+      label: t('recommend:step7.fields.date'),
+      value: data.fecha ? formatDate(data.fecha) : t('recommend:step7.notDefined'),
     },
     {
       step: 2,
       icon: 'clock',
-      label: 'Hora',
-      value: data.hora ? formatTime(data.hora) : 'No definida',
+      label: t('recommend:step7.fields.time'),
+      value: data.hora ? formatTime(data.hora) : t('recommend:step7.notDefined'),
     },
     {
       step: 3,
       icon: 'map-marker',
-      label: 'Tipo de lugar',
-      value: data.tipoLugar ? (data.tipoLugar === 'abierto' ? 'Lugar Abierto' : 'Lugar Cerrado') : 'No definido',
+      label: t('recommend:step7.fields.placeType'),
+      value: data.tipoLugar ? (data.tipoLugar === 'abierto' ? t('recommend:step7.placeOpen') : t('recommend:step7.placeClosed')) : t('recommend:step7.notDefinedMale'),
     },
     {
       step: 4,
       icon: 'calendar-star',
-      label: 'Ocasión',
-      value: data.ocasion || 'No definida',
+      label: t('recommend:step7.fields.occasion'),
+      value: data.ocasion || t('recommend:step7.notDefined'),
     },
     {
       step: 5,
       icon: 'emoticon-happy',
-      label: 'Expectativa',
-      value: data.expectativa || 'No definida',
+      label: t('recommend:step7.fields.expectation'),
+      value: data.expectativa || t('recommend:step7.notDefined'),
     },
     {
       step: 6,
       icon: 'tshirt-crew',
-      label: 'Vestimenta',
-      value: data.vestimenta || 'No definida',
+      label: t('recommend:step7.fields.clothing'),
+      value: data.vestimenta || t('recommend:step7.notDefined'),
     },
   ];
 
@@ -77,11 +81,11 @@ export const Step7Summary: React.FC<Step7SummaryProps> = ({ data, onEdit }) => {
       />
       
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-        Resumen de tu consulta
+        {t('recommend:step7.title')}
       </Text>
-      
+
       <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        Revisa los datos antes de obtener tu recomendación
+        {t('recommend:step7.subtitle')}
       </Text>
 
       <View style={styles.list}>
@@ -121,7 +125,7 @@ export const Step7Summary: React.FC<Step7SummaryProps> = ({ data, onEdit }) => {
       <View style={[styles.infoBox, { backgroundColor: colors.accent + '10' }]}>
         <MaterialCommunityIcons name="information" size={20} color={colors.accent} />
         <Text style={[styles.infoText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-          Consultaremos el clima y analizaremos tu colección para darte la mejor recomendación
+          {t('recommend:step7.infoMessage')}
         </Text>
       </View>
     </ScrollView>

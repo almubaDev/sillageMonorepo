@@ -13,14 +13,19 @@ import {
   useWindowDimensions,
   ScrollView,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthContext } from '../../utils/AuthContext';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { useLanguageChange } from '../../hooks/useLanguageChange';
 
 interface Props {
   navigation: any;
 }
 
 export const LoginScreen: React.FC<Props> = ({ navigation }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { login } = useAuthContext();
   const { width } = useWindowDimensions();
@@ -31,9 +36,17 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const isWeb = Platform.OS === 'web';
   const isDesktop = width >= 1024;
+
+  // Limpiar errores cuando cambia el idioma
+  useLanguageChange(() => {
+    setErrorMessage('');
+    setEmailError('');
+    setPasswordError('');
+  });
 
   const validateEmail = (text: string) => {
     setEmail(text);
@@ -41,7 +54,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     setErrorMessage('');
 
     if (text && !text.includes('@')) {
-      setEmailError('Ingresa un email válido');
+      setEmailError(t('auth:login.errors.emailInvalid'));
     }
   };
 
@@ -51,7 +64,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     setErrorMessage('');
 
     if (text && text.length < 6) {
-      setPasswordError('La contraseña debe tener al menos 6 caracteres');
+      setPasswordError(t('auth:login.errors.passwordMinLength', { count: 6 }));
     }
   };
 
@@ -65,18 +78,18 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     let hasError = false;
 
     if (!email.trim()) {
-      setEmailError('El email es requerido');
+      setEmailError(t('auth:login.errors.emailRequired'));
       hasError = true;
     } else if (!email.includes('@')) {
-      setEmailError('Ingresa un email válido');
+      setEmailError(t('auth:login.errors.emailInvalid'));
       hasError = true;
     }
 
     if (!password) {
-      setPasswordError('La contraseña es requerida');
+      setPasswordError(t('auth:login.errors.passwordRequired'));
       hasError = true;
     } else if (password.length < 6) {
-      setPasswordError('La contraseña debe tener al menos 6 caracteres');
+      setPasswordError(t('auth:login.errors.passwordMinLength', { count: 6 }));
       hasError = true;
     }
 
@@ -88,14 +101,14 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
     if (!result.success) {
       // Mensajes de error más específicos
-      const errorMsg = result.error || 'Error al iniciar sesión';
+      const errorMsg = result.error || t('auth:login.errors.loginFailed');
 
       if (errorMsg.toLowerCase().includes('incorrectos') || errorMsg.toLowerCase().includes('incorrect')) {
-        setErrorMessage('Email o contraseña incorrectos. Por favor verifica tus credenciales.');
+        setErrorMessage(t('auth:login.errors.invalidCredentials'));
       } else if (errorMsg.toLowerCase().includes('inactivo') || errorMsg.toLowerCase().includes('inactive')) {
-        setErrorMessage('Tu cuenta está inactiva. Contacta al soporte.');
+        setErrorMessage(t('auth:login.errors.inactiveAccount'));
       } else if (errorMsg.toLowerCase().includes('conexión') || errorMsg.toLowerCase().includes('connection')) {
-        setErrorMessage('Error de conexión. Verifica tu internet e intenta nuevamente.');
+        setErrorMessage(t('auth:login.errors.connectionError'));
       } else {
         setErrorMessage(errorMsg);
       }
@@ -106,6 +119,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     // DISEÑO WEB DESKTOP (2 COLUMNAS)
     return (
       <View style={[styles.webContainer, { backgroundColor: colors.bg }]}>
+        <LanguageSelector position="top-right" />
         {/* COLUMNA IZQUIERDA - BRANDING */}
         <View style={[styles.brandingSection, { backgroundColor: colors.accent }]}>
           <View style={styles.brandingContent}>
@@ -116,10 +130,10 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             />
             <Text style={[styles.webBrandTitle, { color: colors.bg }]}>Sillage</Text>
             <Text style={[styles.webBrandSubtitle, { color: colors.bg }]}>
-              Tu esencia también habla por ti
+              {t('auth:login.tagline')}
             </Text>
             <Text style={[styles.webBrandDescription, { color: colors.bg, opacity: 0.9 }]}>
-              Descubre el perfume perfecto para cada momento con inteligencia artificial
+              {t('auth:login.description')}
             </Text>
           </View>
         </View>
@@ -130,9 +144,9 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.formContainer}>
-            <Text style={[styles.webFormTitle, { color: colors.text }]}>Bienvenido de nuevo</Text>
+            <Text style={[styles.webFormTitle, { color: colors.text }]}>{t('auth:login.title')}</Text>
             <Text style={[styles.webFormSubtitle, { color: colors.secondary }]}>
-              Ingresa tus credenciales para continuar
+              {t('auth:login.subtitle')}
             </Text>
 
             {errorMessage ? (
@@ -143,7 +157,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
             <View style={styles.webForm}>
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: colors.text }]}>Correo electrónico</Text>
+                <Text style={[styles.label, { color: colors.text }]}>{t('auth:login.email')}</Text>
                 <TextInput
                   style={[
                     styles.webInput,
@@ -153,7 +167,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                       borderColor: emailError ? '#EF4444' : colors.accent,
                     },
                   ]}
-                  placeholder="tu@email.com"
+                  placeholder={t('auth:login.emailPlaceholder')}
                   placeholderTextColor={colors.secondary}
                   value={email}
                   onChangeText={validateEmail}
@@ -167,27 +181,49 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: colors.text }]}>Contraseña</Text>
-                <TextInput
-                  style={[
-                    styles.webInput,
-                    {
-                      backgroundColor: colors.bg,
-                      color: colors.text,
-                      borderColor: passwordError ? '#EF4444' : colors.accent,
-                    },
-                  ]}
-                  placeholder="••••••••"
-                  placeholderTextColor={colors.secondary}
-                  value={password}
-                  onChangeText={validatePassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                />
+                <Text style={[styles.label, { color: colors.text }]}>{t('auth:login.password')}</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[
+                      styles.webInput,
+                      styles.passwordInput,
+                      {
+                        backgroundColor: colors.bg,
+                        color: colors.text,
+                        borderColor: passwordError ? '#EF4444' : colors.accent,
+                      },
+                    ]}
+                    placeholder={t('auth:login.passwordPlaceholder')}
+                    placeholderTextColor={colors.secondary}
+                    value={password}
+                    onChangeText={validatePassword}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeIcon}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <MaterialCommunityIcons
+                      name={showPassword ? 'eye-off' : 'eye'}
+                      size={24}
+                      color={colors.secondary}
+                    />
+                  </TouchableOpacity>
+                </View>
                 {passwordError ? (
                   <Text style={[styles.fieldError, { color: '#EF4444' }]}>{passwordError}</Text>
                 ) : null}
               </View>
+
+              <TouchableOpacity
+                style={styles.forgotPasswordContainer}
+                onPress={() => navigation.navigate('ForgotPassword')}
+              >
+                <Text style={[styles.forgotPasswordText, { color: colors.accent }]}>
+                  {t('auth:login.forgotPassword')}
+                </Text>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.webButton, { backgroundColor: colors.accent }]}
@@ -197,13 +233,15 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 {loading ? (
                   <ActivityIndicator color={colors.bg} />
                 ) : (
-                  <Text style={[styles.buttonText, { color: colors.bg }]}>Iniciar Sesión</Text>
+                  <Text style={[styles.buttonText, { color: colors.bg }]}>
+                    {t('auth:login.loginButton')}
+                  </Text>
                 )}
               </TouchableOpacity>
 
               <View style={styles.divider}>
                 <View style={[styles.dividerLine, { backgroundColor: colors.secondary }]} />
-                <Text style={[styles.dividerText, { color: colors.secondary }]}>o</Text>
+                <Text style={[styles.dividerText, { color: colors.secondary }]}>{t('common:or')}</Text>
                 <View style={[styles.dividerLine, { backgroundColor: colors.secondary }]} />
               </View>
 
@@ -212,7 +250,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={() => navigation.navigate('Register')}
               >
                 <Text style={[styles.secondaryButtonText, { color: colors.accent }]}>
-                  Crear una cuenta nueva
+                  {t('auth:login.createAccount')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -228,6 +266,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, { backgroundColor: colors.bg }]}
     >
+      <LanguageSelector position="top-right" />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.logoContainer}>
@@ -238,9 +277,9 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             />
           </View>
 
-          <Text style={[styles.title, { color: colors.text }]}>Bienvenido</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('auth:login.welcome')}</Text>
           <Text style={[styles.subtitle, { color: colors.secondary }]}>
-            Tu esencia también habla por ti
+            {t('auth:login.tagline')}
           </Text>
 
           {errorMessage ? (
@@ -251,7 +290,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>Email</Text>
+              <Text style={[styles.label, { color: colors.text }]}>{t('auth:login.email')}</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -261,7 +300,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
                     borderColor: emailError ? '#EF4444' : colors.accent,
                   },
                 ]}
-                placeholder="correo@ejemplo.com"
+                placeholder={t('auth:login.emailPlaceholder')}
                 placeholderTextColor={colors.secondary}
                 value={email}
                 onChangeText={validateEmail}
@@ -275,27 +314,49 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>Contraseña</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: colors.bg,
-                    color: colors.text,
-                    borderColor: passwordError ? '#EF4444' : colors.accent,
-                  },
-                ]}
-                placeholder="••••••••"
-                placeholderTextColor={colors.secondary}
-                value={password}
-                onChangeText={validatePassword}
-                secureTextEntry
-                autoCapitalize="none"
-              />
+              <Text style={[styles.label, { color: colors.text }]}>{t('auth:login.password')}</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[
+                    styles.input,
+                    styles.passwordInput,
+                    {
+                      backgroundColor: colors.bg,
+                      color: colors.text,
+                      borderColor: passwordError ? '#EF4444' : colors.accent,
+                    },
+                  ]}
+                  placeholder={t('auth:login.passwordPlaceholder')}
+                  placeholderTextColor={colors.secondary}
+                  value={password}
+                  onChangeText={validatePassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <MaterialCommunityIcons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={24}
+                    color={colors.secondary}
+                  />
+                </TouchableOpacity>
+              </View>
               {passwordError ? (
                 <Text style={[styles.fieldError, { color: '#EF4444' }]}>{passwordError}</Text>
               ) : null}
             </View>
+
+            <TouchableOpacity
+              style={styles.forgotPasswordContainer}
+              onPress={() => navigation.navigate('ForgotPassword')}
+            >
+              <Text style={[styles.forgotPasswordText, { color: colors.accent }]}>
+                {t('auth:login.forgotPassword')}
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.button, { backgroundColor: colors.accent }]}
@@ -305,13 +366,15 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
               {loading ? (
                 <ActivityIndicator color={colors.bg} />
               ) : (
-                <Text style={[styles.buttonText, { color: colors.bg }]}>Iniciar Sesión</Text>
+                <Text style={[styles.buttonText, { color: colors.bg }]}>
+                  {t('auth:login.loginButton')}
+                </Text>
               )}
             </TouchableOpacity>
 
             <View style={styles.divider}>
               <View style={[styles.dividerLine, { backgroundColor: colors.secondary }]} />
-              <Text style={[styles.dividerText, { color: colors.secondary }]}>o</Text>
+              <Text style={[styles.dividerText, { color: colors.secondary }]}>{t('common:or')}</Text>
               <View style={[styles.dividerLine, { backgroundColor: colors.secondary }]} />
             </View>
 
@@ -320,7 +383,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
               onPress={() => navigation.navigate('Register')}
             >
               <Text style={[styles.secondaryButtonText, { color: colors.accent }]}>
-                Crear una cuenta
+                {t('auth:login.createAccount')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -507,5 +570,26 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginLeft: 4,
     fontWeight: '500',
+  },
+  forgotPasswordContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 16,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  passwordContainer: {
+    position: 'relative',
+    width: '100%',
+  },
+  passwordInput: {
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    padding: 4,
   },
 });

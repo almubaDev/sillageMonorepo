@@ -1,8 +1,9 @@
 import httpx
 import random
-from typing import List, Optional
+from typing import List
 from app.core.config import settings
 from app.models.perfume import Perfume
+from app.i18n.loader import language_loader
 
 
 def build_prompt(
@@ -17,73 +18,92 @@ def build_prompt(
     vestimenta: str,
     temperatura: float,
     humedad: float,
-    clima_descripcion: str
+    clima_descripcion: str,
+    idioma: str = "es"
 ) -> str:
-    """Construir el prompt para Gemini"""
-    
+    """
+    Construir el prompt para Gemini en el idioma especificado
+
+    El sistema carga dinámicamente las traducciones desde app/i18n/languages/
+    Para agregar un nuevo idioma, solo necesitas crear un archivo nuevo (ej: fr.py)
+    con la misma estructura que es.py o en.py
+    """
+
+    # Cargar traducciones del idioma
+    seasons = language_loader.get_seasons(idioma)
+    time_of_day_dict = language_loader.get_time_of_day(idioma)
+    perfume_labels = language_loader.get_perfume_labels(idioma)
+    prompt_template = language_loader.get_prompt_template(idioma)
+
     # Determinar estación (hemisferio sur)
     mes = fecha_evento.month
-    estaciones = {
-        1: "verano", 2: "verano", 3: "otoño", 4: "otoño",
-        5: "invierno", 6: "invierno", 7: "invierno",
-        8: "primavera", 9: "primavera", 10: "primavera",
-        11: "verano", 12: "verano"
-    }
-    estacion = estaciones.get(mes, "desconocida")
-    
+    estacion = seasons.get(mes, "desconocida")
+
     # Determinar momento del día
     hora = hora_evento.hour
-    momento_dia = "mañana" if hora < 12 else "tarde" if hora < 19 else "noche"
-    
+    if hora < 12:
+        momento_dia = time_of_day_dict["morning"]
+    elif hora < 19:
+        momento_dia = time_of_day_dict["afternoon"]
+    else:
+        momento_dia = time_of_day_dict["night"]
+
     # Mezclar perfumes aleatoriamente
     perfumes_lista = list(perfumes)
     random.shuffle(perfumes_lista)
-    
-    # Formatear lista de perfumes
+
+    print("🧴 PERFUMES DISPONIBLES PARA LA RECOMENDACIÓN")
+    print("-" * 80)
+    for idx, p in enumerate(perfumes_lista, 1):
+        print(f"\n{idx}. {p.nombre} ({p.marca})")
+        if p.perfumista:
+            print(f"   Perfumista: {p.perfumista}")
+        if p.acordes:
+            print(f"   Acordes ({len(p.acordes)}): {', '.join(p.acordes)}")
+        else:
+            print(f"   Acordes: ❌ NO DISPONIBLE")
+        if p.notas:
+            print(f"   Notas ({len(p.notas)}): {', '.join(p.notas)}")
+        else:
+            print(f"   Notas: ❌ NO DISPONIBLE")
+    print("-" * 80 + "\n")
+
+    # Formatear lista de perfumes usando las etiquetas traducidas
     perfumes_text = "\n".join([
         f"- {p.nombre} ({p.marca})"
-        + (f", perfumista: {p.perfumista}" if p.perfumista else "")
-        + (f", acordes: {', '.join(p.acordes)}" if p.acordes else "")
-        + (f", notas: {', '.join(p.notas[:5])}" if p.notas else "")
+        + (f", {perfume_labels['perfumer']}: {p.perfumista}" if p.perfumista else "")
+        + (f", {perfume_labels['accords']}: {', '.join(p.acordes)}" if p.acordes else "")
+        + (f", {perfume_labels['notes']}: {', '.join(p.notas)}" if p.notas else "")
         for p in perfumes_lista
     ])
-    
-    prompt = f"""Eres un experto perfumista. Recomienda el perfume MÁS ADECUADO de esta colección para el siguiente contexto:
 
-## CONTEXTO DEL EVENTO
-- Lugar: {lugar_nombre} ({lugar_tipo})
-- Descripción: {lugar_descripcion}
-- Fecha y hora: {fecha_evento} {hora_evento} ({momento_dia})
-- Clima: {clima_descripcion}, {temperatura}°C, {humedad}% humedad
-- Estación: {estacion}
-- Ocasión: {ocasion}
-- Expectativa: {expectativa}
-- Vestimenta: {vestimenta}
+    # Construir prompt usando el template del idioma
+    prompt = prompt_template.format(
+        lugar_nombre=lugar_nombre,
+        lugar_tipo=lugar_tipo,
+        lugar_descripcion=lugar_descripcion,
+        fecha_evento=fecha_evento,
+        hora_evento=hora_evento,
+        momento_dia=momento_dia,
+        clima_descripcion=clima_descripcion,
+        temperatura=temperatura,
+        humedad=humedad,
+        estacion=estacion,
+        ocasion=ocasion,
+        expectativa=expectativa,
+        vestimenta=vestimenta,
+        perfumes_text=perfumes_text
+    )
 
-## PERFUMES DISPONIBLES
-{perfumes_text}
-
-## INSTRUCCIONES
-1. Analiza el contexto completo
-2. Considera especialmente el clima, la hora y el tipo de lugar
-3. Elige UN SOLO perfume de la lista
-4. Tu respuesta debe empezar con el nombre exacto del perfume recomendado
-5. Explica brevemente (3-4 líneas) por qué es ideal para este contexto
-
-FORMATO DE RESPUESTA:
-[Nombre del perfume]
-[Explicación breve de por qué es perfecto para esta ocasión]
-"""
-    
     return prompt
 
 
 async def get_ai_recommendation(prompt: str) -> str:
     """Llamar a Gemini AI para obtener recomendación"""
-    
+
     api_key = settings.GEMINI_API_KEY
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-    
+
     payload = {
         "contents": [
             {
@@ -91,15 +111,15 @@ async def get_ai_recommendation(prompt: str) -> str:
             }
         ]
     }
-    
+
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(url, json=payload)
             response.raise_for_status()
-            
+
             data = response.json()
             return data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
-            
+
     except Exception as e:
         print(f"Error al llamar Gemini: {e}")
         return "No se pudo generar una recomendación en este momento."

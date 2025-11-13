@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, TextInput } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 
 interface Step1DateProps {
@@ -10,6 +11,7 @@ interface Step1DateProps {
 }
 
 export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
 
@@ -34,7 +36,8 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('es-ES', {
+    const locale = i18n.language === 'en' ? 'en-US' : 'es-ES';
+    return date.toLocaleDateString(locale, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -62,11 +65,11 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
       />
       
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-        ¿Cuándo es el evento?
+        {t('recommend:step1.title')}
       </Text>
-      
+
       <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        Selecciona la fecha (máximo 5 días adelante)
+        {t('recommend:step1.subtitle')}
       </Text>
 
       {Platform.OS === 'web' ? (
@@ -106,7 +109,7 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
             >
               <MaterialCommunityIcons name="calendar" size={24} color={colors.accent} />
               <Text style={[styles.dateButtonText, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-                {value ? formatDate(value) : 'Seleccionar fecha'}
+                {value ? formatDate(value) : t('recommend:step1.selectDate')}
               </Text>
             </TouchableOpacity>
           )}

@@ -4,8 +4,10 @@ import React, { useState } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Text } from 'react-native';
 import Modal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthContext } from '../../utils/AuthContext';
+import { useLanguageChange } from '../../hooks/useLanguageChange';
 import { ProgressBar } from './ProgressBar';
 import { FormNavigation } from './FormNavigation';
 import { Step1Date } from './steps/Step1Date';
@@ -27,12 +29,18 @@ interface Props {
 }
 
 export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { refreshUser } = useAuthContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<RecommendationFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Limpiar errores cuando cambia el idioma
+  useLanguageChange(() => {
+    setError(null);
+  });
 
   const updateFormData = <K extends keyof RecommendationFormData>(
     field: K,
@@ -89,9 +97,9 @@ export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
       setError(null);
 
       // Validar que tengamos todos los datos necesarios
-      if (!formData.fecha || !formData.hora || !formData.tipoLugar || 
+      if (!formData.fecha || !formData.hora || !formData.tipoLugar ||
           !formData.ubicacion.latitud || !formData.ubicacion.longitud) {
-        setError('Faltan datos requeridos. Por favor completa todos los pasos.');
+        setError(t('recommend:error.missingData'));
         setLoading(false);
         return;
       }
@@ -108,6 +116,7 @@ export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
         ocasion: formData.ocasion,
         expectativa: formData.expectativa,
         vestimenta: formData.vestimenta,
+        idioma: i18n.language, // Enviar idioma actual del usuario
       };
 
       console.log('📤 Enviando datos al backend:', recommendationData);
@@ -240,25 +249,25 @@ export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
           <View style={[styles.loadingContent, { backgroundColor: colors.accent + '15' }]}>
             <ActivityIndicator size="large" color={colors.accent} />
             <Text style={[styles.loadingTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-              Generando tu recomendación
+              {t('recommend:loading.title')}
             </Text>
             <View style={styles.loadingSteps}>
               <View style={styles.loadingStep}>
                 <MaterialCommunityIcons name="weather-cloudy" size={20} color={colors.accent} />
                 <Text style={[styles.loadingStepText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-                  Consultando el clima...
+                  {t('recommend:loading.checkingWeather')}
                 </Text>
               </View>
               <View style={styles.loadingStep}>
                 <MaterialCommunityIcons name="robot" size={20} color={colors.accent} />
                 <Text style={[styles.loadingStepText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-                  Analizando con IA...
+                  {t('recommend:loading.analyzingAI')}
                 </Text>
               </View>
               <View style={styles.loadingStep}>
                 <MaterialCommunityIcons name="bottle-tonic-plus" size={20} color={colors.accent} />
                 <Text style={[styles.loadingStepText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-                  Seleccionando el perfume perfecto...
+                  {t('recommend:loading.selectingPerfume')}
                 </Text>
               </View>
             </View>

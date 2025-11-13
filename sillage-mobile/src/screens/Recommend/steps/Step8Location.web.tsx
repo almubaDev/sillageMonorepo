@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 
 declare global {
@@ -25,6 +26,7 @@ interface Step8LocationProps {
 }
 
 export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange }) => {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -42,7 +44,8 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
     if (Platform.OS === 'web') {
       if (!window.google) {
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBYW7kK_nRl4IHm8P5_MPqPDVPbMl7J-n0&libraries=places&language=es`;
+        const mapLanguage = i18n.language === 'en' ? 'en' : 'es';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBYW7kK_nRl4IHm8P5_MPqPDVPbMl7J-n0&libraries=places&language=${mapLanguage}`;
         script.async = true;
         script.defer = true;
         script.onload = initMap;
@@ -109,14 +112,14 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
           onChange({
             latitud: lat,
             longitud: lng,
-            nombre: results[0].address_components?.[0]?.long_name || 'Ubicación seleccionada',
+            nombre: results[0].address_components?.[0]?.long_name || t('recommend:step8.selectLocation'),
             direccion: results[0].formatted_address,
           });
         } else {
           onChange({
             latitud: lat,
             longitud: lng,
-            nombre: 'Ubicación seleccionada',
+            nombre: t('recommend:step8.selectLocation'),
             direccion: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
           });
         }
@@ -128,12 +131,12 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      Alert.alert('Error', 'Escribe una dirección o lugar');
+      Alert.alert(t('recommend:step8.errors.searchFailed'), t('recommend:step8.searchPlaceholder'));
       return;
     }
 
     if (!geocoderRef.current || !mapRef.current || !markerRef.current) {
-      Alert.alert('Error', 'El mapa no está listo');
+      Alert.alert(t('recommend:step8.errors.searchFailed'), t('recommend:step8.errors.notAvailable'));
       return;
     }
 
@@ -158,13 +161,13 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
           });
           setSearchQuery('');
         } else {
-          Alert.alert('No encontrado', 'No se encontró la dirección');
+          Alert.alert(t('recommend:step8.noResults'), t('recommend:step8.tryAgain'));
         }
         setSearching(false);
       });
     } catch (error) {
       console.error('Error en búsqueda:', error);
-      Alert.alert('Error', 'No se pudo buscar la dirección');
+      Alert.alert(t('recommend:step8.errors.searchFailed'), t('recommend:step8.tryAgain'));
       setSearching(false);
     }
   };
@@ -187,11 +190,11 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         />
         
         <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-          ¿Dónde será el evento?
+          {t('recommend:step8.title')}
         </Text>
-        
+
         <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-          Busca o toca el mapa para seleccionar
+          {t('recommend:step8.subtitle')}
         </Text>
       </View>
 
@@ -203,7 +206,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
             borderColor: colors.accent,
             fontFamily: 'Lato-Regular',
           }]}
-          placeholder="Ej: Providencia 123, Santiago"
+          placeholder={t('recommend:step8.searchPlaceholder')}
           placeholderTextColor={colors.secondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -227,7 +230,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
           <View style={styles.loading}>
             <ActivityIndicator size="large" color={colors.accent} />
             <Text style={[styles.loadingText, { color: colors.secondary }]}>
-              Cargando mapa...
+              {t('recommend:step8.gettingLocation')}
             </Text>
           </View>
         )}

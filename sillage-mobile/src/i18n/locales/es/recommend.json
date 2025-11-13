@@ -1,0 +1,113 @@
+{
+  "title": "Nueva Recomendación",
+  "tabLabel": "Recomendador",
+  "navigation": {
+    "back": "Atrás",
+    "continue": "Continuar",
+    "submit": "Obtener Recomendación"
+  },
+  "loading": {
+    "title": "Generando tu recomendación",
+    "checkingWeather": "Consultando el clima...",
+    "analyzingAI": "Analizando con IA...",
+    "selectingPerfume": "Seleccionando el perfume perfecto..."
+  },
+  "error": {
+    "missingData": "Faltan datos requeridos. Por favor completa todos los pasos."
+  },
+  "step1": {
+    "title": "¿Cuándo es el evento?",
+    "subtitle": "Selecciona la fecha (máximo 5 días adelante)",
+    "selectDate": "Seleccionar fecha"
+  },
+  "step2": {
+    "title": "¿A qué hora?",
+    "subtitle": "Selecciona la hora del evento",
+    "selectTime": "Seleccionar hora"
+  },
+  "step3": {
+    "title": "¿Tipo de lugar?",
+    "subtitle": "¿Será en un lugar abierto o cerrado?",
+    "open": "Lugar Abierto",
+    "openDesc": "Al aire libre, parque, terraza",
+    "closed": "Lugar Cerrado",
+    "closedDesc": "Interior, oficina, restaurante"
+  },
+  "step4": {
+    "title": "¿Cuál es la ocasión?",
+    "subtitle": "Selecciona el tipo de evento",
+    "customPlaceholder": "Describe tu ocasión...",
+    "confirm": "Confirmar",
+    "occasions": {
+      "trabajo": "Trabajo",
+      "cita": "Cita Romántica",
+      "fiesta": "Fiesta",
+      "casual": "Casual",
+      "formal": "Evento Formal",
+      "deportivo": "Actividad Deportiva",
+      "otro": "Otro"
+    }
+  },
+  "step5": {
+    "title": "¿Cómo quieres sentirte?",
+    "subtitle": "Selecciona la expectativa que buscas",
+    "expectations": {
+      "confiado": "Confiado",
+      "seductor": "Seductor",
+      "fresco": "Fresco",
+      "elegante": "Elegante",
+      "energico": "Enérgico",
+      "relajado": "Relajado",
+      "profesional": "Profesional",
+      "creativo": "Creativo"
+    }
+  },
+  "step6": {
+    "title": "¿Qué vestirás?",
+    "subtitle": "Selecciona tu estilo de vestimenta",
+    "clothing": {
+      "formal": "Formal",
+      "formalDesc": "Traje, corbata",
+      "semiformal": "Semi-formal",
+      "semiformalDesc": "Smart casual",
+      "casual": "Casual",
+      "casualDesc": "Ropa de diario",
+      "deportivo": "Deportivo",
+      "deportivoDesc": "Ropa deportiva"
+    }
+  },
+  "step7": {
+    "title": "Resumen de tu consulta",
+    "subtitle": "Revisa los datos antes de obtener tu recomendación",
+    "infoMessage": "Consultaremos el clima y analizaremos tu colección para darte la mejor recomendación",
+    "fields": {
+      "date": "Fecha",
+      "time": "Hora",
+      "placeType": "Tipo de lugar",
+      "occasion": "Ocasión",
+      "expectation": "Expectativa",
+      "clothing": "Vestimenta"
+    },
+    "notDefined": "No definida",
+    "notDefinedMale": "No definido",
+    "placeOpen": "Lugar Abierto",
+    "placeClosed": "Lugar Cerrado"
+  },
+  "step8": {
+    "title": "¿Dónde será el evento?",
+    "subtitle": "Busca la ubicación para consultar el clima",
+    "searchPlaceholder": "Buscar dirección o lugar...",
+    "searching": "Buscando...",
+    "noResults": "No se encontraron resultados",
+    "tryAgain": "Intenta con otro término de búsqueda",
+    "selectLocation": "Selecciona una ubicación",
+    "currentLocation": "Usar mi ubicación actual",
+    "gettingLocation": "Obteniendo ubicación...",
+    "errors": {
+      "permissionDenied": "Permiso de ubicación denegado",
+      "notAvailable": "Ubicación no disponible",
+      "timeout": "Tiempo de espera agotado",
+      "searchFailed": "Error al buscar ubicación"
+    }
+  }
+}

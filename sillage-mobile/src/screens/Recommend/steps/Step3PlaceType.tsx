@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 
 interface Step3PlaceTypeProps {
@@ -9,20 +10,21 @@ interface Step3PlaceTypeProps {
 }
 
 export const Step3PlaceType: React.FC<Step3PlaceTypeProps> = ({ value, onChange }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   const options = [
     {
       id: 'abierto' as const,
-      label: 'Lugar Abierto',
+      label: t('recommend:step3.open'),
       icon: 'weather-sunny',
-      description: 'Parque, terraza, exterior',
+      description: t('recommend:step3.openDesc'),
     },
     {
       id: 'cerrado' as const,
-      label: 'Lugar Cerrado',
+      label: t('recommend:step3.closed'),
       icon: 'home',
-      description: 'Oficina, restaurant, interior',
+      description: t('recommend:step3.closedDesc'),
     },
   ];
 
@@ -36,11 +38,11 @@ export const Step3PlaceType: React.FC<Step3PlaceTypeProps> = ({ value, onChange 
       />
       
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-        ¿Qué tipo de lugar es?
+        {t('recommend:step3.title')}
       </Text>
-      
+
       <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        Esto nos ayuda a considerar el clima
+        {t('recommend:step3.subtitle')}
       </Text>
 
       <View style={styles.options}>
