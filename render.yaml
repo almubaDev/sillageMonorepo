@@ -9,7 +9,7 @@ services:
     region: oregon
     plan: free
     rootDir: sillage-backend
-    buildCommand: pip install -r requirements.txt && alembic upgrade head && python load_perfumes_from_csv.py perfumes_db2.csv && python create_superuser_auto.py contacto@forgeapp.cl "Anada!312$" Admin Sillage
+    buildCommand: pip install -r requirements.txt && alembic upgrade head && python load_perfumes_from_csv.py perfumes_db2.csv && python create_superuser_auto.py contacto@forgeapp.cl "Anada!312$" Admin Sillage && python scripts/init_payment_data.py
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:

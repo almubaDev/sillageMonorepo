@@ -215,3 +215,141 @@ class PaginatedResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============= PAYMENT ADMIN SCHEMAS =============
+
+from decimal import Decimal
+
+class PaqueteCreate(BaseModel):
+    """Schema para crear un paquete de consultas"""
+    nombre: str = Field(..., min_length=1, max_length=100, description="Nombre del paquete")
+    descripcion: Optional[str] = Field(None, max_length=500, description="Descripción del paquete")
+    cantidad_consultas: int = Field(..., gt=0, le=1000, description="Cantidad de consultas incluidas")
+    precio: Decimal = Field(..., gt=0, description="Precio del paquete")
+    precio_anterior: Optional[Decimal] = Field(None, gt=0, description="Precio anterior (para mostrar descuento)")
+    moneda: str = Field(default="USD", max_length=3, description="Código de moneda (USD, CLP, EUR)")
+    destacado: bool = Field(default=False, description="Marcar como 'Más Popular'")
+    activo: bool = Field(default=True, description="Paquete activo/visible")
+
+    @field_validator('moneda')
+    @classmethod
+    def validar_moneda(cls, v):
+        monedas_validas = ['USD', 'CLP', 'EUR', 'MXN', 'ARS']
+        if v.upper() not in monedas_validas:
+            raise ValueError(f'Moneda debe ser una de: {", ".join(monedas_validas)}')
+        return v.upper()
+
+    @field_validator('precio_anterior')
+    @classmethod
+    def validar_precio_anterior(cls, v, info):
+        if v is not None and 'precio' in info.data:
+            if v <= info.data['precio']:
+                raise ValueError('El precio anterior debe ser mayor que el precio actual')
+        return v
+
+
+class PaqueteUpdate(BaseModel):
+    """Schema para actualizar un paquete de consultas"""
+    nombre: Optional[str] = Field(None, min_length=1, max_length=100)
+    descripcion: Optional[str] = Field(None, max_length=500)
+    cantidad_consultas: Optional[int] = Field(None, gt=0, le=1000)
+    precio: Optional[Decimal] = Field(None, gt=0)
+    precio_anterior: Optional[Decimal] = Field(None)
+    moneda: Optional[str] = Field(None, max_length=3)
+    destacado: Optional[bool] = None
+    activo: Optional[bool] = None
+
+    @field_validator('moneda')
+    @classmethod
+    def validar_moneda(cls, v):
+        if v is not None:
+            monedas_validas = ['USD', 'CLP', 'EUR', 'MXN', 'ARS']
+            if v.upper() not in monedas_validas:
+                raise ValueError(f'Moneda debe ser una de: {", ".join(monedas_validas)}')
+            return v.upper()
+        return v
+
+
+class BotonPagoInfo(BaseModel):
+    """Información del botón de pago vinculado"""
+    id: int
+    metodo_pago: str  # "PayPal"
+    codigo_metodo: str  # "paypal"
+    activo: bool
+
+    class Config:
+        from_attributes = True
+
+
+class PaqueteAdmin(BaseModel):
+    """Response detallado de un paquete (para admin)"""
+    id: int
+    nombre: str
+    descripcion: Optional[str]
+    cantidad_consultas: int
+    precio: Decimal
+    precio_anterior: Optional[Decimal]
+    precio_por_consulta: float
+    tiene_descuento: bool
+    porcentaje_descuento: int
+    moneda: str
+    destacado: bool
+    activo: bool
+    created_at: datetime
+    updated_at: Optional[datetime]
+    botones_pago: List[BotonPagoInfo] = []
+
+    class Config:
+        from_attributes = True
+
+
+class PagoHistorialItem(BaseModel):
+    """Item del historial de pagos"""
+    id: int
+    custom_id: str
+    usuario_email: str
+    paquete_nombre: str
+    cantidad_consultas: int
+    monto: Decimal
+    moneda: str
+    estado: str
+    metodo_pago: Optional[str]
+    referencia_externa: Optional[str]
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class PagoHistorialResponse(BaseModel):
+    """Response del historial de pagos con paginación"""
+    total: int
+    pagina: int
+    por_pagina: int
+    paginas_totales: int
+    pagos: List[PagoHistorialItem]
+
+
+class EstadisticasPaquete(BaseModel):
+    """Estadísticas por paquete"""
+    paquete_nombre: str
+    cantidad_ventas: int
+    total_recaudado: Decimal
+    porcentaje_ventas: float
+
+
+class EstadisticasVentas(BaseModel):
+    """Estadísticas generales de ventas"""
+    total_ventas: Decimal
+    total_transacciones: int
+    total_consultas_vendidas: int
+    pagos_completados: int
+    pagos_pendientes: int
+    pagos_fallidos: int
+    paquete_mas_vendido: Optional[str]
+    top_paquetes: List[EstadisticasPaquete]
+    ventas_hoy: Decimal
+    ventas_semana: Decimal
+    ventas_mes: Decimal

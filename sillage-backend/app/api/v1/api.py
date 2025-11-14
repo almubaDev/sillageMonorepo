@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, perfumes, recommendations, password, payments, coupons
+from app.api.v1.endpoints import auth, users, perfumes, recommendations, password, payments, coupons, admin_payments
 from app.api.v1.endpoints.admin import users as admin_users
 from app.api.v1.endpoints.admin import perfumes as admin_perfumes
 from app.api.v1.endpoints.admin import consultations as admin_consultations
@@ -82,6 +82,11 @@ api_router.include_router(
 api_router.include_router(
     admin_coupons.router,
     tags=["Admin - Coupons"]
+)
+
+api_router.include_router(
+    admin_payments.router,
+    tags=["Admin - Payments"]
 )
 
 # Aquí agregaremos más routers después:
