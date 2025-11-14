@@ -41,10 +41,15 @@ export default function PaymentPackagesScreen() {
   const loadPaquetes = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('🔄 Cargando paquetes, incluirInactivos:', incluirInactivos);
       const data = await adminPaymentService.getPaquetes(incluirInactivos);
+      console.log('✅ Paquetes recibidos:', data);
+      console.log('📦 Total de paquetes:', data.length);
       setPaquetes(data);
     } catch (error: any) {
-      console.error('Error cargando paquetes:', error);
+      console.error('❌ Error cargando paquetes:', error);
+      console.error('📝 Error detail:', error.response?.data);
+      console.error('🔴 Error status:', error.response?.status);
       Alert.alert('Error', error.response?.data?.detail || 'No se pudieron cargar los paquetes');
     } finally {
       setLoading(false);
