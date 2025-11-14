@@ -7,6 +7,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   TextInput,
   Alert,
   ActivityIndicator,
@@ -41,15 +42,9 @@ export default function PaymentPackagesScreen() {
   const loadPaquetes = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('🔄 Cargando paquetes, incluirInactivos:', incluirInactivos);
       const data = await adminPaymentService.getPaquetes(incluirInactivos);
-      console.log('✅ Paquetes recibidos:', data);
-      console.log('📦 Total de paquetes:', data.length);
       setPaquetes(data);
     } catch (error: any) {
-      console.error('❌ Error cargando paquetes:', error);
-      console.error('📝 Error detail:', error.response?.data);
-      console.error('🔴 Error status:', error.response?.status);
       Alert.alert('Error', error.response?.data?.detail || 'No se pudieron cargar los paquetes');
     } finally {
       setLoading(false);
@@ -157,36 +152,26 @@ export default function PaymentPackagesScreen() {
     }
   };
 
-  const handleDelete = (paquete: PaqueteAdmin) => {
-    Alert.alert(
-      'Confirmar',
-      `¿Desactivar el paquete "${paquete.nombre}"?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Desactivar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await adminPaymentService.deletePaquete(paquete.id);
-              Alert.alert('Éxito', 'Paquete desactivado');
-              loadPaquetes();
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.detail || 'No se pudo desactivar el paquete');
-            }
-          },
-        },
-      ]
-    );
+  const handleDelete = async (paquete: PaqueteAdmin) => {
+    const confirmed = window.confirm(`¿Desactivar el paquete "${paquete.nombre}"?`);
+    if (!confirmed) return;
+
+    try {
+      await adminPaymentService.deletePaquete(paquete.id);
+      Alert.alert('Éxito', 'Paquete desactivado');
+      loadPaquetes();
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'No se pudo desactivar el paquete');
+    }
   };
 
   const renderPaquete = (paquete: PaqueteAdmin) => (
-    <View key={paquete.id} style={adminStyles.card}>
-      {/* Header */}
-      <View style={adminStyles.cardHeader}>
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={adminStyles.cardTitle}>{paquete.nombre}</Text>
+      <View key={paquete.id} style={adminStyles.card}>
+        {/* Header */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+          <View style={{ flex: 1, paddingRight: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <Text style={adminStyles.cardTitle}>{paquete.nombre}</Text>
             {paquete.destacado && (
               <View style={[adminStyles.badge, adminStyles.badgeWarning, { marginLeft: 8 }]}>
                 <Text style={[adminStyles.badgeText, adminStyles.badgeWarningText]}>Popular</Text>
@@ -201,20 +186,20 @@ export default function PaymentPackagesScreen() {
           {paquete.descripcion && (
             <Text style={adminStyles.cardSubtitle}>{paquete.descripcion}</Text>
           )}
-        </View>
-        <View style={{ flexDirection: 'row', marginLeft: 12 }}>
-          <TouchableOpacity
-            onPress={() => openEditModal(paquete)}
-            style={{
-              backgroundColor: AdminColors.infoLight,
-              padding: 10,
-              borderRadius: 8,
-              marginRight: 8
-            }}
-          >
-            <MaterialCommunityIcons name="pencil" size={20} color={AdminColors.info} />
-          </TouchableOpacity>
-          {paquete.activo && (
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              onPress={() => openEditModal(paquete)}
+              style={{
+                backgroundColor: AdminColors.infoLight,
+                padding: 10,
+                borderRadius: 8,
+                marginRight: 8
+              }}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons name="pencil" size={20} color={AdminColors.info} />
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleDelete(paquete)}
               style={{
@@ -222,12 +207,12 @@ export default function PaymentPackagesScreen() {
                 padding: 10,
                 borderRadius: 8
               }}
+              activeOpacity={0.7}
             >
               <MaterialCommunityIcons name="delete" size={20} color={AdminColors.error} />
             </TouchableOpacity>
-          )}
+          </View>
         </View>
-      </View>
 
       {/* Precio e info */}
       <View style={adminStyles.divider} />

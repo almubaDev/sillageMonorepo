@@ -99,11 +99,9 @@ const adminPaymentService = {
    * Obtener todos los paquetes (incluyendo inactivos)
    */
   async getPaquetes(incluirInactivos: boolean = true): Promise<PaqueteAdmin[]> {
-    console.log('🌐 API Call: GET /admin/payments/paquetes', { incluir_inactivos: incluirInactivos });
     const response = await api.get('/admin/payments/paquetes', {
       params: { incluir_inactivos: incluirInactivos }
     });
-    console.log('📡 API Response:', response.status, response.data);
     return response.data;
   },
 
