@@ -24,6 +24,8 @@ export default function PaymentPackagesScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [paqueteToDelete, setPaqueteToDelete] = useState<PaqueteAdmin | null>(null);
   const [editingPaquete, setEditingPaquete] = useState<PaqueteAdmin | null>(null);
   const [incluirInactivos, setIncluirInactivos] = useState(true);
 
@@ -152,30 +154,23 @@ export default function PaymentPackagesScreen() {
     }
   };
 
-  const handleDelete = (paquete: PaqueteAdmin) => {
-    Alert.alert(
-      'Confirmar',
-      `¿Desactivar el paquete "${paquete.nombre}"?`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel'
-        },
-        {
-          text: 'Desactivar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await adminPaymentService.deletePaquete(paquete.id);
-              Alert.alert('Éxito', 'Paquete desactivado');
-              loadPaquetes();
-            } catch (error: any) {
-              Alert.alert('Error', error.response?.data?.detail || 'No se pudo desactivar el paquete');
-            }
-          }
-        }
-      ]
-    );
+  const confirmDelete = (paquete: PaqueteAdmin) => {
+    setPaqueteToDelete(paquete);
+    setShowDeleteModal(true);
+  };
+
+  const handleDelete = async () => {
+    if (!paqueteToDelete) return;
+
+    try {
+      await adminPaymentService.deletePaquete(paqueteToDelete.id);
+      setShowDeleteModal(false);
+      setPaqueteToDelete(null);
+      Alert.alert('Éxito', 'Paquete desactivado');
+      loadPaquetes();
+    } catch (error: any) {
+      Alert.alert('Error', error.response?.data?.detail || 'No se pudo desactivar el paquete');
+    }
   };
 
   const renderPaquete = (paquete: PaqueteAdmin) => (
@@ -214,7 +209,7 @@ export default function PaymentPackagesScreen() {
               <MaterialCommunityIcons name="pencil" size={20} color={AdminColors.info} />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => handleDelete(paquete)}
+              onPress={() => confirmDelete(paquete)}
               style={{
                 backgroundColor: AdminColors.errorLight,
                 padding: 10,
@@ -473,6 +468,43 @@ export default function PaymentPackagesScreen() {
               style={[adminStyles.button, { flex: 1, marginLeft: 8 }]}
             >
               <Text style={adminStyles.buttonText}>{editingPaquete ? 'Actualizar' : 'Crear'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Confirmar Eliminación */}
+      <Modal
+        isVisible={showDeleteModal}
+        onBackdropPress={() => setShowDeleteModal(false)}
+        style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <View style={{ backgroundColor: AdminColors.white, borderRadius: 16, padding: 24, width: '90%', maxWidth: 400 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+            <MaterialCommunityIcons name="alert-circle" size={24} color={AdminColors.error} />
+            <Text style={{ fontSize: 18, fontWeight: '600', color: AdminColors.textPrimary, marginLeft: 12 }}>
+              Confirmar Desactivación
+            </Text>
+          </View>
+
+          <Text style={{ fontSize: 14, color: AdminColors.textSecondary, marginBottom: 24 }}>
+            ¿Estás seguro que deseas desactivar el paquete "{paqueteToDelete?.nombre}"?
+            {'\n\n'}
+            Este paquete dejará de estar visible para los usuarios.
+          </Text>
+
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              onPress={() => setShowDeleteModal(false)}
+              style={[adminStyles.button, adminStyles.buttonSecondary, { flex: 1, marginRight: 8 }]}
+            >
+              <Text style={[adminStyles.buttonText, adminStyles.buttonSecondaryText]}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleDelete}
+              style={[adminStyles.button, { flex: 1, marginLeft: 8, backgroundColor: AdminColors.error }]}
+            >
+              <Text style={adminStyles.buttonText}>Desactivar</Text>
             </TouchableOpacity>
           </View>
         </View>
