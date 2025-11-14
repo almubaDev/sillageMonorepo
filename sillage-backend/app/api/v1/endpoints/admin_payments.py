@@ -40,51 +40,76 @@ async def get_paquetes_admin(
     """
     Obtener todos los paquetes (incluyendo inactivos) con información de botones
     """
-    query = select(PaqueteConsultas).options(
-        selectinload(PaqueteConsultas.botones_pago).selectinload(BotonPago.metodo_pago)
-    )
+    try:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"🔍 GET /admin/payments/paquetes - User: {current_user.email}, incluir_inactivos: {incluir_inactivos}")
 
-    if not incluir_inactivos:
-        query = query.where(PaqueteConsultas.activo == True)
-
-    query = query.order_by(PaqueteConsultas.created_at.desc())
-
-    result = await db.execute(query)
-    paquetes = result.scalars().all()
-
-    # Construir response con información de botones
-    paquetes_response = []
-    for paquete in paquetes:
-        botones_info = [
-            BotonPagoInfo(
-                id=boton.id,
-                metodo_pago=boton.metodo_pago.nombre,
-                codigo_metodo=boton.metodo_pago.codigo,
-                activo=boton.activo and boton.metodo_pago.activo
-            )
-            for boton in paquete.botones_pago
-        ]
-
-        paquete_data = PaqueteAdmin(
-            id=paquete.id,
-            nombre=paquete.nombre,
-            descripcion=paquete.descripcion,
-            cantidad_consultas=paquete.cantidad_consultas,
-            precio=paquete.precio,
-            precio_anterior=paquete.precio_anterior,
-            precio_por_consulta=paquete.precio_por_consulta,
-            tiene_descuento=paquete.tiene_descuento,
-            porcentaje_descuento=paquete.porcentaje_descuento,
-            moneda=paquete.moneda,
-            destacado=paquete.destacado,
-            activo=paquete.activo,
-            created_at=paquete.created_at,
-            updated_at=paquete.updated_at,
-            botones_pago=botones_info
+        query = select(PaqueteConsultas).options(
+            selectinload(PaqueteConsultas.botones_pago).selectinload(BotonPago.metodo_pago)
         )
-        paquetes_response.append(paquete_data)
 
-    return paquetes_response
+        if not incluir_inactivos:
+            query = query.where(PaqueteConsultas.activo == True)
+
+        query = query.order_by(PaqueteConsultas.created_at.desc())
+
+        result = await db.execute(query)
+        paquetes = result.scalars().all()
+
+        logger.info(f"📦 Encontrados {len(paquetes)} paquetes en la base de datos")
+
+        # Construir response con información de botones
+        paquetes_response = []
+        for paquete in paquetes:
+            try:
+                botones_info = [
+                    BotonPagoInfo(
+                        id=boton.id,
+                        metodo_pago=boton.metodo_pago.nombre,
+                        codigo_metodo=boton.metodo_pago.codigo,
+                        activo=boton.activo and boton.metodo_pago.activo
+                    )
+                    for boton in paquete.botones_pago
+                ]
+
+                paquete_data = PaqueteAdmin(
+                    id=paquete.id,
+                    nombre=paquete.nombre,
+                    descripcion=paquete.descripcion,
+                    cantidad_consultas=paquete.cantidad_consultas,
+                    precio=paquete.precio,
+                    precio_anterior=paquete.precio_anterior,
+                    precio_por_consulta=paquete.precio_por_consulta,
+                    tiene_descuento=paquete.tiene_descuento,
+                    porcentaje_descuento=paquete.porcentaje_descuento,
+                    moneda=paquete.moneda,
+                    destacado=paquete.destacado,
+                    activo=paquete.activo,
+                    created_at=paquete.created_at,
+                    updated_at=paquete.updated_at,
+                    botones_pago=botones_info
+                )
+                paquetes_response.append(paquete_data)
+            except Exception as e:
+                logger.error(f"❌ Error procesando paquete {paquete.id} ({paquete.nombre}): {str(e)}")
+                import traceback
+                logger.error(traceback.format_exc())
+                raise
+
+        logger.info(f"✅ Devolviendo {len(paquetes_response)} paquetes al cliente")
+        return paquetes_response
+
+    except Exception as e:
+        import logging
+        import traceback
+        logger = logging.getLogger(__name__)
+        logger.error(f"❌ ERROR en get_paquetes_admin: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error obteniendo paquetes: {str(e)}"
+        )
 
 
 @router.post("/paquetes", response_model=PaqueteAdmin, status_code=status.HTTP_201_CREATED)
