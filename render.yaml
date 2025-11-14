@@ -45,7 +45,7 @@ services:
 
       # CORS
       - key: ALLOWED_ORIGINS
-        value: https://sillage.pro,https://www.sillage.pro,https://api.sillage.pro
+        value: https://sillage.pro,https://www.sillage.pro,https://api.sillage.pro,http://localhost:19006,http://localhost:8081
 
       # Email
       - key: EMAIL_HOST_USER
