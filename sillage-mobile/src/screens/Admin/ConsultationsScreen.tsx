@@ -158,10 +158,10 @@ export default function ConsultationsScreen() {
     try {
       setGifting(true);
       // console.log('🎁 Llamando a adminService.giftConsultations con:', {
-        userId: selectedUser.id,
-        quantity: qty,
-        reason: reason.trim() || undefined
-      });
+      //   userId: selectedUser.id,
+      //   quantity: qty,
+      //   reason: reason.trim() || undefined
+      // });
 
       const result = await adminService.giftConsultations(selectedUser.id, {
         quantity: qty,
