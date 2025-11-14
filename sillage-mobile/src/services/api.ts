@@ -2,8 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Configuración base de la API
-const API_BASE_URL = 'http://localhost:8000/api/v1';
-//const API_BASE_URL = 'https://92t98wk8-8000.brs.devtunnels.ms/api/v1';
+// @ts-ignore - process.env is replaced at build time
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.sillage.pro/api/v1';
 
 // Variable para almacenar el callback de logout
 let onUnauthorizedCallback: (() => void) | null = null;
