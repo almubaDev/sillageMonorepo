@@ -63,6 +63,14 @@ const menuItems: MenuItem[] = [
     screen: 'Coupons',
   },
   {
+    id: 'payment-packages',
+    title: 'Paquetes de Pago',
+    description: 'Gestionar paquetes de consultas y PayPal',
+    icon: 'package-variant',
+    iconColor: '#0070ba',
+    screen: 'PaymentPackages',
+  },
+  {
     id: 'financial',
     title: 'Reportes Financieros',
     description: 'Ingresos, ventas y análisis financiero',

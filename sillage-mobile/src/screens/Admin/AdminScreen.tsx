@@ -11,6 +11,7 @@ import PerfumesScreen from './PerfumesScreen';
 import ConsultationsScreen from './ConsultationsScreen';
 import FinancialReportsScreen from './FinancialReportsScreen';
 import CouponsScreen from './CouponsScreen';
+import PaymentPackagesScreen from './PaymentPackagesScreen';
 import { AdminColors } from './adminStyles';
 
 export type AdminStackParamList = {
@@ -21,6 +22,7 @@ export type AdminStackParamList = {
   Consultations: undefined;
   FinancialReports: undefined;
   Coupons: undefined;
+  PaymentPackages: undefined;
 };
 
 const Stack = createNativeStackNavigator<AdminStackParamList>();
@@ -74,6 +76,11 @@ export default function AdminScreen() {
         name="Coupons"
         component={CouponsScreen}
         options={{ title: 'Cupones' }}
+      />
+      <Stack.Screen
+        name="PaymentPackages"
+        component={PaymentPackagesScreen}
+        options={{ title: 'Paquetes de Pago' }}
       />
     </Stack.Navigator>
   );
