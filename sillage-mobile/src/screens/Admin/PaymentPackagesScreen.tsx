@@ -152,17 +152,30 @@ export default function PaymentPackagesScreen() {
     }
   };
 
-  const handleDelete = async (paquete: PaqueteAdmin) => {
-    const confirmed = window.confirm(`¿Desactivar el paquete "${paquete.nombre}"?`);
-    if (!confirmed) return;
-
-    try {
-      await adminPaymentService.deletePaquete(paquete.id);
-      Alert.alert('Éxito', 'Paquete desactivado');
-      loadPaquetes();
-    } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'No se pudo desactivar el paquete');
-    }
+  const handleDelete = (paquete: PaqueteAdmin) => {
+    Alert.alert(
+      'Confirmar',
+      `¿Desactivar el paquete "${paquete.nombre}"?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Desactivar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await adminPaymentService.deletePaquete(paquete.id);
+              Alert.alert('Éxito', 'Paquete desactivado');
+              loadPaquetes();
+            } catch (error: any) {
+              Alert.alert('Error', error.response?.data?.detail || 'No se pudo desactivar el paquete');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const renderPaquete = (paquete: PaqueteAdmin) => (
