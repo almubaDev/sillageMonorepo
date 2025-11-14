@@ -1,3 +1,6 @@
+/**
+ * PaymentPackagesScreen - Gestión de paquetes de pago
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -10,8 +13,9 @@ import {
   Switch,
   RefreshControl,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Modal from 'react-native-modal';
+import { adminStyles, AdminColors } from './adminStyles';
 import adminPaymentService, { PaqueteAdmin, PaqueteCreate, PaqueteUpdate } from '../../services/adminPaymentService';
 
 export default function PaymentPackagesScreen() {
@@ -111,7 +115,6 @@ export default function PaymentPackagesScreen() {
 
     try {
       if (editingPaquete) {
-        // Actualizar
         const updateData: PaqueteUpdate = {
           nombre: formData.nombre,
           descripcion: formData.descripcion || undefined,
@@ -126,7 +129,6 @@ export default function PaymentPackagesScreen() {
         await adminPaymentService.updatePaquete(editingPaquete.id, updateData);
         Alert.alert('Éxito', 'Paquete actualizado correctamente');
       } else {
-        // Crear
         const createData: PaqueteCreate = {
           nombre: formData.nombre,
           descripcion: formData.descripcion || undefined,
@@ -174,83 +176,98 @@ export default function PaymentPackagesScreen() {
   };
 
   const renderPaquete = (paquete: PaqueteAdmin) => (
-    <View key={paquete.id} className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+    <View key={paquete.id} style={adminStyles.card}>
       {/* Header */}
-      <View className="flex-row justify-between items-start mb-3">
-        <View className="flex-1">
-          <View className="flex-row items-center">
-            <Text className="text-lg font-semibold text-gray-900">{paquete.nombre}</Text>
+      <View style={adminStyles.cardHeader}>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+            <Text style={adminStyles.cardTitle}>{paquete.nombre}</Text>
             {paquete.destacado && (
-              <View className="ml-2 bg-purple-100 px-2 py-1 rounded-full">
-                <Text className="text-xs font-semibold text-purple-700">Popular</Text>
+              <View style={[adminStyles.badge, adminStyles.badgeWarning, { marginLeft: 8 }]}>
+                <Text style={[adminStyles.badgeText, adminStyles.badgeWarningText]}>Popular</Text>
               </View>
             )}
             {!paquete.activo && (
-              <View className="ml-2 bg-gray-100 px-2 py-1 rounded-full">
-                <Text className="text-xs font-semibold text-gray-600">Inactivo</Text>
+              <View style={[adminStyles.badge, { backgroundColor: AdminColors.gray200, marginLeft: 8 }]}>
+                <Text style={[adminStyles.badgeText, { color: AdminColors.gray600 }]}>Inactivo</Text>
               </View>
             )}
           </View>
           {paquete.descripcion && (
-            <Text className="text-sm text-gray-600 mt-1">{paquete.descripcion}</Text>
+            <Text style={adminStyles.cardSubtitle}>{paquete.descripcion}</Text>
           )}
         </View>
-        <View className="flex-row">
+        <View style={{ flexDirection: 'row', marginLeft: 12 }}>
           <TouchableOpacity
             onPress={() => openEditModal(paquete)}
-            className="bg-blue-50 p-2 rounded-lg mr-2"
+            style={{
+              backgroundColor: AdminColors.infoLight,
+              padding: 10,
+              borderRadius: 8,
+              marginRight: 8
+            }}
           >
-            <Ionicons name="pencil" size={18} color="#3b82f6" />
+            <MaterialCommunityIcons name="pencil" size={20} color={AdminColors.info} />
           </TouchableOpacity>
           {paquete.activo && (
             <TouchableOpacity
               onPress={() => handleDelete(paquete)}
-              className="bg-red-50 p-2 rounded-lg"
+              style={{
+                backgroundColor: AdminColors.errorLight,
+                padding: 10,
+                borderRadius: 8
+              }}
             >
-              <Ionicons name="trash" size={18} color="#ef4444" />
+              <MaterialCommunityIcons name="delete" size={20} color={AdminColors.error} />
             </TouchableOpacity>
           )}
         </View>
       </View>
 
-      {/* Info */}
-      <View className="flex-row justify-between items-center py-3 border-t border-gray-100">
+      {/* Precio e info */}
+      <View style={adminStyles.divider} />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
         <View>
-          <Text className="text-2xl font-bold text-purple-600">
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color: AdminColors.primary }}>
             ${paquete.precio} {paquete.moneda}
           </Text>
           {paquete.tiene_descuento && paquete.precio_anterior && (
-            <View className="flex-row items-center mt-1">
-              <Text className="text-sm text-gray-400 line-through mr-2">
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+              <Text style={{ fontSize: 14, color: AdminColors.textLight, textDecorationLine: 'line-through', marginRight: 8 }}>
                 ${paquete.precio_anterior}
               </Text>
-              <Text className="text-xs font-semibold text-green-600">
-                {paquete.porcentaje_descuento}% OFF
-              </Text>
+              <View style={[adminStyles.badge, adminStyles.badgeSuccess]}>
+                <Text style={[adminStyles.badgeText, adminStyles.badgeSuccessText]}>
+                  {paquete.porcentaje_descuento}% OFF
+                </Text>
+              </View>
             </View>
           )}
         </View>
-        <View className="items-end">
-          <Text className="text-lg font-semibold text-gray-900">
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 20, fontWeight: '600', color: AdminColors.textPrimary }}>
             {paquete.cantidad_consultas} consultas
           </Text>
-          <Text className="text-xs text-gray-500 mt-1">
-            ${paquete.precio_por_consulta} por consulta
+          <Text style={{ fontSize: 12, color: AdminColors.textSecondary, marginTop: 2 }}>
+            ${paquete.precio_por_consulta.toFixed(2)} c/u
           </Text>
         </View>
       </View>
 
       {/* Botones de pago */}
-      <View className="mt-3 pt-3 border-t border-gray-100">
-        <Text className="text-xs font-semibold text-gray-500 mb-2">MÉTODOS DE PAGO:</Text>
+      <View style={adminStyles.divider} />
+      <View>
+        <Text style={{ fontSize: 12, fontWeight: '600', color: AdminColors.textLight, marginBottom: 8 }}>
+          MÉTODOS DE PAGO
+        </Text>
         {paquete.botones_pago.map((boton) => (
-          <View key={boton.id} className="flex-row items-center mb-1">
-            <Ionicons
-              name={boton.activo ? 'checkmark-circle' : 'close-circle'}
-              size={16}
-              color={boton.activo ? '#10b981' : '#ef4444'}
+          <View key={boton.id} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+            <MaterialCommunityIcons
+              name={boton.activo ? 'check-circle' : 'close-circle'}
+              size={18}
+              color={boton.activo ? AdminColors.success : AdminColors.error}
             />
-            <Text className={`text-sm ml-2 ${boton.activo ? 'text-gray-700' : 'text-gray-400'}`}>
+            <Text style={{ fontSize: 14, color: AdminColors.textPrimary, marginLeft: 8 }}>
               {boton.metodo_pago}
             </Text>
           </View>
@@ -261,49 +278,51 @@ export default function PaymentPackagesScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#9333ea" />
-        <Text className="text-gray-600 mt-4">Cargando paquetes...</Text>
+      <View style={adminStyles.loadingContainer}>
+        <ActivityIndicator size="large" color={AdminColors.primary} />
+        <Text style={adminStyles.loadingText}>Cargando paquetes...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View style={adminStyles.container}>
       {/* Header */}
-      <View className="bg-white px-4 py-4 border-b border-gray-200">
-        <View className="flex-row justify-between items-center">
-          <Text className="text-xl font-bold text-gray-900">Paquetes de Pago</Text>
-          <TouchableOpacity
-            onPress={openCreateModal}
-            className="bg-purple-600 px-4 py-2 rounded-lg flex-row items-center"
-          >
-            <Ionicons name="add" size={20} color="white" />
-            <Text className="text-white font-semibold ml-1">Crear</Text>
+      <View style={adminStyles.pageHeader}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={adminStyles.pageTitle}>Paquetes de Pago</Text>
+            <Text style={adminStyles.pageSubtitle}>Gestionar paquetes de consultas</Text>
+          </View>
+          <TouchableOpacity style={adminStyles.button} onPress={openCreateModal}>
+            <MaterialCommunityIcons name="plus" size={20} color={AdminColors.white} />
+            <Text style={adminStyles.buttonText}>Crear</Text>
           </TouchableOpacity>
         </View>
 
         {/* Toggle inactivos */}
-        <View className="flex-row items-center justify-between mt-3">
-          <Text className="text-sm text-gray-600">Mostrar inactivos</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16 }}>
+          <Text style={{ fontSize: 14, color: AdminColors.textSecondary }}>Mostrar paquetes inactivos</Text>
           <Switch
             value={incluirInactivos}
             onValueChange={setIncluirInactivos}
-            trackColor={{ false: '#d1d5db', true: '#9333ea' }}
+            trackColor={{ false: AdminColors.gray300, true: AdminColors.primary }}
+            thumbColor={AdminColors.white}
           />
         </View>
       </View>
 
       {/* Lista */}
       <ScrollView
-        className="flex-1 px-4 py-4"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        style={adminStyles.scrollContainer}
+        contentContainerStyle={adminStyles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[AdminColors.primary]} />}
       >
         {paquetes.length === 0 ? (
-          <View className="items-center justify-center py-12">
-            <Ionicons name="cube-outline" size={64} color="#d1d5db" />
-            <Text className="text-gray-500 mt-4">No hay paquetes</Text>
-            <Text className="text-gray-400 text-sm">Crea el primero</Text>
+          <View style={adminStyles.emptyContainer}>
+            <MaterialCommunityIcons name="package-variant" size={64} color={AdminColors.gray300} />
+            <Text style={adminStyles.emptyText}>No hay paquetes</Text>
+            <Text style={{ fontSize: 14, color: AdminColors.textLight, marginTop: 4 }}>Crea el primero</Text>
           </View>
         ) : (
           paquetes.map(renderPaquete)
@@ -311,78 +330,92 @@ export default function PaymentPackagesScreen() {
       </ScrollView>
 
       {/* Modal Crear/Editar */}
-      <Modal isVisible={showModal} onBackdropPress={() => setShowModal(false)}>
-        <View className="bg-white rounded-xl p-6 max-h-[90%]">
-          <Text className="text-xl font-bold text-gray-900 mb-4">
-            {editingPaquete ? 'Editar Paquete' : 'Crear Paquete'}
-          </Text>
+      <Modal isVisible={showModal} onBackdropPress={() => setShowModal(false)} style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={adminStyles.modalContent}>
+          <View style={adminStyles.modalHeader}>
+            <Text style={adminStyles.modalTitle}>
+              {editingPaquete ? 'Editar Paquete' : 'Crear Paquete'}
+            </Text>
+            <TouchableOpacity onPress={() => setShowModal(false)}>
+              <MaterialCommunityIcons name="close" size={24} color={AdminColors.textSecondary} />
+            </TouchableOpacity>
+          </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView style={adminStyles.modalBody} showsVerticalScrollIndicator={false}>
             {/* Nombre */}
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Nombre *</Text>
+            <Text style={adminStyles.inputLabel}>Nombre *</Text>
             <TextInput
               value={formData.nombre}
               onChangeText={(text) => setFormData({ ...formData, nombre: text })}
               placeholder="Ej: Paquete Premium"
-              className="bg-gray-100 px-4 py-3 rounded-lg mb-4"
+              style={adminStyles.input}
             />
 
             {/* Descripción */}
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Descripción</Text>
+            <Text style={[adminStyles.inputLabel, { marginTop: 16 }]}>Descripción</Text>
             <TextInput
               value={formData.descripcion}
               onChangeText={(text) => setFormData({ ...formData, descripcion: text })}
               placeholder="Breve descripción del paquete"
               multiline
               numberOfLines={3}
-              className="bg-gray-100 px-4 py-3 rounded-lg mb-4"
-              style={{ textAlignVertical: 'top' }}
+              style={[adminStyles.input, { height: 80, textAlignVertical: 'top' }]}
             />
 
             {/* Cantidad */}
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Cantidad de consultas *</Text>
+            <Text style={[adminStyles.inputLabel, { marginTop: 16 }]}>Cantidad de consultas *</Text>
             <TextInput
               value={formData.cantidad_consultas}
               onChangeText={(text) => setFormData({ ...formData, cantidad_consultas: text.replace(/[^0-9]/g, '') })}
               placeholder="30"
               keyboardType="numeric"
-              className="bg-gray-100 px-4 py-3 rounded-lg mb-4"
+              style={adminStyles.input}
             />
 
             {/* Precio */}
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Precio *</Text>
+            <Text style={[adminStyles.inputLabel, { marginTop: 16 }]}>Precio *</Text>
             <TextInput
               value={formData.precio}
               onChangeText={(text) => setFormData({ ...formData, precio: text })}
               placeholder="9.99"
               keyboardType="decimal-pad"
-              className="bg-gray-100 px-4 py-3 rounded-lg mb-4"
+              style={adminStyles.input}
             />
 
             {/* Precio anterior */}
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Precio anterior (opcional)</Text>
+            <Text style={[adminStyles.inputLabel, { marginTop: 16 }]}>Precio anterior (opcional)</Text>
             <TextInput
               value={formData.precio_anterior}
               onChangeText={(text) => setFormData({ ...formData, precio_anterior: text })}
               placeholder="14.99"
               keyboardType="decimal-pad"
-              className="bg-gray-100 px-4 py-3 rounded-lg mb-4"
+              style={adminStyles.input}
             />
 
             {/* Moneda */}
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Moneda</Text>
-            <View className="flex-row mb-4">
+            <Text style={[adminStyles.inputLabel, { marginTop: 16 }]}>Moneda</Text>
+            <View style={{ flexDirection: 'row', marginTop: 8 }}>
               {['USD', 'CLP', 'EUR'].map((currency) => (
                 <TouchableOpacity
                   key={currency}
                   onPress={() => setFormData({ ...formData, moneda: currency })}
-                  className={`px-4 py-2 rounded-lg mr-2 ${
-                    formData.moneda === currency ? 'bg-purple-600' : 'bg-gray-200'
-                  }`}
+                  style={[
+                    {
+                      paddingHorizontal: 20,
+                      paddingVertical: 10,
+                      borderRadius: 8,
+                      marginRight: 8,
+                      borderWidth: 1,
+                    },
+                    formData.moneda === currency
+                      ? { backgroundColor: AdminColors.primary, borderColor: AdminColors.primary }
+                      : { backgroundColor: AdminColors.white, borderColor: AdminColors.border }
+                  ]}
                 >
-                  <Text
-                    className={`font-semibold ${formData.moneda === currency ? 'text-white' : 'text-gray-700'}`}
-                  >
+                  <Text style={{
+                    fontWeight: '600',
+                    color: formData.moneda === currency ? AdminColors.white : AdminColors.textPrimary
+                  }}>
                     {currency}
                   </Text>
                 </TouchableOpacity>
@@ -390,48 +423,53 @@ export default function PaymentPackagesScreen() {
             </View>
 
             {/* Destacado */}
-            <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-sm font-semibold text-gray-700">Marcar como Popular</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 }}>
+              <Text style={adminStyles.inputLabel}>Marcar como Popular</Text>
               <Switch
                 value={formData.destacado}
                 onValueChange={(value) => setFormData({ ...formData, destacado: value })}
-                trackColor={{ false: '#d1d5db', true: '#9333ea' }}
+                trackColor={{ false: AdminColors.gray300, true: AdminColors.primary }}
+                thumbColor={AdminColors.white}
               />
             </View>
 
             {/* Activo */}
-            <View className="flex-row items-center justify-between mb-6">
-              <Text className="text-sm font-semibold text-gray-700">Activo</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16 }}>
+              <Text style={adminStyles.inputLabel}>Activo</Text>
               <Switch
                 value={formData.activo}
                 onValueChange={(value) => setFormData({ ...formData, activo: value })}
-                trackColor={{ false: '#d1d5db', true: '#9333ea' }}
+                trackColor={{ false: AdminColors.gray300, true: AdminColors.primary }}
+                thumbColor={AdminColors.white}
               />
             </View>
 
             {/* Nota */}
             {!editingPaquete && (
-              <View className="bg-blue-50 p-3 rounded-lg mb-4">
-                <Text className="text-xs text-blue-700">
-                  <Ionicons name="information-circle" size={12} /> Al crear el paquete, se vinculará automáticamente
-                  con PayPal
-                </Text>
+              <View style={[adminStyles.badge, adminStyles.badgeInfo, { marginTop: 20, padding: 12, alignSelf: 'stretch' }]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <MaterialCommunityIcons name="information" size={16} color={AdminColors.info} />
+                  <Text style={{ fontSize: 12, color: AdminColors.info, marginLeft: 8, flex: 1 }}>
+                    Al crear el paquete, se vinculará automáticamente con PayPal
+                  </Text>
+                </View>
               </View>
             )}
           </ScrollView>
 
           {/* Botones */}
-          <View className="flex-row mt-4">
+          <View style={adminStyles.modalFooter}>
             <TouchableOpacity
               onPress={() => setShowModal(false)}
-              className="flex-1 bg-gray-200 py-3 rounded-lg mr-2"
+              style={[adminStyles.button, adminStyles.buttonSecondary, { flex: 1, marginRight: 8 }]}
             >
-              <Text className="text-center font-semibold text-gray-700">Cancelar</Text>
+              <Text style={[adminStyles.buttonText, adminStyles.buttonSecondaryText]}>Cancelar</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleSubmit} className="flex-1 bg-purple-600 py-3 rounded-lg ml-2">
-              <Text className="text-center font-semibold text-white">
-                {editingPaquete ? 'Actualizar' : 'Crear'}
-              </Text>
+            <TouchableOpacity
+              onPress={handleSubmit}
+              style={[adminStyles.button, { flex: 1, marginLeft: 8 }]}
+            >
+              <Text style={adminStyles.buttonText}>{editingPaquete ? 'Actualizar' : 'Crear'}</Text>
             </TouchableOpacity>
           </View>
         </View>
