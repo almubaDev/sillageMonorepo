@@ -75,7 +75,9 @@ class PaqueteConsultas(Base):
     @property
     def tiene_descuento(self) -> bool:
         """Verificar si tiene precio anterior (descuento)"""
-        return self.precio_anterior and float(self.precio_anterior) > float(self.precio)
+        if self.precio_anterior is None:
+            return False
+        return float(self.precio_anterior) > float(self.precio)
 
     @property
     def porcentaje_descuento(self) -> int:
