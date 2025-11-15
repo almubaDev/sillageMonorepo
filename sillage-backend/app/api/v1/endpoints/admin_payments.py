@@ -240,7 +240,7 @@ async def delete_paquete(
     current_user: User = Depends(require_superuser)
 ):
     """
-    Desactivar un paquete (soft delete)
+    Eliminar un paquete de la base de datos (hard delete)
     """
     result = await db.execute(
         select(PaqueteConsultas).where(PaqueteConsultas.id == paquete_id)
@@ -253,7 +253,7 @@ async def delete_paquete(
             detail=f"Paquete con ID {paquete_id} no encontrado"
         )
 
-    paquete.activo = False
+    await db.delete(paquete)
     await db.commit()
 
 

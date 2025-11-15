@@ -166,10 +166,10 @@ export default function PaymentPackagesScreen() {
       await adminPaymentService.deletePaquete(paqueteToDelete.id);
       setShowDeleteModal(false);
       setPaqueteToDelete(null);
-      Alert.alert('Éxito', 'Paquete desactivado');
+      Alert.alert('Éxito', 'Paquete eliminado permanentemente');
       loadPaquetes();
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'No se pudo desactivar el paquete');
+      Alert.alert('Error', error.response?.data?.detail || 'No se pudo eliminar el paquete');
     }
   };
 
@@ -483,14 +483,14 @@ export default function PaymentPackagesScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
             <MaterialCommunityIcons name="alert-circle" size={24} color={AdminColors.error} />
             <Text style={{ fontSize: 18, fontWeight: '600', color: AdminColors.textPrimary, marginLeft: 12 }}>
-              Confirmar Desactivación
+              Confirmar Eliminación
             </Text>
           </View>
 
           <Text style={{ fontSize: 14, color: AdminColors.textSecondary, marginBottom: 24 }}>
-            ¿Estás seguro que deseas desactivar el paquete "{paqueteToDelete?.nombre}"?
+            ¿Estás seguro que deseas eliminar permanentemente el paquete "{paqueteToDelete?.nombre}"?
             {'\n\n'}
-            Este paquete dejará de estar visible para los usuarios.
+            Esta acción no se puede deshacer. El paquete será eliminado de la base de datos.
           </Text>
 
           <View style={{ flexDirection: 'row' }}>
@@ -504,7 +504,7 @@ export default function PaymentPackagesScreen() {
               onPress={handleDelete}
               style={[adminStyles.button, { flex: 1, marginLeft: 8, backgroundColor: AdminColors.error }]}
             >
-              <Text style={adminStyles.buttonText}>Desactivar</Text>
+              <Text style={adminStyles.buttonText}>Eliminar</Text>
             </TouchableOpacity>
           </View>
         </View>
