@@ -241,6 +241,7 @@ async def delete_paquete(
 ):
     """
     Eliminar un paquete de la base de datos (hard delete)
+    Solo se puede eliminar si no tiene pagos asociados
     """
     result = await db.execute(
         select(PaqueteConsultas).where(PaqueteConsultas.id == paquete_id)
@@ -251,6 +252,18 @@ async def delete_paquete(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Paquete con ID {paquete_id} no encontrado"
+        )
+
+    # Verificar si tiene pagos asociados
+    pagos_count = await db.execute(
+        select(func.count(PagoConsultas.id)).where(PagoConsultas.paquete_consultas_id == paquete_id)
+    )
+    count = pagos_count.scalar()
+
+    if count > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"No se puede eliminar el paquete porque tiene {count} pago(s) asociado(s). Desactívalo en su lugar."
         )
 
     await db.delete(paquete)
