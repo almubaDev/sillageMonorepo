@@ -1,9 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { RecommendationFormData } from '../types';
+
+// Importar CSS para scrollbars visibles en web
+if (Platform.OS === 'web') {
+  require('../scrollbar.css');
+}
 
 interface Step7SummaryProps {
   data: RecommendationFormData;
@@ -72,7 +77,13 @@ export const Step7Summary: React.FC<Step7SummaryProps> = ({ data, onEdit }) => {
   ];
 
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={true}
+      // @ts-ignore - className solo para web
+      className={Platform.OS === 'web' ? 'scrollbar-visible' : undefined}
+    >
       <MaterialCommunityIcons 
         name="clipboard-check" 
         size={64} 

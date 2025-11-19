@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +17,11 @@ import { useAuthContext } from '../../utils/AuthContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RecommendStackParamList } from '../../navigation/types';
 import { formatPerfumeName, formatBrand, formatPerfumista } from '../../utils/formatters';
+
+// Importar CSS para scrollbars visibles en web
+if (Platform.OS === 'web') {
+  require('./scrollbar.css');
+}
 
 type Props = NativeStackScreenProps<RecommendStackParamList, 'RecommendationResult'>;
 
@@ -103,9 +109,12 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
   };
 
   return (
-    <ScrollView 
+    <ScrollView
       style={[styles.container, { backgroundColor: colors.bg }]}
       contentContainerStyle={[styles.content, isDesktop && styles.contentDesktop]}
+      showsVerticalScrollIndicator={true}
+      // @ts-ignore - className solo para web
+      className={Platform.OS === 'web' ? 'scrollbar-visible' : undefined}
     >
       {/* Header con icono de éxito */}
       <View style={styles.header}>
@@ -432,6 +441,7 @@ const styles = StyleSheet.create({
   contextValue: {
     fontSize: 14,
     flexWrap: 'wrap',
+    flex: 1,
   },
   consultasBox: {
     flexDirection: 'row',
