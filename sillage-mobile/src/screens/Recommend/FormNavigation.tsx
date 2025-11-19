@@ -85,6 +85,8 @@ const styles = StyleSheet.create({
   backButton: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
+    flexDirection: 'row',
+    gap: 8,
   },
   nextButton: {
     // backgroundColor set dynamically
