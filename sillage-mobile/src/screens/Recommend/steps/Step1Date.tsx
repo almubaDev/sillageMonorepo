@@ -88,12 +88,13 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
               borderColor: colors.accent,
               borderRadius: 12,
               paddingLeft: 20,
-              paddingRight: 40,
+              paddingRight: 50,
               fontSize: 16,
               backgroundColor: colors.accent + '20',
               color: colors.text,
               fontFamily: 'Lato-Regular',
               textAlign: 'center',
+              margin: '0 auto',
             }}
           />
         </View>
@@ -164,9 +165,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   webPickerContainer: {
-    width: '56%',
-    maxWidth: 180,
+    width: '50%',
+    maxWidth: 162,
     marginBottom: 24,
+    alignSelf: 'center',
   },
   dateButton: {
     flexDirection: 'row',
