@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   webPickerContainer: {
-    width: '80%',
-    maxWidth: 260,
+    width: '75%',
+    maxWidth: 240,
     marginBottom: 24,
   },
   timeButton: {
