@@ -228,7 +228,10 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
               <Text style={[styles.contextLabel, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
                 {t('result:context.place')}
               </Text>
-              <Text style={[styles.contextValue, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
+              <Text
+                style={[styles.contextValue, { color: colors.text, fontFamily: 'Lato-Bold' }]}
+                numberOfLines={0}
+              >
                 {recommendation.lugar_descripcion || recommendation.lugar_nombre}
               </Text>
             </View>

@@ -5,26 +5,38 @@ input[type="time"] {
   margin-left: auto !important;
   margin-right: auto !important;
 
-  /* Controlar el chevron/icono */
-  padding-inline-end: 60px !important;
+  /* Padding normal sin espacio para chevron */
+  padding-inline-end: 16px !important;
   padding-inline-start: 16px !important;
 
   /* Eliminar estilos nativos que interfieren */
   box-sizing: border-box !important;
 }
 
-/* Controlar específicamente el icono del calendario/reloj en webkit */
+/* OCULTAR el icono del calendario/reloj completamente */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  position: absolute;
-  right: 12px;
-  padding: 0;
-  margin: 0;
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-/* Firefox */
+/* OCULTAR en Firefox */
 input[type="date"]::-moz-calendar-picker-indicator,
 input[type="time"]::-moz-calendar-picker-indicator {
-  cursor: pointer;
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* OCULTAR otros elementos internos */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="time"]::-webkit-inner-spin-button {
+  display: none !important;
+}
+
+input[type="date"]::-webkit-clear-button,
+input[type="time"]::-webkit-clear-button {
+  display: none !important;
 }
