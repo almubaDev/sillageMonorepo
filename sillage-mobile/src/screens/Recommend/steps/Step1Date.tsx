@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   webPickerContainer: {
-    width: '90%',
-    maxWidth: 320,
+    width: '85%',
+    maxWidth: 280,
     marginBottom: 24,
   },
   dateButton: {
