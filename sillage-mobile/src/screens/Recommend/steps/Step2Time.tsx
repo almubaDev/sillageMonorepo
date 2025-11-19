@@ -5,6 +5,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 
+// Importar CSS para inputs de fecha/hora en web
+if (Platform.OS === 'web') {
+  require('../date-time-picker.css');
+}
+
 interface Step2TimeProps {
   value: Date | null;
   onChange: (time: Date) => void;

@@ -1,0 +1,30 @@
+/* Estilos para inputs de fecha y hora */
+input[type="date"],
+input[type="time"] {
+  /* Forzar centrado */
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  /* Controlar el chevron/icono */
+  padding-inline-end: 60px !important;
+  padding-inline-start: 16px !important;
+
+  /* Eliminar estilos nativos que interfieren */
+  box-sizing: border-box !important;
+}
+
+/* Controlar específicamente el icono del calendario/reloj en webkit */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  position: absolute;
+  right: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="date"]::-moz-calendar-picker-indicator,
+input[type="time"]::-moz-calendar-picker-indicator {
+  cursor: pointer;
+}
