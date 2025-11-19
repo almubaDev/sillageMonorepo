@@ -88,7 +88,7 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
               borderColor: colors.accent,
               borderRadius: 12,
               paddingLeft: 20,
-              paddingRight: 20,
+              paddingRight: 40,
               fontSize: 16,
               backgroundColor: colors.accent + '20',
               color: colors.text,
