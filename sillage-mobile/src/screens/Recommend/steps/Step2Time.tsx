@@ -73,19 +73,19 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
             onChange={(e) => handleWebTimeChange(e.target.value)}
             style={{
               height: 56,
-              width: '100%',
+              width: 162,
               borderWidth: 2,
               borderStyle: 'solid',
               borderColor: colors.accent,
               borderRadius: 12,
-              paddingLeft: 20,
-              paddingRight: 50,
+              paddingLeft: 16,
+              paddingRight: 60,
               fontSize: 16,
               backgroundColor: colors.accent + '20',
               color: colors.text,
               fontFamily: 'Lato-Regular',
               textAlign: 'center',
-              margin: '0 auto',
+              display: 'block',
             }}
           />
         </View>
@@ -154,10 +154,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   webPickerContainer: {
-    width: '50%',
+    width: '100%',
     maxWidth: 162,
     marginBottom: 24,
-    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   timeButton: {
     flexDirection: 'row',
