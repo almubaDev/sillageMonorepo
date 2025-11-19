@@ -13,30 +13,15 @@ input[type="time"] {
   box-sizing: border-box !important;
 }
 
-/* OCULTAR el icono del calendario/reloj completamente */
+/* Hacer el icono del calendario/reloj transparente */
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
-  display: none !important;
   opacity: 0 !important;
-  visibility: hidden !important;
-  width: 0 !important;
-  height: 0 !important;
+  cursor: pointer;
 }
 
-/* OCULTAR en Firefox */
+/* Transparente en Firefox */
 input[type="date"]::-moz-calendar-picker-indicator,
 input[type="time"]::-moz-calendar-picker-indicator {
-  display: none !important;
   opacity: 0 !important;
-}
-
-/* OCULTAR otros elementos internos */
-input[type="date"]::-webkit-inner-spin-button,
-input[type="time"]::-webkit-inner-spin-button {
-  display: none !important;
-}
-
-input[type="date"]::-webkit-clear-button,
-input[type="time"]::-webkit-clear-button {
-  display: none !important;
 }
