@@ -9,35 +9,32 @@ from app.services.weather import get_weather_data
 from app.services.gemini import build_prompt, get_ai_recommendation
 
 
-def extract_perfume_name(ai_response: str, perfumes: List[Perfume]) -> Optional[Perfume]:
-    """Extraer el perfume recomendado de la respuesta de la IA"""
-    
-    # Intentar encontrar el nombre del perfume al inicio de la respuesta
-    lines = ai_response.strip().split('\n')
-    if not lines:
-        return None
-    
-    first_line = lines[0].strip()
-    
-    # Limpiar el texto de posibles asteriscos o caracteres especiales
-    first_line = re.sub(r'[\*\#\-\:]', '', first_line).strip()
-    
-    # Buscar coincidencia con los perfumes disponibles
-    for perfume in perfumes:
-        # Comparación flexible
-        if perfume.nombre.lower() in first_line.lower():
-            return perfume
-        # También buscar sin espacios o guiones
-        perfume_clean = perfume.nombre.replace(' ', '').replace('-', '').lower()
-        first_clean = first_line.replace(' ', '').replace('-', '').lower()
-        if perfume_clean in first_clean:
-            return perfume
-    
-    # Si no encontramos en la primera línea, buscar en todo el texto
-    for perfume in perfumes:
-        if perfume.nombre.lower() in ai_response.lower():
-            return perfume
-    
+def extract_perfume_by_number(ai_response: str, perfumes_ordenados: List[Perfume]) -> Optional[Perfume]:
+    """
+    Extraer el perfume recomendado de la respuesta de la IA usando el número asignado.
+
+    La IA responde con "Perfume X" donde X es el número del perfume en la lista.
+    """
+
+    # Buscar patrón "Perfume X" o "Perfume [X]" en la respuesta
+    # Soporta: "Perfume 3", "Perfume [3]", "**Perfume 3**", etc.
+    pattern = r'[Pp]erfume\s*\[?(\d+)\]?'
+    match = re.search(pattern, ai_response)
+
+    if match:
+        perfume_number = int(match.group(1))
+        # El número es 1-indexed, convertir a 0-indexed
+        index = perfume_number - 1
+
+        if 0 <= index < len(perfumes_ordenados):
+            selected = perfumes_ordenados[index]
+            print(f"✅ Perfume seleccionado: Perfume {perfume_number} = {selected.nombre} ({selected.marca})")
+            return selected
+        else:
+            print(f"⚠️ Número de perfume fuera de rango: {perfume_number} (total: {len(perfumes_ordenados)})")
+    else:
+        print(f"⚠️ No se encontró patrón 'Perfume X' en la respuesta")
+
     return None
 
 
@@ -95,8 +92,8 @@ async def generate_recommendation(
     print(f"Humedad: {weather_data['humedad']}%")
     print("-" * 80 + "\n")
 
-    # Construir prompt
-    prompt = build_prompt(
+    # Construir prompt (retorna tupla: prompt, perfumes_ordenados)
+    prompt, perfumes_ordenados = build_prompt(
         perfumes=perfumes,
         fecha_evento=fecha_evento,
         hora_evento=hora_evento,
@@ -124,9 +121,9 @@ async def generate_recommendation(
     print("-" * 80)
     print(ai_response)
     print("-" * 80 + "\n")
-    
-    # Extraer el perfume recomendado
-    recommended_perfume = extract_perfume_name(ai_response, perfumes)
+
+    # Extraer el perfume recomendado usando el número del perfume
+    recommended_perfume = extract_perfume_by_number(ai_response, perfumes_ordenados)
     
     # Crear el registro de recomendación
     recommendation = Recomendacion(

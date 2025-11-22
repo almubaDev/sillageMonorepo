@@ -20,13 +20,16 @@ def build_prompt(
     humedad: float,
     clima_descripcion: str,
     idioma: str = "es"
-) -> str:
+) -> tuple[str, List[Perfume]]:
     """
-    Construir el prompt para Gemini en el idioma especificado
+    Construir el prompt para Gemini en el idioma especificado.
 
-    El sistema carga dinámicamente las traducciones desde app/i18n/languages/
-    Para agregar un nuevo idioma, solo necesitas crear un archivo nuevo (ej: fr.py)
-    con la misma estructura que es.py o en.py
+    Los perfumes se anonimizan (Perfume 1, Perfume 2, etc.) para evitar
+    sesgos por popularidad o reconocimiento de marca.
+
+    Retorna:
+        tuple: (prompt, perfumes_ordenados) donde perfumes_ordenados es la lista
+               en el mismo orden que aparecen en el prompt para mapear la respuesta
     """
 
     # Cargar traducciones del idioma
@@ -48,33 +51,27 @@ def build_prompt(
     else:
         momento_dia = time_of_day_dict["night"]
 
-    # Mezclar perfumes aleatoriamente
+    # Mezclar perfumes aleatoriamente para evitar sesgos por orden
     perfumes_lista = list(perfumes)
     random.shuffle(perfumes_lista)
 
-    print("🧴 PERFUMES DISPONIBLES PARA LA RECOMENDACIÓN")
+    # Log para debug (muestra info real del perfume)
+    print("🧴 PERFUMES DISPONIBLES PARA LA RECOMENDACIÓN (ANONIMIZADOS EN PROMPT)")
     print("-" * 80)
     for idx, p in enumerate(perfumes_lista, 1):
-        print(f"\n{idx}. {p.nombre} ({p.marca})")
-        if p.perfumista:
-            print(f"   Perfumista: {p.perfumista}")
+        print(f"\nPerfume {idx} = {p.nombre} ({p.marca})")
         if p.acordes:
-            print(f"   Acordes ({len(p.acordes)}): {', '.join(p.acordes)}")
-        else:
-            print(f"   Acordes: ❌ NO DISPONIBLE")
+            print(f"   Acordes: {', '.join(p.acordes)}")
         if p.notas:
-            print(f"   Notas ({len(p.notas)}): {', '.join(p.notas)}")
-        else:
-            print(f"   Notas: ❌ NO DISPONIBLE")
+            print(f"   Notas: {', '.join(p.notas)}")
     print("-" * 80 + "\n")
 
-    # Formatear lista de perfumes usando las etiquetas traducidas
+    # Formatear lista de perfumes ANONIMIZADOS (solo acordes y notas)
     perfumes_text = "\n".join([
-        f"- {p.nombre} ({p.marca})"
-        + (f", {perfume_labels['perfumer']}: {p.perfumista}" if p.perfumista else "")
-        + (f", {perfume_labels['accords']}: {', '.join(p.acordes)}" if p.acordes else "")
-        + (f", {perfume_labels['notes']}: {', '.join(p.notas)}" if p.notas else "")
-        for p in perfumes_lista
+        f"- Perfume {idx}: "
+        + (f"{perfume_labels['accords']}: {', '.join(p.acordes)}" if p.acordes else "")
+        + (f"; {perfume_labels['notes']}: {', '.join(p.notas)}" if p.notas else "")
+        for idx, p in enumerate(perfumes_lista, 1)
     ])
 
     # Construir prompt usando el template del idioma
@@ -95,7 +92,7 @@ def build_prompt(
         perfumes_text=perfumes_text
     )
 
-    return prompt
+    return prompt, perfumes_lista
 
 
 async def get_ai_recommendation(prompt: str) -> str:

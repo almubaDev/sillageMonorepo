@@ -37,20 +37,19 @@ PROMPT_TEMPLATE = """Eres un experto perfumista. Recomienda el perfume MÁS ADEC
 - Expectativa: {expectativa}
 - Vestimenta: {vestimenta}
 
-## PERFUMES DISPONIBLES
+## PERFUMES DISPONIBLES (ANONIMIZADOS)
 {perfumes_text}
 
 ## INSTRUCCIONES
 1. Analiza el contexto completo
 2. Considera especialmente el clima, la hora y el tipo de lugar
-3. Considera las notas y acordes de cada perfume en relación con el clima y la temperatura
-4. No te dejes influenciar por el orden en que aparecen los perfumes en la lista
-5. No te dejes llevar por la popularidad o reconocimiento de las marcas - evalúa objetivamente según el contexto
+3. Evalúa las notas y acordes de cada perfume en relación con el clima y la temperatura
+4. No te dejes influenciar por el orden en que aparecen los perfumes
+5. Basa tu decisión ÚNICAMENTE en la compatibilidad de acordes y notas con el contexto
 6. Elige SOLO UN perfume de la lista
-7. Tu respuesta debe comenzar con el nombre exacto del perfume recomendado
-8. Explica brevemente (3-4 líneas) por qué es ideal para este contexto
+7. Explica brevemente (3-4 líneas) por qué es ideal para este contexto
 
-FORMATO DE RESPUESTA:
-[Nombre del perfume]
+FORMATO DE RESPUESTA (OBLIGATORIO):
+Perfume [número]
 [Breve explicación de por qué es perfecto para esta ocasión]
 """

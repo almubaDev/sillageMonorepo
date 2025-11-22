@@ -37,20 +37,19 @@ PROMPT_TEMPLATE = """You are an expert perfumer. Recommend the MOST SUITABLE per
 - Expectation: {expectativa}
 - Attire: {vestimenta}
 
-## AVAILABLE PERFUMES
+## AVAILABLE PERFUMES (ANONYMIZED)
 {perfumes_text}
 
 ## INSTRUCTIONS
 1. Analyze the complete context
 2. Consider especially the weather, time, and type of place
-3. Consider the notes and accords of each perfume in relation to the weather and temperature
-4. Don't be influenced by the order in which perfumes appear in the list
-5. Don't be swayed by brand popularity or recognition - evaluate objectively based on context
+3. Evaluate the notes and accords of each perfume in relation to the weather and temperature
+4. Don't be influenced by the order in which perfumes appear
+5. Base your decision ONLY on the compatibility of accords and notes with the context
 6. Choose ONLY ONE perfume from the list
-7. Your response must start with the exact name of the recommended perfume
-8. Briefly explain (3-4 lines) why it is ideal for this context
+7. Briefly explain (3-4 lines) why it is ideal for this context
 
-RESPONSE FORMAT:
-[Perfume name]
+RESPONSE FORMAT (REQUIRED):
+Perfume [number]
 [Brief explanation of why it's perfect for this occasion]
 """

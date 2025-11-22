@@ -58,7 +58,43 @@ export const recommendationService = {
    */
   async create(data: CreateRecommendationRequest): Promise<RecommendationResponse> {
     try {
+      // Log de la consulta enviada
+      console.log('%c📤 CONSULTA A GEMINI', 'background: #3B82F6; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+      console.log('%cDatos del contexto:', 'color: #3B82F6; font-weight: bold;');
+      console.table({
+        'Fecha': data.fecha_evento,
+        'Hora': data.hora_evento,
+        'Lugar': data.lugar_nombre,
+        'Tipo': data.lugar_tipo,
+        'Descripción': data.lugar_descripcion,
+        'Ocasión': data.ocasion,
+        'Expectativa': data.expectativa,
+        'Vestimenta': data.vestimenta,
+        'Coordenadas': `${data.latitud}, ${data.longitud}`
+      });
+
       const response = await api.post<RecommendationResponse>('/recommendations/', data);
+
+      // Log de la respuesta de Gemini
+      console.log('%c📥 RESPUESTA DE GEMINI', 'background: #10B981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+      if (response.data.perfume_recomendado) {
+        console.log('%cPerfume recomendado:', 'color: #10B981; font-weight: bold;');
+        console.table({
+          'Nombre': response.data.perfume_recomendado.nombre,
+          'Marca': response.data.perfume_recomendado.marca,
+          'Acordes': response.data.perfume_recomendado.acordes?.join(', ') || 'N/A',
+          'Notas': response.data.perfume_recomendado.notas?.join(', ') || 'N/A'
+        });
+      }
+      console.log('%cExplicación de la IA:', 'color: #10B981; font-weight: bold;');
+      console.log(response.data.respuesta_ia);
+      console.log('%cCondiciones climáticas:', 'color: #10B981; font-weight: bold;');
+      console.table({
+        'Clima': response.data.clima_descripcion,
+        'Temperatura': `${response.data.temperatura}°C`,
+        'Humedad': `${response.data.humedad}%`
+      });
+
       return response.data;
     } catch (error: any) {
       // Manejo detallado de errores
