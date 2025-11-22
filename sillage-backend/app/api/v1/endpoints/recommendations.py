@@ -71,6 +71,17 @@ async def create_recommendation(
             current_user.consultas_restantes -= 1
             await db.commit()
         
+        # Preparar lista de perfumes enviados para debug
+        perfumes_enviados = [
+            {
+                "nombre": p.nombre,
+                "marca": p.marca,
+                "acordes": p.acordes or [],
+                "notas": p.notas or []
+            }
+            for p in user_perfumes
+        ]
+
         # Preparar respuesta con información completa
         response_dict = {
             "id": recommendation.id,
@@ -90,7 +101,8 @@ async def create_recommendation(
             "explicacion": recommendation.explicacion,
             "respuesta_ia": recommendation.respuesta_ia,
             "created_at": recommendation.created_at,
-            "consultas_restantes": current_user.consultas_restantes  # NUEVO: Enviar consultas restantes
+            "consultas_restantes": current_user.consultas_restantes,
+            "perfumes_enviados": perfumes_enviados  # Lista de perfumes enviados a Gemini
         }
         
         # Buscar datos completos del perfume recomendado

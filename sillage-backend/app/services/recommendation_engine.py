@@ -38,6 +38,23 @@ def extract_perfume_by_number(ai_response: str, perfumes_ordenados: List[Perfume
     return None
 
 
+def replace_perfume_numbers_with_names(ai_response: str, perfumes_ordenados: List[Perfume]) -> str:
+    """
+    Reemplazar todas las referencias "Perfume X" en la respuesta por el nombre real del perfume.
+    """
+    def replacer(match):
+        perfume_number = int(match.group(1))
+        index = perfume_number - 1
+        if 0 <= index < len(perfumes_ordenados):
+            perfume = perfumes_ordenados[index]
+            return f"{perfume.nombre} de {perfume.marca}"
+        return match.group(0)  # Si no se encuentra, dejar el original
+
+    # Reemplazar todas las ocurrencias de "Perfume X", "perfume X", "Perfume [X]", etc.
+    pattern = r'[Pp]erfume\s*\[?(\d+)\]?'
+    return re.sub(pattern, replacer, ai_response)
+
+
 async def generate_recommendation(
     db: AsyncSession,
     user_id: int,
@@ -124,7 +141,15 @@ async def generate_recommendation(
 
     # Extraer el perfume recomendado usando el número del perfume
     recommended_perfume = extract_perfume_by_number(ai_response, perfumes_ordenados)
-    
+
+    # Reemplazar "Perfume X" por el nombre real en la respuesta
+    ai_response_con_nombres = replace_perfume_numbers_with_names(ai_response, perfumes_ordenados)
+
+    print("🔄 RESPUESTA CON NOMBRES REALES")
+    print("-" * 80)
+    print(ai_response_con_nombres)
+    print("-" * 80 + "\n")
+
     # Crear el registro de recomendación
     recommendation = Recomendacion(
         user_id=user_id,
@@ -142,7 +167,7 @@ async def generate_recommendation(
         temperatura=weather_data['temperatura'],
         humedad=weather_data['humedad'],
         prompt=prompt,
-        respuesta_ia=ai_response,
+        respuesta_ia=ai_response_con_nombres,  # Guardar con nombres reales
         perfume_recomendado_id=recommended_perfume.id if recommended_perfume else None,
         explicacion=f"Recomendación: {recommended_perfume.nombre if recommended_perfume else 'No se pudo determinar'}"
     )
