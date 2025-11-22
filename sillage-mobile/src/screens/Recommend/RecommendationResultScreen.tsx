@@ -1,6 +1,6 @@
 // sillage-mobile/src/screens/Recommend/RecommendationResultScreen.tsx
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -32,6 +32,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
   const { recommendation } = route.params;
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Usar consultas restantes de la recomendación si existe, sino del usuario actual
   const consultasRestantes = recommendation.consultas_restantes !== undefined
@@ -43,6 +44,10 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
     if (recommendation.consultas_restantes === undefined) {
       refreshUser();
     }
+    // Hacer scroll al inicio cuando se monta el componente
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }, 100);
   }, []);
 
   useEffect(() => {
@@ -110,6 +115,7 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
 
   return (
     <ScrollView
+      ref={scrollViewRef}
       style={[styles.container, { backgroundColor: colors.bg }]}
       contentContainerStyle={[styles.content, isDesktop && styles.contentDesktop]}
       showsVerticalScrollIndicator={true}
