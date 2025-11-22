@@ -14,7 +14,7 @@ from sqlalchemy.dialects.postgresql import insert
 from app.models.api_usage import APIUsageLog, APIDailyUsage, APIUsageConfig
 
 
-# Configuración por defecto de las APIs
+# Configuración por defecto de las APIs - FREE TIER
 DEFAULT_API_CONFIGS = {
     'gemini': {
         'free_daily_limit': 200,
@@ -36,6 +36,22 @@ DEFAULT_API_CONFIGS = {
         'cost_per_call': Decimal('0.005'),
         'cost_per_1m_tokens_input': Decimal('0'),
         'cost_per_1m_tokens_output': Decimal('0'),
+    },
+}
+
+# Configuración de las APIs - PAID TIER (Tier 1)
+PAID_API_CONFIGS = {
+    'gemini': {
+        'paid_daily_limit': 10000,  # Tier 1: 10,000 RPD
+        'paid_monthly_limit': 300000,
+    },
+    'openweather': {
+        'paid_daily_limit': 100000,  # Sin limite practico en paid
+        'paid_monthly_limit': 3000000,
+    },
+    'google_maps': {
+        'paid_daily_limit': 0,  # Sin limite diario
+        'paid_monthly_limit': 1000000,  # Practicamente sin limite
     },
 }
 
@@ -228,9 +244,16 @@ class APITracker:
             monthly_calls = monthly.monthly_calls or 0
             monthly_cost = float(monthly.monthly_cost or 0)
 
-            # Calcular porcentajes
-            daily_limit = config.free_daily_limit if config else DEFAULT_API_CONFIGS[api]['free_daily_limit']
-            monthly_limit = config.free_monthly_limit if config else DEFAULT_API_CONFIGS[api]['free_monthly_limit']
+            # Determinar si está en modo pago
+            is_paid = config.is_paid_tier if config else False
+
+            # Calcular límites según el tier (free o paid)
+            if is_paid and api in PAID_API_CONFIGS:
+                daily_limit = PAID_API_CONFIGS[api]['paid_daily_limit']
+                monthly_limit = PAID_API_CONFIGS[api]['paid_monthly_limit']
+            else:
+                daily_limit = config.free_daily_limit if config else DEFAULT_API_CONFIGS[api]['free_daily_limit']
+                monthly_limit = config.free_monthly_limit if config else DEFAULT_API_CONFIGS[api]['free_monthly_limit']
 
             daily_pct = (daily_calls / daily_limit * 100) if daily_limit > 0 else 0
             monthly_pct = (monthly_calls / monthly_limit * 100) if monthly_limit > 0 else 0
