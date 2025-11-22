@@ -78,6 +78,14 @@ const menuItems: MenuItem[] = [
     iconColor: '#10B981',
     screen: 'FinancialReports',
   },
+  {
+    id: 'api-usage',
+    title: 'Uso de APIs',
+    description: 'Monitorear consumo de Gemini, OpenWeather y Maps',
+    icon: 'api',
+    iconColor: '#F97316',
+    screen: 'APIUsage',
+  },
 ];
 
 export default function AdminMenuScreen() {

@@ -177,6 +177,45 @@ export interface CouponStats {
   total_consultations_gifted: number;
 }
 
+// ==================== API USAGE ====================
+
+export interface APIUsageLimitInfo {
+  calls: number;
+  limit: number;
+  percentage: number;
+  tokens_input?: number;
+  tokens_output?: number;
+  cost_usd?: number;
+}
+
+export interface APIAlert {
+  level: 'warning' | 'critical';
+  message: string;
+}
+
+export interface APISummaryItem {
+  is_paid_tier: boolean;
+  today: APIUsageLimitInfo;
+  month: APIUsageLimitInfo;
+  alerts: APIAlert[];
+}
+
+export interface APIUsageSummary {
+  gemini?: APISummaryItem;
+  openweather?: APISummaryItem;
+  google_maps?: APISummaryItem;
+}
+
+export interface APIConfigInfo {
+  api_name: string;
+  is_paid_tier: boolean;
+  free_daily_limit: number;
+  free_monthly_limit: number;
+  cost_per_call: number;
+  cost_per_1m_tokens_input: number;
+  cost_per_1m_tokens_output: number;
+}
+
 // ==================== ADMIN SERVICE ====================
 
 export const adminService = {
@@ -318,6 +357,38 @@ export const adminService = {
 
   async getCouponStats(): Promise<CouponStats> {
     const response = await api.get<CouponStats>('/admin/coupons/stats');
+    return response.data;
+  },
+
+  // ========== API USAGE ==========
+  async getAPIUsageSummary(apiName?: string): Promise<APIUsageSummary> {
+    const response = await api.get<APIUsageSummary>('/admin/api-usage/summary', {
+      params: apiName ? { api_name: apiName } : {}
+    });
+    return response.data;
+  },
+
+  async getAPIConfigs(): Promise<APIConfigInfo[]> {
+    const response = await api.get<APIConfigInfo[]>('/admin/api-usage/configs');
+    return response.data;
+  },
+
+  async setAPITierMode(apiName: string, isPaid: boolean): Promise<void> {
+    await api.post('/admin/api-usage/set-tier', {
+      api_name: apiName,
+      is_paid: isPaid
+    });
+  },
+
+  async getAPIChartData(apiName?: string, days: number = 30): Promise<any[]> {
+    const response = await api.get('/admin/api-usage/chart-data', {
+      params: { api_name: apiName, days }
+    });
+    return response.data;
+  },
+
+  async getFreeTierLimits(): Promise<any> {
+    const response = await api.get('/admin/api-usage/free-tier-limits');
     return response.data;
   },
 };

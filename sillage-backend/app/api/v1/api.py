@@ -6,6 +6,7 @@ from app.api.v1.endpoints.admin import consultations as admin_consultations
 from app.api.v1.endpoints.admin import dashboard as admin_dashboard
 from app.api.v1.endpoints.admin import financial as admin_financial
 from app.api.v1.endpoints.admin import coupons as admin_coupons
+from app.api.v1.endpoints.admin import api_usage as admin_api_usage
 
 api_router = APIRouter()
 
@@ -87,6 +88,11 @@ api_router.include_router(
 api_router.include_router(
     admin_payments.router,
     tags=["Admin - Payments"]
+)
+
+api_router.include_router(
+    admin_api_usage.router,
+    tags=["Admin - API Usage"]
 )
 
 # Aquí agregaremos más routers después:

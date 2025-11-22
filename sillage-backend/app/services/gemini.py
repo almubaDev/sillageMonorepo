@@ -1,6 +1,8 @@
 import httpx
 import random
-from typing import List
+import time as time_module
+from typing import List, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.perfume import Perfume
 from app.i18n.loader import language_loader
@@ -106,7 +108,12 @@ def build_prompt(
     return prompt, perfumes_lista
 
 
-async def get_ai_recommendation(prompt: str) -> str:
+async def get_ai_recommendation(
+    prompt: str,
+    db: AsyncSession = None,
+    user_id: int = None,
+    recommendation_id: int = None
+) -> str:
     """Llamar a Gemini AI para obtener recomendación"""
 
     api_key = settings.GEMINI_API_KEY
@@ -120,14 +127,49 @@ async def get_ai_recommendation(prompt: str) -> str:
         ]
     }
 
+    start_time = time_module.time()
+    success = True
+    error_msg = None
+    tokens_input = 0
+    tokens_output = 0
+
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(url, json=payload)
             response.raise_for_status()
 
             data = response.json()
+
+            # Extraer información de tokens del usageMetadata
+            usage_metadata = data.get('usageMetadata', {})
+            tokens_input = usage_metadata.get('promptTokenCount', 0)
+            tokens_output = usage_metadata.get('candidatesTokenCount', 0)
+
             return data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
 
     except Exception as e:
+        success = False
+        error_msg = str(e)
         print(f"Error al llamar Gemini: {e}")
         return "No se pudo generar una recomendación en este momento."
+
+    finally:
+        # Registrar uso de API si tenemos sesión de DB
+        if db:
+            response_time_ms = int((time_module.time() - start_time) * 1000)
+            try:
+                from app.services.api_tracker import track_api_call
+                await track_api_call(
+                    db=db,
+                    api_name='gemini',
+                    endpoint=url,
+                    tokens_input=tokens_input,
+                    tokens_output=tokens_output,
+                    response_time_ms=response_time_ms,
+                    success=success,
+                    error_message=error_msg,
+                    user_id=user_id,
+                    recommendation_id=recommendation_id
+                )
+            except Exception as track_error:
+                print(f"Error al registrar uso de API Gemini: {track_error}")

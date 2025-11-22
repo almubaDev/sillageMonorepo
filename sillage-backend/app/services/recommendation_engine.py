@@ -90,9 +90,10 @@ async def generate_recommendation(
     print(f"🧴 Cantidad de perfumes disponibles: {len(perfumes)}")
     print("="*80 + "\n")
 
-    # Obtener datos del clima
+    # Obtener datos del clima (con tracking de API)
     weather_data = await get_weather_data(
-        latitud, longitud, fecha_evento, hora_evento
+        latitud, longitud, fecha_evento, hora_evento,
+        db=db, user_id=user_id
     )
     
     if not weather_data:
@@ -131,8 +132,10 @@ async def generate_recommendation(
     print(prompt)
     print("-" * 80 + "\n")
 
-    # Obtener recomendación de la IA
-    ai_response = await get_ai_recommendation(prompt)
+    # Obtener recomendación de la IA (con tracking de API)
+    ai_response = await get_ai_recommendation(
+        prompt, db=db, user_id=user_id
+    )
 
     print("🤖 RESPUESTA DE LA IA")
     print("-" * 80)

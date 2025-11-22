@@ -12,6 +12,7 @@ import ConsultationsScreen from './ConsultationsScreen';
 import FinancialReportsScreen from './FinancialReportsScreen';
 import CouponsScreen from './CouponsScreen';
 import PaymentPackagesScreen from './PaymentPackagesScreen';
+import APIUsageScreen from './APIUsageScreen';
 import { AdminColors } from './adminStyles';
 
 export type AdminStackParamList = {
@@ -23,6 +24,7 @@ export type AdminStackParamList = {
   FinancialReports: undefined;
   Coupons: undefined;
   PaymentPackages: undefined;
+  APIUsage: undefined;
 };
 
 const Stack = createNativeStackNavigator<AdminStackParamList>();
@@ -81,6 +83,11 @@ export default function AdminScreen() {
         name="PaymentPackages"
         component={PaymentPackagesScreen}
         options={{ title: 'Paquetes de Pago' }}
+      />
+      <Stack.Screen
+        name="APIUsage"
+        component={APIUsageScreen}
+        options={{ title: 'Uso de APIs' }}
       />
     </Stack.Navigator>
   );

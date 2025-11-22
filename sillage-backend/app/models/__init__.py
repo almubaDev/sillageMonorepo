@@ -13,6 +13,7 @@ from app.models.payment import (
     TransaccionConsultas
 )
 from app.models.coupon import Coupon, CouponBatch, CouponType
+from app.models.api_usage import APIUsageLog, APIDailyUsage, APIUsageConfig
 
 # Esto es importante para que Alembic detecte todos los modelos
 __all__ = [
@@ -35,5 +36,8 @@ __all__ = [
     "TransaccionConsultas",
     "Coupon",
     "CouponBatch",
-    "CouponType"
+    "CouponType",
+    "APIUsageLog",
+    "APIDailyUsage",
+    "APIUsageConfig"
 ]
