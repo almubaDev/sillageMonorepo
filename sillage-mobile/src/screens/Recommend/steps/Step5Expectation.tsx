@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { EXPECTATIVAS } from '../types';
@@ -16,19 +15,8 @@ export const Step5Expectation: React.FC<Step5ExpectationProps> = ({ value, onCha
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
-      <MaterialCommunityIcons 
-        name="emoticon-happy-outline" 
-        size={64} 
-        color={colors.accent} 
-        style={styles.icon}
-      />
-      
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
         {t('recommend:step5.title')}
-      </Text>
-
-      <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        {t('recommend:step5.subtitle')}
       </Text>
 
       <View style={styles.grid}>
@@ -36,35 +24,25 @@ export const Step5Expectation: React.FC<Step5ExpectationProps> = ({ value, onCha
           <TouchableOpacity
             key={expectativa.id}
             style={[
-              styles.card,
+              styles.button,
               {
-                backgroundColor: value === expectativa.id ? expectativa.color + '20' : colors.bg,
-                borderColor: value === expectativa.id ? expectativa.color : colors.secondary + '40',
+                backgroundColor: value === expectativa.id ? expectativa.color : colors.bg,
+                borderColor: value === expectativa.id ? expectativa.color : colors.secondary + '60',
               },
             ]}
             onPress={() => onChange(expectativa.id)}
           >
-            <Text style={styles.emoji}>{expectativa.emoji}</Text>
             <Text
               style={[
-                styles.cardLabel,
+                styles.buttonText,
                 {
-                  color: value === expectativa.id ? colors.text : colors.secondary,
+                  color: value === expectativa.id ? '#FFFFFF' : colors.text,
                   fontFamily: 'Lato-Bold',
                 },
               ]}
             >
               {t(`recommend:step5.expectations.${expectativa.id}`)}
             </Text>
-            {value === expectativa.id && (
-              <View style={styles.checkMark}>
-                <MaterialCommunityIcons 
-                  name="check-circle" 
-                  size={20} 
-                  color={expectativa.color} 
-                />
-              </View>
-            )}
           </TouchableOpacity>
         ))}
       </View>
@@ -80,46 +58,30 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
   },
-  icon: {
-    marginTop: 20,
-    marginBottom: 24,
-  },
   title: {
     fontSize: 24,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    marginBottom: 32,
+    marginBottom: 24,
     textAlign: 'center',
   },
   grid: {
     width: '100%',
+    maxWidth: 400,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
     justifyContent: 'center',
   },
-  card: {
-    width: '47%',
-    padding: 20,
-    borderRadius: 12,
+  button: {
+    width: '48%',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     borderWidth: 2,
     alignItems: 'center',
-    position: 'relative',
+    justifyContent: 'center',
   },
-  emoji: {
-    fontSize: 36,
-    marginBottom: 8,
-  },
-  cardLabel: {
+  buttonText: {
     fontSize: 14,
     textAlign: 'center',
-  },
-  checkMark: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
   },
 });

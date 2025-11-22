@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { VESTIMENTAS } from '../types';
@@ -16,67 +15,34 @@ export const Step6Clothing: React.FC<Step6ClothingProps> = ({ value, onChange })
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
-      <MaterialCommunityIcons 
-        name="tshirt-crew" 
-        size={64} 
-        color={colors.accent} 
-        style={styles.icon}
-      />
-      
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
         {t('recommend:step6.title')}
       </Text>
 
-      <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        {t('recommend:step6.subtitle')}
-      </Text>
-
-      <View style={styles.options}>
+      <View style={styles.grid}>
         {VESTIMENTAS.map((vestimenta) => (
           <TouchableOpacity
             key={vestimenta.id}
             style={[
-              styles.optionCard,
+              styles.button,
               {
-                backgroundColor: value === vestimenta.id ? colors.accent + '20' : colors.bg,
-                borderColor: value === vestimenta.id ? colors.accent : colors.secondary + '40',
+                backgroundColor: value === vestimenta.id ? colors.accent : colors.bg,
+                borderColor: value === vestimenta.id ? colors.accent : colors.secondary + '60',
               },
             ]}
             onPress={() => onChange(vestimenta.id)}
           >
-            <MaterialCommunityIcons
-              name={vestimenta.icon as any}
-              size={40}
-              color={value === vestimenta.id ? colors.accent : colors.secondary}
-            />
-            <View style={styles.textContainer}>
-              <Text
-                style={[
-                  styles.optionLabel,
-                  {
-                    color: value === vestimenta.id ? colors.text : colors.secondary,
-                    fontFamily: 'Lato-Bold',
-                  },
-                ]}
-              >
-                {t(`recommend:step6.clothing.${vestimenta.id}`)}
-              </Text>
-              <Text
-                style={[
-                  styles.optionDescription,
-                  { color: colors.secondary, fontFamily: 'Lato-Regular' },
-                ]}
-              >
-                {t(`recommend:step6.clothing.${vestimenta.id}Desc`)}
-              </Text>
-            </View>
-            {value === vestimenta.id && (
-              <MaterialCommunityIcons 
-                name="check-circle" 
-                size={24} 
-                color={colors.accent} 
-              />
-            )}
+            <Text
+              style={[
+                styles.buttonText,
+                {
+                  color: value === vestimenta.id ? colors.bg : colors.text,
+                  fontFamily: 'Lato-Bold',
+                },
+              ]}
+            >
+              {t(`recommend:step6.clothing.${vestimenta.id}`)}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -92,40 +58,30 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
   },
-  icon: {
-    marginTop: 20,
-    marginBottom: 24,
-  },
   title: {
     fontSize: 24,
-    marginBottom: 12,
+    marginBottom: 24,
     textAlign: 'center',
   },
-  subtitle: {
-    fontSize: 14,
-    marginBottom: 32,
-    textAlign: 'center',
-  },
-  options: {
+  grid: {
     width: '100%',
-    gap: 12,
-  },
-  optionCard: {
+    maxWidth: 400,
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    borderRadius: 12,
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  button: {
+    width: '48%',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     borderWidth: 2,
-    gap: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  textContainer: {
-    flex: 1,
-  },
-  optionLabel: {
-    fontSize: 16,
-    marginBottom: 2,
-  },
-  optionDescription: {
-    fontSize: 12,
+  buttonText: {
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

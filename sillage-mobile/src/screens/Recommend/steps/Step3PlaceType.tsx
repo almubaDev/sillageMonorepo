@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 
@@ -14,79 +13,40 @@ export const Step3PlaceType: React.FC<Step3PlaceTypeProps> = ({ value, onChange 
   const { colors } = useTheme();
 
   const options = [
-    {
-      id: 'abierto' as const,
-      label: t('recommend:step3.open'),
-      icon: 'weather-sunny',
-      description: t('recommend:step3.openDesc'),
-    },
-    {
-      id: 'cerrado' as const,
-      label: t('recommend:step3.closed'),
-      icon: 'home',
-      description: t('recommend:step3.closedDesc'),
-    },
+    { id: 'abierto' as const, label: t('recommend:step3.open') },
+    { id: 'cerrado' as const, label: t('recommend:step3.closed') },
   ];
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
-      <MaterialCommunityIcons 
-        name="map-marker" 
-        size={64} 
-        color={colors.accent} 
-        style={styles.icon}
-      />
-      
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
         {t('recommend:step3.title')}
       </Text>
 
-      <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-        {t('recommend:step3.subtitle')}
-      </Text>
-
-      <View style={styles.options}>
+      <View style={styles.grid}>
         {options.map((option) => (
           <TouchableOpacity
             key={option.id}
             style={[
-              styles.optionCard,
+              styles.button,
               {
-                backgroundColor: value === option.id ? colors.accent + '20' : colors.bg,
-                borderColor: value === option.id ? colors.accent : colors.secondary + '40',
+                backgroundColor: value === option.id ? colors.accent : colors.bg,
+                borderColor: value === option.id ? colors.accent : colors.secondary + '60',
               },
             ]}
             onPress={() => onChange(option.id)}
           >
-            <MaterialCommunityIcons
-              name={option.icon as any}
-              size={48}
-              color={value === option.id ? colors.accent : colors.secondary}
-            />
             <Text
               style={[
-                styles.optionLabel,
+                styles.buttonText,
                 {
-                  color: value === option.id ? colors.text : colors.secondary,
+                  color: value === option.id ? colors.bg : colors.text,
                   fontFamily: 'Lato-Bold',
                 },
               ]}
             >
               {option.label}
             </Text>
-            <Text
-              style={[
-                styles.optionDescription,
-                { color: colors.secondary, fontFamily: 'Lato-Regular' },
-              ]}
-            >
-              {option.description}
-            </Text>
-            {value === option.id && (
-              <View style={styles.checkContainer}>
-                <MaterialCommunityIcons name="check-circle" size={24} color={colors.accent} />
-              </View>
-            )}
           </TouchableOpacity>
         ))}
       </View>
@@ -101,45 +61,31 @@ const styles = StyleSheet.create({
   container: {
     padding: 24,
     alignItems: 'center',
-    paddingBottom: 40,
-  },
-  icon: {
-    marginTop: 20,
-    marginBottom: 24,
   },
   title: {
     fontSize: 24,
-    marginBottom: 12,
+    marginBottom: 24,
     textAlign: 'center',
   },
-  subtitle: {
-    fontSize: 14,
-    marginBottom: 32,
-    textAlign: 'center',
-  },
-  options: {
+  grid: {
     width: '100%',
-    gap: 16,
+    maxWidth: 400,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    justifyContent: 'center',
   },
-  optionCard: {
-    padding: 24,
-    borderRadius: 16,
+  button: {
+    width: '48%',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     borderWidth: 2,
     alignItems: 'center',
-    position: 'relative',
+    justifyContent: 'center',
   },
-  optionLabel: {
-    fontSize: 18,
-    marginTop: 12,
-  },
-  optionDescription: {
-    fontSize: 13,
-    marginTop: 4,
+  buttonText: {
+    fontSize: 15,
     textAlign: 'center',
-  },
-  checkContainer: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
   },
 });
