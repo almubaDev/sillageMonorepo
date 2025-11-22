@@ -25,13 +25,6 @@ export interface PerfumeRecomendado {
   acordes: string[];
 }
 
-export interface PerfumeEnviado {
-  nombre: string;
-  marca: string;
-  acordes: string[];
-  notas: string[];
-}
-
 export interface RecommendationResponse {
   id: number;
   fecha_evento: string;
@@ -50,7 +43,7 @@ export interface RecommendationResponse {
   respuesta_ia: string;
   created_at: string;
   consultas_restantes?: number;
-  perfumes_enviados?: PerfumeEnviado[];
+  prompt_enviado?: string;
 }
 
 export interface RecommendationError {
@@ -83,15 +76,12 @@ export const recommendationService = {
 
       const response = await api.post<RecommendationResponse>('/recommendations/', data);
 
-      // Log de perfumes enviados a Gemini
-      console.log('%c🧴 PERFUMES ENVIADOS A GEMINI', 'background: #8B5CF6; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
-      if (response.data.perfumes_enviados && response.data.perfumes_enviados.length > 0) {
-        response.data.perfumes_enviados.forEach((perfume, index) => {
-          console.log(`%c${index + 1}. ${perfume.nombre} (${perfume.marca})`, 'color: #8B5CF6; font-weight: bold;');
-          console.log(`   Acordes: ${perfume.acordes?.join(', ') || 'N/A'}`);
-          console.log(`   Notas: ${perfume.notas?.join(', ') || 'N/A'}`);
-        });
-      }
+      // Log del PROMPT COMPLETO enviado a Gemini
+      console.log('================================================================================');
+      console.log('📤 PROMPT ENVIADO A GEMINI');
+      console.log('================================================================================');
+      console.log(response.data.prompt_enviado || 'No se recibió el prompt');
+      console.log('================================================================================');
 
       // Log de la respuesta de Gemini
       console.log('%c📥 RESPUESTA DE GEMINI', 'background: #10B981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');

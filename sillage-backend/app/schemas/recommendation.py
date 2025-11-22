@@ -72,7 +72,8 @@ class RecommendationResponse(BaseModel):
     explicacion: Optional[str] = None
     respuesta_ia: Optional[str] = None
     created_at: Optional[datetime] = None
-    consultas_restantes: Optional[int] = None  # NUEVO: Consultas restantes después de esta
+    consultas_restantes: Optional[int] = None
+    prompt_enviado: Optional[str] = None  # Prompt completo enviado a Gemini (para debug)
 
     class Config:
         from_attributes = True
