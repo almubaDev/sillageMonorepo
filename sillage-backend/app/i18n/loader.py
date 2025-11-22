@@ -57,6 +57,11 @@ class LanguageLoader:
         module = self.get_language_module(lang_code)
         return module.PROMPT_TEMPLATE
 
+    def get_proximidad_ocasion(self, lang_code: str) -> Dict[str, str]:
+        """Obtiene diccionario de proximidad por ocasión"""
+        module = self.get_language_module(lang_code)
+        return module.PROXIMIDAD_OCASION
+
 
 # Instancia global del loader
 language_loader = LanguageLoader()

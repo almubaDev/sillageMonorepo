@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
+import { LUGAR_TIPOS } from '../types';
 
 interface Step3PlaceTypeProps {
   value: 'abierto' | 'cerrado' | null;
@@ -13,8 +14,8 @@ export const Step3PlaceType: React.FC<Step3PlaceTypeProps> = ({ value, onChange 
   const { colors } = useTheme();
 
   const options = [
-    { id: 'abierto' as const, label: t('recommend:step3.open') },
-    { id: 'cerrado' as const, label: t('recommend:step3.closed') },
+    { id: 'abierto' as const, label: t('recommend:step3.open'), color: LUGAR_TIPOS.find(l => l.id === 'abierto')?.color || '#06B6D4' },
+    { id: 'cerrado' as const, label: t('recommend:step3.closed'), color: LUGAR_TIPOS.find(l => l.id === 'cerrado')?.color || '#8B5CF6' },
   ];
 
   return (
@@ -30,8 +31,8 @@ export const Step3PlaceType: React.FC<Step3PlaceTypeProps> = ({ value, onChange 
             style={[
               styles.button,
               {
-                backgroundColor: value === option.id ? colors.accent : colors.bg,
-                borderColor: value === option.id ? colors.accent : colors.secondary + '60',
+                backgroundColor: value === option.id ? option.color : colors.bg,
+                borderColor: value === option.id ? option.color : colors.secondary + '60',
               },
             ]}
             onPress={() => onChange(option.id)}
@@ -40,7 +41,7 @@ export const Step3PlaceType: React.FC<Step3PlaceTypeProps> = ({ value, onChange 
               style={[
                 styles.buttonText,
                 {
-                  color: value === option.id ? colors.bg : colors.text,
+                  color: value === option.id ? '#FFFFFF' : colors.text,
                   fontFamily: 'Lato-Bold',
                 },
               ]}

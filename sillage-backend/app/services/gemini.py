@@ -37,6 +37,7 @@ def build_prompt(
     time_of_day_dict = language_loader.get_time_of_day(idioma)
     perfume_labels = language_loader.get_perfume_labels(idioma)
     prompt_template = language_loader.get_prompt_template(idioma)
+    proximidad_dict = language_loader.get_proximidad_ocasion(idioma)
 
     # Determinar estación (hemisferio sur)
     mes = fecha_evento.month
@@ -50,6 +51,15 @@ def build_prompt(
         momento_dia = time_of_day_dict["afternoon"]
     else:
         momento_dia = time_of_day_dict["night"]
+
+    # Determinar proximidad esperada según ocasión
+    proximidad = proximidad_dict.get(ocasion, "media")
+
+    # Descripción del tipo de espacio
+    if idioma == "es":
+        tipo_espacio_desc = "Espacio cerrado (interior, aire acondicionado/calefacción)" if lugar_tipo == "cerrado" else "Espacio abierto (exterior, ventilación natural)"
+    else:
+        tipo_espacio_desc = "Enclosed space (indoor, air conditioning/heating)" if lugar_tipo == "cerrado" else "Open space (outdoor, natural ventilation)"
 
     # Mezclar perfumes aleatoriamente para evitar sesgos por orden
     perfumes_lista = list(perfumes)
@@ -77,8 +87,8 @@ def build_prompt(
     # Construir prompt usando el template del idioma
     prompt = prompt_template.format(
         lugar_nombre=lugar_nombre,
-        lugar_tipo=lugar_tipo,
         lugar_descripcion=lugar_descripcion,
+        tipo_espacio_desc=tipo_espacio_desc,
         fecha_evento=fecha_evento,
         hora_evento=hora_evento,
         momento_dia=momento_dia,
@@ -87,6 +97,7 @@ def build_prompt(
         humedad=humedad,
         estacion=estacion,
         ocasion=ocasion,
+        proximidad=proximidad,
         expectativa=expectativa,
         vestimenta=vestimenta,
         perfumes_text=perfumes_text

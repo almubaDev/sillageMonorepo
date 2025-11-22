@@ -44,12 +44,12 @@ export const INITIAL_FORM_DATA: RecommendationFormData = {
 };
 
 export const OCASIONES = [
-  { id: 'trabajo', label: 'Trabajo' },
-  { id: 'cita', label: 'Cita Romántica' },
-  { id: 'fiesta', label: 'Fiesta' },
-  { id: 'casual', label: 'Casual' },
-  { id: 'formal', label: 'Evento Formal' },
-  { id: 'deportivo', label: 'Actividad Deportiva' },
+  { id: 'trabajo', label: 'Trabajo', color: '#6B7280' },
+  { id: 'cita', label: 'Cita Romántica', color: '#EF4444' },
+  { id: 'fiesta', label: 'Fiesta', color: '#8B5CF6' },
+  { id: 'casual', label: 'Casual', color: '#10B981' },
+  { id: 'formal', label: 'Evento Formal', color: '#1E3A5F' },
+  { id: 'deportivo', label: 'Actividad Deportiva', color: '#F59E0B' },
 ];
 
 export const EXPECTATIVAS = [
@@ -64,8 +64,13 @@ export const EXPECTATIVAS = [
 ];
 
 export const VESTIMENTAS = [
-  { id: 'formal', label: 'Formal' },
-  { id: 'semiformal', label: 'Semi-formal' },
-  { id: 'casual', label: 'Casual' },
-  { id: 'deportivo', label: 'Deportivo' },
+  { id: 'formal', label: 'Formal', color: '#1E3A5F' },
+  { id: 'semiformal', label: 'Semi-formal', color: '#6B7280' },
+  { id: 'casual', label: 'Casual', color: '#10B981' },
+  { id: 'deportivo', label: 'Deportivo', color: '#F59E0B' },
+];
+
+export const LUGAR_TIPOS = [
+  { id: 'abierto', color: '#06B6D4' },
+  { id: 'cerrado', color: '#8B5CF6' },
 ];

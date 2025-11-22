@@ -26,8 +26,8 @@ export const Step4Occasion: React.FC<Step4OccasionProps> = ({ value, onChange })
             style={[
               styles.button,
               {
-                backgroundColor: value === ocasion.id ? colors.accent : colors.bg,
-                borderColor: value === ocasion.id ? colors.accent : colors.secondary + '60',
+                backgroundColor: value === ocasion.id ? ocasion.color : colors.bg,
+                borderColor: value === ocasion.id ? ocasion.color : colors.secondary + '60',
               },
             ]}
             onPress={() => onChange(ocasion.id)}
@@ -36,7 +36,7 @@ export const Step4Occasion: React.FC<Step4OccasionProps> = ({ value, onChange })
               style={[
                 styles.buttonText,
                 {
-                  color: value === ocasion.id ? colors.bg : colors.text,
+                  color: value === ocasion.id ? '#FFFFFF' : colors.text,
                   fontFamily: 'Lato-Bold',
                 },
               ]}

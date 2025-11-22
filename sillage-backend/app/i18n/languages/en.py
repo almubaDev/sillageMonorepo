@@ -25,16 +25,28 @@ PERFUME_LABELS = {
     "notes": "notes"
 }
 
+# Expected proximity by occasion
+PROXIMIDAD_OCASION = {
+    "trabajo": "medium (professional environment, formal interactions)",
+    "cita": "high (intimate moments, physical closeness)",
+    "fiesta": "variable (from close conversations to dance floor)",
+    "casual": "low to medium (relaxed interactions)",
+    "formal": "medium (social events with close interactions)",
+    "deportivo": "low (physical activity, sweating)"
+}
+
 # Gemini prompt template
 PROMPT_TEMPLATE = """You are an expert perfumer. Recommend the MOST SUITABLE perfume from this collection for the following context:
 
 ## EVENT CONTEXT
-- Place: {lugar_descripcion} ({lugar_tipo})
+- Place: {lugar_descripcion}
+- Space type: {tipo_espacio_desc}
 - Date and time: {fecha_evento} {hora_evento} ({momento_dia})
 - Weather: {clima_descripcion}, {temperatura}°C, {humedad}% humidity
 - Season: {estacion}
 - Occasion: {ocasion}
-- Expectation: {expectativa}
+- Expected proximity: {proximidad}
+- Emotional expectation: {expectativa}
 - Attire: {vestimenta}
 
 ## AVAILABLE PERFUMES (ANONYMIZED)
@@ -42,12 +54,13 @@ PROMPT_TEMPLATE = """You are an expert perfumer. Recommend the MOST SUITABLE per
 
 ## INSTRUCTIONS
 1. Analyze the complete context
-2. Consider especially the weather, time, and type of place
-3. Evaluate the notes and accords of each perfume in relation to the weather and temperature
-4. Don't be influenced by the order in which perfumes appear
-5. Base your decision ONLY on the compatibility of accords and notes with the context
-6. Choose ONLY ONE perfume from the list
-7. Briefly explain (3-4 lines) why it is ideal for this context
+2. Consider the SPACE TYPE: in enclosed spaces perfumes project more, in open spaces they dissipate
+3. Consider PROXIMITY: for high proximity avoid very intense or projecting perfumes
+4. Evaluate notes and accords in relation to weather and temperature
+5. Don't be influenced by the order in which perfumes appear
+6. Base your decision ONLY on the compatibility of accords and notes with the context
+7. Choose ONLY ONE perfume from the list
+8. Briefly explain (3-4 lines) why it is ideal for this context
 
 RESPONSE FORMAT (REQUIRED):
 Perfume [number]

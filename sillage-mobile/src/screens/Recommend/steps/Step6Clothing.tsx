@@ -26,8 +26,8 @@ export const Step6Clothing: React.FC<Step6ClothingProps> = ({ value, onChange })
             style={[
               styles.button,
               {
-                backgroundColor: value === vestimenta.id ? colors.accent : colors.bg,
-                borderColor: value === vestimenta.id ? colors.accent : colors.secondary + '60',
+                backgroundColor: value === vestimenta.id ? vestimenta.color : colors.bg,
+                borderColor: value === vestimenta.id ? vestimenta.color : colors.secondary + '60',
               },
             ]}
             onPress={() => onChange(vestimenta.id)}
@@ -36,7 +36,7 @@ export const Step6Clothing: React.FC<Step6ClothingProps> = ({ value, onChange })
               style={[
                 styles.buttonText,
                 {
-                  color: value === vestimenta.id ? colors.bg : colors.text,
+                  color: value === vestimenta.id ? '#FFFFFF' : colors.text,
                   fontFamily: 'Lato-Bold',
                 },
               ]}
