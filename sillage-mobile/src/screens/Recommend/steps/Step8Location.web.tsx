@@ -32,8 +32,6 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [adjustmentUsed, setAdjustmentUsed] = useState(false);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const geocoderRef = useRef<any>(null);
@@ -73,27 +71,16 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
     const marker = new window.google.maps.Marker({
       map: map,
       position: defaultLocation,
-      draggable: true,
+      draggable: false,
       visible: value.latitud !== null && value.longitud !== null,
     });
 
     const geocoder = new window.google.maps.Geocoder();
 
-    marker.addListener('dragend', () => {
-      const pos = marker.getPosition();
-      if (pos) {
-        updateLocation(pos.lat(), pos.lng(), geocoder);
-      }
-    });
+    // No dragend listener - pin is not draggable
 
-    map.addListener('click', (e: any) => {
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      marker.setPosition({ lat, lng });
-      marker.setVisible(true);
-      map.panTo({ lat, lng });
-      updateLocation(lat, lng, geocoder);
-    });
+    // Click listener removed - pin movement is blocked
+    // Users must use the search input only
 
     mapRef.current = map;
     markerRef.current = marker;
@@ -108,54 +95,9 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
     }
   };
 
-  // Deshabilitar drag cuando se usa el ajuste
-  useEffect(() => {
-    if (markerRef.current) {
-      const shouldBeDraggable = !(hasSearched && adjustmentUsed);
-      markerRef.current.setDraggable(shouldBeDraggable);
-    }
-  }, [hasSearched, adjustmentUsed]);
+  // Pin siempre bloqueado - solo se puede usar búsqueda
 
-  const updateLocation = async (lat: number, lng: number, geocoder: any, isFromSearch: boolean = false) => {
-    // Si ya se usó el ajuste después de una búsqueda, no permitir más cambios
-    if (!isFromSearch && hasSearched && adjustmentUsed) {
-      return; // Silenciosamente ignorar - el mapa ya no debería responder
-    }
-
-    // IMPORTANTE: Marcar ajuste como usado ANTES de hacer el geocode
-    // para evitar múltiples clicks mientras se procesa
-    if (!isFromSearch && hasSearched) {
-      setAdjustmentUsed(true);
-    }
-
-    try {
-      geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
-        // Solo reportar si NO es un ajuste (click inicial sin búsqueda previa)
-        // El ajuste es gratis (no se reporta al backend)
-        if (!isFromSearch && !hasSearched) {
-          reportMapsUsage('reverse_geocode');
-        }
-
-        if (status === 'OK' && results[0]) {
-          onChange({
-            latitud: lat,
-            longitud: lng,
-            nombre: results[0].address_components?.[0]?.long_name || t('recommend:step8.selectLocation'),
-            direccion: results[0].formatted_address,
-          });
-        } else {
-          onChange({
-            latitud: lat,
-            longitud: lng,
-            nombre: t('recommend:step8.selectLocation'),
-            direccion: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
-          });
-        }
-      });
-    } catch (error) {
-      console.error('Error en geocodificación:', error);
-    }
-  };
+  // updateLocation ya no se usa - el pin está bloqueado
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -191,8 +133,6 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
             direccion: results[0].formatted_address,
           });
           setSearchQuery('');
-          setHasSearched(true);
-          setAdjustmentUsed(false); // Reset para permitir 1 ajuste
         } else {
           Alert.alert(t('recommend:step8.noResults'), t('recommend:step8.tryAgain'));
         }
@@ -258,18 +198,6 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         </TouchableOpacity>
       </View>
 
-      {/* Indicador de ajuste - debajo del input */}
-      {hasSearched && value.latitud && value.longitud && (
-        <Text style={[
-          styles.adjustmentText,
-          { color: adjustmentUsed ? colors.secondary : colors.accent }
-        ]}>
-          {adjustmentUsed
-            ? t('recommend:step8.adjustmentUsed')
-            : t('recommend:step8.adjustmentAvailable')
-          }
-        </Text>
-      )}
 
       <View style={styles.mapContainer}>
         {!mapLoaded && (
@@ -388,10 +316,5 @@ const styles = StyleSheet.create({
   },
   selectedAddress: {
     fontSize: 12,
-  },
-  adjustmentText: {
-    fontSize: 12,
-    marginBottom: 10,
-    fontFamily: 'Lato-Regular',
   },
 });

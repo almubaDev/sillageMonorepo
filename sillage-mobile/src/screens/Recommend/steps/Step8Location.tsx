@@ -26,65 +26,13 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [adjustmentUsed, setAdjustmentUsed] = useState(false);
 
   const defaultLocation = {
     latitude: value.latitud || -33.4489,
     longitude: value.longitud || -70.6693,
   };
 
-  const handleMapPress = async (event: any) => {
-    // Si ya se usó el ajuste después de una búsqueda, no permitir más cambios
-    if (hasSearched && adjustmentUsed) {
-      return; // Silenciosamente ignorar - el mapa ya no debería responder
-    }
-
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-
-    // IMPORTANTE: Marcar ajuste como usado ANTES de hacer el fetch
-    // para evitar múltiples clicks mientras se procesa
-    if (hasSearched) {
-      setAdjustmentUsed(true);
-    }
-
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}&language=es`
-      );
-      const data = await response.json();
-
-      // Solo reportar si NO es un ajuste (click inicial sin búsqueda previa)
-      // El ajuste es gratis (no se reporta al backend)
-      if (!hasSearched) {
-        reportMapsUsage('reverse_geocode');
-      }
-
-      if (data.results && data.results[0]) {
-        onChange({
-          latitud: latitude,
-          longitud: longitude,
-          nombre: data.results[0].address_components?.[0]?.long_name || t('recommend:step8.selectLocation'),
-          direccion: data.results[0].formatted_address,
-        });
-      } else {
-        onChange({
-          latitud: latitude,
-          longitud: longitude,
-          nombre: t('recommend:step8.selectLocation'),
-          direccion: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-        });
-      }
-    } catch (error) {
-      console.error('Error en geocodificación:', error);
-      onChange({
-        latitud: latitude,
-        longitud: longitude,
-        nombre: t('recommend:step8.selectLocation'),
-        direccion: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
-      });
-    }
-  };
+  // El mapa no responde a clicks - solo se puede usar búsqueda
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -111,8 +59,6 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
           direccion: location.formatted_address,
         });
         setSearchQuery('');
-        setHasSearched(true);
-        setAdjustmentUsed(false); // Reset para permitir 1 ajuste
       } else {
         Alert.alert(t('recommend:step8.noResults'), t('recommend:step8.tryAgain'));
       }
@@ -165,19 +111,6 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         </TouchableOpacity>
       </View>
 
-      {/* Indicador de ajuste - debajo del input */}
-      {hasSearched && value.latitud && value.longitud && (
-        <Text style={[
-          styles.adjustmentText,
-          { color: adjustmentUsed ? colors.secondary : colors.accent }
-        ]}>
-          {adjustmentUsed
-            ? t('recommend:step8.adjustmentUsed')
-            : t('recommend:step8.adjustmentAvailable')
-          }
-        </Text>
-      )}
-
       <MapView
         style={styles.map}
         provider={PROVIDER_GOOGLE}
@@ -197,7 +130,6 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
               }
             : undefined
         }
-        onPress={!(hasSearched && adjustmentUsed) ? handleMapPress : undefined}
       >
         {value.latitud && value.longitud && (
           <Marker
@@ -207,8 +139,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
             }}
             title={value.nombre}
             description={value.direccion}
-            draggable={!(hasSearched && adjustmentUsed)}
-            onDragEnd={!(hasSearched && adjustmentUsed) ? handleMapPress : undefined}
+            draggable={false}
           />
         )}
       </MapView>
@@ -292,10 +223,5 @@ const styles = StyleSheet.create({
   },
   selectedAddress: {
     fontSize: 12,
-  },
-  adjustmentText: {
-    fontSize: 12,
-    marginBottom: 10,
-    fontFamily: 'Lato-Regular',
   },
 });
