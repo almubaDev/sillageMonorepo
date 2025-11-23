@@ -8,6 +8,40 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { adminStyles, AdminColors } from './adminStyles';
 import { adminService, APIUsageSummary, APIConfigInfo } from '../../services/adminService';
 
+// Costos por API (para calcular estimados)
+const API_COSTS = {
+  gemini: {
+    costPer1MTokensInput: 0.10,
+    costPer1MTokensOutput: 0.40,
+    costPerCall: 0,
+    limitType: 'llamadas', // El límite es por llamadas, no tokens
+  },
+  openweather: {
+    costPerCall: 0.0015,
+    limitType: 'llamadas',
+  },
+  google_maps: {
+    costPerCall: 0.005,
+    limitType: 'llamadas',
+  },
+};
+
+// Límites por tier
+const API_LIMITS = {
+  gemini: {
+    free: { daily: 200, monthly: 6000 },
+    paid: { daily: 10000, monthly: 300000 },
+  },
+  openweather: {
+    free: { daily: 1000, monthly: 30000 },
+    paid: { daily: 100000, monthly: 3000000 },
+  },
+  google_maps: {
+    free: { daily: 0, monthly: 10000 },
+    paid: { daily: 0, monthly: 1000000 },
+  },
+};
+
 interface APICardProps {
   name: string;
   displayName: string;
@@ -30,6 +64,41 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('es').format(num);
   };
+
+  // Calcular costo estimado basado en uso
+  const calculateCost = (calls: number, tokensInput: number = 0, tokensOutput: number = 0): number => {
+    const costs = API_COSTS[name as keyof typeof API_COSTS];
+    if (!costs) return 0;
+
+    if (name === 'gemini') {
+      const geminiCosts = costs as typeof API_COSTS.gemini;
+      const inputCost = (tokensInput / 1000000) * geminiCosts.costPer1MTokensInput;
+      const outputCost = (tokensOutput / 1000000) * geminiCosts.costPer1MTokensOutput;
+      return inputCost + outputCost;
+    } else {
+      const apiCosts = costs as { costPerCall: number };
+      return calls * apiCosts.costPerCall;
+    }
+  };
+
+  const getLimitType = (): string => {
+    const costs = API_COSTS[name as keyof typeof API_COSTS];
+    return costs?.limitType || 'llamadas';
+  };
+
+  const todayCost = calculateCost(
+    data.today.calls,
+    data.today.tokens_input || 0,
+    data.today.tokens_output || 0
+  );
+
+  const monthCost = calculateCost(
+    data.month.calls,
+    data.month.tokens_input || 0,
+    data.month.tokens_output || 0
+  );
+
+  const limitType = getLimitType();
 
   return (
     <View style={[adminStyles.card, { marginBottom: 16 }]}>
@@ -103,9 +172,14 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
             }}
           />
         </View>
-        <Text style={{ fontSize: 11, color: AdminColors.textSecondary, marginTop: 2 }}>
-          {data.today.percentage.toFixed(1)}% del limite diario
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
+          <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
+            {data.today.percentage.toFixed(1)}% del límite de {limitType} diario
+          </Text>
+          <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
+            {data.is_paid_tier ? `$${todayCost.toFixed(4)} USD` : '$0.00 (Free)'}
+          </Text>
+        </View>
       </View>
 
       {/* Uso Mensual */}
@@ -126,9 +200,14 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
             }}
           />
         </View>
-        <Text style={{ fontSize: 11, color: AdminColors.textSecondary, marginTop: 2 }}>
-          {data.month.percentage.toFixed(1)}% del limite mensual
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
+          <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
+            {data.month.percentage.toFixed(1)}% del límite de {limitType} mensual
+          </Text>
+          <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
+            {data.is_paid_tier ? `$${monthCost.toFixed(4)} USD` : '$0.00 (Free)'}
+          </Text>
+        </View>
       </View>
 
       {/* Tokens (solo para Gemini) */}
@@ -297,23 +376,97 @@ export default function APIUsageScreen() {
           onToggleTier={handleToggleTier}
         />
 
-        {/* Limites Free Tier Reference */}
+        {/* Limites Reference - Dinámico según tier */}
         <View style={[adminStyles.card, { marginTop: 8 }]}>
-          <Text style={adminStyles.cardTitle}>Referencia de Limites Free Tier</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={adminStyles.cardTitle}>Referencia de Límites</Text>
+          </View>
 
-          <View style={{ marginTop: 12 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: AdminColors.border }}>
-              <Text style={adminStyles.label}>Gemini 2.0 Flash</Text>
-              <Text style={adminStyles.value}>200/dia, 6,000/mes</Text>
+          {/* Gemini */}
+          <View style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: AdminColors.border }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={adminStyles.label}>Gemini 2.0 Flash</Text>
+                <View style={{
+                  marginLeft: 8,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 4,
+                  backgroundColor: summary?.gemini?.is_paid_tier ? '#DBEAFE' : '#D1FAE5',
+                }}>
+                  <Text style={{ fontSize: 10, color: summary?.gemini?.is_paid_tier ? '#1D4ED8' : '#059669' }}>
+                    {summary?.gemini?.is_paid_tier ? 'PAID' : 'FREE'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={adminStyles.value}>
+                {summary?.gemini?.is_paid_tier
+                  ? `${(API_LIMITS.gemini.paid.daily).toLocaleString()}/día, ${(API_LIMITS.gemini.paid.monthly).toLocaleString()}/mes`
+                  : `${API_LIMITS.gemini.free.daily}/día, ${(API_LIMITS.gemini.free.monthly).toLocaleString()}/mes`
+                }
+              </Text>
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: AdminColors.border }}>
-              <Text style={adminStyles.label}>OpenWeather</Text>
-              <Text style={adminStyles.value}>1,000/dia, 30,000/mes</Text>
+            <Text style={{ fontSize: 10, color: AdminColors.textSecondary, marginTop: 2 }}>
+              {summary?.gemini?.is_paid_tier ? '$0.10/1M input + $0.40/1M output' : 'Sin costo'}
+            </Text>
+          </View>
+
+          {/* OpenWeather */}
+          <View style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: AdminColors.border }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={adminStyles.label}>OpenWeather</Text>
+                <View style={{
+                  marginLeft: 8,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 4,
+                  backgroundColor: summary?.openweather?.is_paid_tier ? '#DBEAFE' : '#D1FAE5',
+                }}>
+                  <Text style={{ fontSize: 10, color: summary?.openweather?.is_paid_tier ? '#1D4ED8' : '#059669' }}>
+                    {summary?.openweather?.is_paid_tier ? 'PAID' : 'FREE'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={adminStyles.value}>
+                {summary?.openweather?.is_paid_tier
+                  ? `${(API_LIMITS.openweather.paid.daily).toLocaleString()}/día, ${(API_LIMITS.openweather.paid.monthly).toLocaleString()}/mes`
+                  : `${(API_LIMITS.openweather.free.daily).toLocaleString()}/día, ${(API_LIMITS.openweather.free.monthly).toLocaleString()}/mes`
+                }
+              </Text>
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 }}>
-              <Text style={adminStyles.label}>Google Maps</Text>
-              <Text style={adminStyles.value}>Sin limite diario, 10,000/mes</Text>
+            <Text style={{ fontSize: 10, color: AdminColors.textSecondary, marginTop: 2 }}>
+              {summary?.openweather?.is_paid_tier ? '$0.0015/llamada' : 'Sin costo'}
+            </Text>
+          </View>
+
+          {/* Google Maps */}
+          <View style={{ paddingVertical: 8 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={adminStyles.label}>Google Maps</Text>
+                <View style={{
+                  marginLeft: 8,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 4,
+                  backgroundColor: summary?.google_maps?.is_paid_tier ? '#DBEAFE' : '#D1FAE5',
+                }}>
+                  <Text style={{ fontSize: 10, color: summary?.google_maps?.is_paid_tier ? '#1D4ED8' : '#059669' }}>
+                    {summary?.google_maps?.is_paid_tier ? 'PAID' : 'FREE'}
+                  </Text>
+                </View>
+              </View>
+              <Text style={adminStyles.value}>
+                {summary?.google_maps?.is_paid_tier
+                  ? `Sin límite diario, ${(API_LIMITS.google_maps.paid.monthly).toLocaleString()}/mes`
+                  : `Sin límite diario, ${(API_LIMITS.google_maps.free.monthly).toLocaleString()}/mes`
+                }
+              </Text>
             </View>
+            <Text style={{ fontSize: 10, color: AdminColors.textSecondary, marginTop: 2 }}>
+              {summary?.google_maps?.is_paid_tier ? '$0.005/llamada ($5/1000)' : 'Sin costo'}
+            </Text>
           </View>
         </View>
       </ScrollView>
