@@ -96,7 +96,9 @@
   "step8": {
     "title": "Where will the event be?",
     "subtitle": "Search for the location to check the weather",
-    "searchPlaceholder": "Search address or place...",
+    "searchPlaceholder": "E.g.: 123 Main Street, New York",
+    "adjustmentUsed": "You already used your location adjustment",
+    "adjustmentAvailable": "You can adjust the pin 1 time",
     "searching": "Searching...",
     "noResults": "No results found",
     "tryAgain": "Try another search term",

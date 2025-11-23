@@ -32,6 +32,8 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [adjustmentUsed, setAdjustmentUsed] = useState(false);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const geocoderRef = useRef<any>(null);
@@ -106,11 +108,33 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
     }
   };
 
-  const updateLocation = async (lat: number, lng: number, geocoder: any) => {
+  // Deshabilitar drag cuando se usa el ajuste
+  useEffect(() => {
+    if (markerRef.current) {
+      const shouldBeDraggable = !(hasSearched && adjustmentUsed);
+      markerRef.current.setDraggable(shouldBeDraggable);
+    }
+  }, [hasSearched, adjustmentUsed]);
+
+  const updateLocation = async (lat: number, lng: number, geocoder: any, isFromSearch: boolean = false) => {
+    // Si ya se usó el ajuste después de una búsqueda, no permitir más cambios
+    if (!isFromSearch && hasSearched && adjustmentUsed) {
+      Alert.alert(
+        t('recommend:step8.adjustmentUsed'),
+        t('recommend:step8.tryAgain')
+      );
+      return;
+    }
+
     try {
       geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
         // Reportar uso de Maps al backend para tracking
         reportMapsUsage('reverse_geocode');
+
+        // Si ya se había buscado y no es una búsqueda nueva, marcar el ajuste como usado
+        if (!isFromSearch && hasSearched) {
+          setAdjustmentUsed(true);
+        }
 
         if (status === 'OK' && results[0]) {
           onChange({
@@ -167,6 +191,8 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
             direccion: results[0].formatted_address,
           });
           setSearchQuery('');
+          setHasSearched(true);
+          setAdjustmentUsed(false); // Reset para permitir 1 ajuste
         } else {
           Alert.alert(t('recommend:step8.noResults'), t('recommend:step8.tryAgain'));
         }
@@ -252,6 +278,35 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
           }}
         />
       </View>
+
+      {/* Indicador de ajuste disponible */}
+      {hasSearched && value.latitud && value.longitud && (
+        <View style={[
+          styles.adjustmentIndicator,
+          {
+            backgroundColor: adjustmentUsed ? colors.secondary + '20' : colors.accent + '20',
+            borderColor: adjustmentUsed ? colors.secondary : colors.accent,
+          }
+        ]}>
+          <MaterialCommunityIcons
+            name={adjustmentUsed ? "map-marker-off" : "map-marker-radius"}
+            size={16}
+            color={adjustmentUsed ? colors.secondary : colors.accent}
+          />
+          <Text style={[
+            styles.adjustmentText,
+            {
+              color: adjustmentUsed ? colors.secondary : colors.accent,
+              fontFamily: 'Lato-Regular',
+            }
+          ]}>
+            {adjustmentUsed
+              ? t('recommend:step8.adjustmentUsed')
+              : t('recommend:step8.adjustmentAvailable')
+            }
+          </Text>
+        </View>
+      )}
 
       {value.latitud && value.longitud && (
         <View style={[styles.selectedContainer, { backgroundColor: colors.accent + '10', borderColor: colors.accent }]}>
@@ -348,6 +403,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   selectedAddress: {
+    fontSize: 12,
+  },
+  adjustmentIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 10,
+    borderWidth: 1,
+  },
+  adjustmentText: {
     fontSize: 12,
   },
 });

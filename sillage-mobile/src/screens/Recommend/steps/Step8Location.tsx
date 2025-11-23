@@ -26,6 +26,8 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [adjustmentUsed, setAdjustmentUsed] = useState(false);
 
   const defaultLocation = {
     latitude: value.latitud || -33.4489,
@@ -33,6 +35,15 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
   };
 
   const handleMapPress = async (event: any) => {
+    // Si ya se usó el ajuste después de una búsqueda, no permitir más cambios
+    if (hasSearched && adjustmentUsed) {
+      Alert.alert(
+        t('recommend:step8.adjustmentUsed'),
+        t('recommend:step8.tryAgain')
+      );
+      return;
+    }
+
     const { latitude, longitude } = event.nativeEvent.coordinate;
 
     try {
@@ -43,6 +54,11 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
 
       // Reportar uso de Maps al backend para tracking
       reportMapsUsage('reverse_geocode');
+
+      // Si ya se había buscado, marcar el ajuste como usado
+      if (hasSearched) {
+        setAdjustmentUsed(true);
+      }
 
       if (data.results && data.results[0]) {
         onChange({
@@ -95,6 +111,8 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
           direccion: location.formatted_address,
         });
         setSearchQuery('');
+        setHasSearched(true);
+        setAdjustmentUsed(false); // Reset para permitir 1 ajuste
       } else {
         Alert.alert(t('recommend:step8.noResults'), t('recommend:step8.tryAgain'));
       }
@@ -166,7 +184,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
               }
             : undefined
         }
-        onPress={handleMapPress}
+        onPress={!(hasSearched && adjustmentUsed) ? handleMapPress : undefined}
       >
         {value.latitud && value.longitud && (
           <Marker
@@ -176,11 +194,40 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
             }}
             title={value.nombre}
             description={value.direccion}
-            draggable
-            onDragEnd={handleMapPress}
+            draggable={!(hasSearched && adjustmentUsed)}
+            onDragEnd={!(hasSearched && adjustmentUsed) ? handleMapPress : undefined}
           />
         )}
       </MapView>
+
+      {/* Indicador de ajuste disponible */}
+      {hasSearched && value.latitud && value.longitud && (
+        <View style={[
+          styles.adjustmentIndicator,
+          {
+            backgroundColor: adjustmentUsed ? colors.secondary + '20' : colors.accent + '20',
+            borderColor: adjustmentUsed ? colors.secondary : colors.accent,
+          }
+        ]}>
+          <MaterialCommunityIcons
+            name={adjustmentUsed ? "map-marker-off" : "map-marker-radius"}
+            size={16}
+            color={adjustmentUsed ? colors.secondary : colors.accent}
+          />
+          <Text style={[
+            styles.adjustmentText,
+            {
+              color: adjustmentUsed ? colors.secondary : colors.accent,
+              fontFamily: 'Lato-Regular',
+            }
+          ]}>
+            {adjustmentUsed
+              ? t('recommend:step8.adjustmentUsed')
+              : t('recommend:step8.adjustmentAvailable')
+            }
+          </Text>
+        </View>
+      )}
 
       {value.latitud && value.longitud && (
         <View style={[styles.selectedContainer, { backgroundColor: colors.accent + '10', borderColor: colors.accent }]}>
@@ -260,6 +307,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   selectedAddress: {
+    fontSize: 12,
+  },
+  adjustmentIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 10,
+    borderWidth: 1,
+  },
+  adjustmentText: {
     fontSize: 12,
   },
 });

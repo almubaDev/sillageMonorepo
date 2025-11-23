@@ -96,7 +96,9 @@
   "step8": {
     "title": "¿Dónde será el evento?",
     "subtitle": "Busca la ubicación para consultar el clima",
-    "searchPlaceholder": "Buscar dirección o lugar...",
+    "searchPlaceholder": "Ej: Av. Providencia 1234, Santiago",
+    "adjustmentUsed": "Ya usaste tu ajuste de ubicación",
+    "adjustmentAvailable": "Puedes ajustar el pin 1 vez",
     "searching": "Buscando...",
     "noResults": "No se encontraron resultados",
     "tryAgain": "Intenta con otro término de búsqueda",
