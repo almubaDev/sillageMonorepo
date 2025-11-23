@@ -56,4 +56,17 @@ api.interceptors.response.use(
   }
 );
 
+/**
+ * Reportar uso de Google Maps API al backend para tracking.
+ * Se llama después de cada operación de geocoding en el frontend.
+ */
+export const reportMapsUsage = async (action: 'geocode' | 'reverse_geocode' | 'places_search'): Promise<void> => {
+  try {
+    await api.post('/api-usage/report-maps', { action, success: true });
+  } catch (error) {
+    // Silenciosamente ignorar errores de tracking para no afectar la UX
+    console.log('Error reportando uso de Maps:', error);
+  }
+};
+
 export default api;

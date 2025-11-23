@@ -12,8 +12,9 @@ from datetime import date
 
 from app.core.database import get_db
 from app.core.permissions import require_superuser
+from app.core.security import get_current_user
 from app.models.user import User
-from app.services.api_tracker import APITracker, DEFAULT_API_CONFIGS
+from app.services.api_tracker import APITracker, DEFAULT_API_CONFIGS, track_api_call
 
 router = APIRouter(prefix="/admin/api-usage", tags=["Admin - API Usage"])
 
@@ -208,3 +209,56 @@ async def get_free_tier_limits(
             "notes": "Se usa desde el cliente móvil. $200 de crédito mensual gratis"
         }
     }
+
+
+# ========================================================================
+# ENDPOINT PÚBLICO - Para reportar uso desde el frontend
+# ========================================================================
+
+class ReportMapsUsageRequest(BaseModel):
+    action: str  # 'geocode' | 'reverse_geocode' | 'places_search'
+    success: bool = True
+
+
+class ReportMapsUsageResponse(BaseModel):
+    tracked: bool
+    message: str
+
+
+# Este router es para usuarios autenticados (no solo admins)
+public_router = APIRouter(prefix="/api-usage", tags=["API Usage"])
+
+
+@public_router.post("/report-maps", response_model=ReportMapsUsageResponse)
+async def report_maps_usage(
+    request: ReportMapsUsageRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Reportar uso de Google Maps API desde el frontend.
+    Como Google Maps se llama directamente desde el cliente,
+    este endpoint permite trackear ese uso.
+    """
+    try:
+        await track_api_call(
+            db=db,
+            api_name='google_maps',
+            endpoint=f'frontend/{request.action}',
+            tokens_input=0,
+            tokens_output=0,
+            response_time_ms=0,
+            success=request.success,
+            error_message=None,
+            user_id=current_user.id
+        )
+        return ReportMapsUsageResponse(
+            tracked=True,
+            message="Uso de Google Maps registrado correctamente"
+        )
+    except Exception as e:
+        print(f"Error al registrar uso de Maps: {e}")
+        return ReportMapsUsageResponse(
+            tracked=False,
+            message="Error al registrar uso"
+        )

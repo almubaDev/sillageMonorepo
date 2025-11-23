@@ -235,13 +235,13 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
         </View>
       )}
 
-      {/* Costo estimado (solo si hay costo) */}
-      {data.month.cost_usd !== undefined && data.month.cost_usd > 0 && (
+      {/* Costo estimado (solo en modo Paid y si hay uso) */}
+      {data.is_paid_tier && data.month.calls > 0 && (
         <View style={{ borderTopWidth: 1, borderTopColor: AdminColors.border, paddingTop: 12, marginTop: 12 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={adminStyles.label}>Costo Estimado (Mes)</Text>
             <Text style={[adminStyles.value, { color: AdminColors.error }]}>
-              ${data.month.cost_usd.toFixed(4)} USD
+              ${monthCost.toFixed(4)} USD
             </Text>
           </View>
         </View>

@@ -4,6 +4,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
+import { reportMapsUsage } from '../../../services/api';
 
 interface Step8LocationProps {
   value: {
@@ -39,6 +40,9 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}&language=es`
       );
       const data = await response.json();
+
+      // Reportar uso de Maps al backend para tracking
+      reportMapsUsage('reverse_geocode');
 
       if (data.results && data.results[0]) {
         onChange({
@@ -78,6 +82,9 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(searchQuery)}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}&language=es`
       );
       const data = await response.json();
+
+      // Reportar uso de Maps al backend para tracking
+      reportMapsUsage('geocode');
 
       if (data.results && data.results.length > 0) {
         const location = data.results[0];

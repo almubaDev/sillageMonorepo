@@ -95,5 +95,11 @@ api_router.include_router(
     tags=["Admin - API Usage"]
 )
 
+# Public API Usage endpoint (para reportar uso de Maps desde frontend)
+api_router.include_router(
+    admin_api_usage.public_router,
+    tags=["API Usage"]
+)
+
 # Aquí agregaremos más routers después:
 # api_router.include_router(subscriptions.router, prefix="/subscriptions", tags=["Suscripciones"])

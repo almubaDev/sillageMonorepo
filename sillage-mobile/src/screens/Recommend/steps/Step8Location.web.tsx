@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityInd
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
+import { reportMapsUsage } from '../../../services/api';
 
 declare global {
   interface Window {
@@ -108,6 +109,9 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
   const updateLocation = async (lat: number, lng: number, geocoder: any) => {
     try {
       geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
+        // Reportar uso de Maps al backend para tracking
+        reportMapsUsage('reverse_geocode');
+
         if (status === 'OK' && results[0]) {
           onChange({
             latitud: lat,
@@ -143,6 +147,9 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
     try {
       setSearching(true);
       geocoderRef.current.geocode({ address: searchQuery }, (results: any, status: any) => {
+        // Reportar uso de Maps al backend para tracking
+        reportMapsUsage('geocode');
+
         if (status === 'OK' && results[0]) {
           const location = results[0].geometry.location;
           const lat = location.lat();
