@@ -10,13 +10,22 @@ import {
   FinancialSummary,
   PackageRevenue,
   TopCustomer,
+  APIUsageSummary,
 } from '../../services/adminService';
+
+// Costos por API (igual que en APIUsageScreen)
+const API_COSTS = {
+  gemini: { costPer1MTokensInput: 0.10, costPer1MTokensOutput: 0.40 },
+  openweather: { costPerCall: 0.0015 },
+  google_maps: { costPerCall: 0.005 },
+};
 
 export default function FinancialReportsScreen() {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<FinancialSummary | null>(null);
   const [packageRevenue, setPackageRevenue] = useState<PackageRevenue[]>([]);
   const [topCustomers, setTopCustomers] = useState<TopCustomer[]>([]);
+  const [apiUsage, setApiUsage] = useState<APIUsageSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<'all' | 'month' | 'day'>('all');
 
@@ -30,15 +39,17 @@ export default function FinancialReportsScreen() {
       setError(null);
 
       // Cargar datos en paralelo
-      const [summaryData, revenueData, customersData] = await Promise.all([
+      const [summaryData, revenueData, customersData, apiData] = await Promise.all([
         adminService.getFinancialSummary(),
         adminService.getRevenueByPackage(period),
         adminService.getTopCustomers(10),
+        adminService.getAPIUsageSummary(),
       ]);
 
       setSummary(summaryData);
       setPackageRevenue(revenueData);
       setTopCustomers(customersData);
+      setApiUsage(apiData);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Error al cargar datos financieros');
     } finally {
@@ -49,6 +60,40 @@ export default function FinancialReportsScreen() {
   const formatCurrency = (amount: number) => {
     return `$${amount.toFixed(2)}`;
   };
+
+  // Calcular gastos de APIs
+  const calculateApiCosts = () => {
+    if (!apiUsage) return { today: 0, month: 0, total: 0 };
+
+    let todayCost = 0;
+    let monthCost = 0;
+
+    // Gemini (cobra por tokens)
+    if (apiUsage.gemini?.is_paid_tier) {
+      const gemini = apiUsage.gemini;
+      todayCost += ((gemini.today.tokens_input || 0) / 1000000) * API_COSTS.gemini.costPer1MTokensInput;
+      todayCost += ((gemini.today.tokens_output || 0) / 1000000) * API_COSTS.gemini.costPer1MTokensOutput;
+      monthCost += ((gemini.month.tokens_input || 0) / 1000000) * API_COSTS.gemini.costPer1MTokensInput;
+      monthCost += ((gemini.month.tokens_output || 0) / 1000000) * API_COSTS.gemini.costPer1MTokensOutput;
+    }
+
+    // OpenWeather (cobra por llamada)
+    if (apiUsage.openweather?.is_paid_tier) {
+      todayCost += apiUsage.openweather.today.calls * API_COSTS.openweather.costPerCall;
+      monthCost += apiUsage.openweather.month.calls * API_COSTS.openweather.costPerCall;
+    }
+
+    // Google Maps (cobra por llamada)
+    if (apiUsage.google_maps?.is_paid_tier) {
+      todayCost += apiUsage.google_maps.today.calls * API_COSTS.google_maps.costPerCall;
+      monthCost += apiUsage.google_maps.month.calls * API_COSTS.google_maps.costPerCall;
+    }
+
+    // Para el total histórico, usamos el mes como aproximación (sin datos históricos completos)
+    return { today: todayCost, month: monthCost, total: monthCost };
+  };
+
+  const apiCosts = calculateApiCosts();
 
   if (loading && !summary) {
     return (
@@ -80,57 +125,67 @@ export default function FinancialReportsScreen() {
         style={adminStyles.scrollContainer}
         contentContainerStyle={adminStyles.scrollContent}
       >
-        {/* Resumen General */}
+        {/* Resumen General - 3 columnas: Ingresos, Gastos, Margen */}
         <Text style={adminStyles.sectionTitle}>Resumen General</Text>
-        <View style={adminStyles.grid2}>
-          <View style={[adminStyles.statsCard, adminStyles.gridItem2]}>
-            <MaterialCommunityIcons
-              name="currency-usd"
-              size={32}
-              color={AdminColors.success}
-              style={adminStyles.statsCardIcon}
-            />
-            <Text style={adminStyles.statsCardValue}>
-              {formatCurrency(summary?.total_revenue || 0)}
-            </Text>
-            <Text style={adminStyles.statsCardLabel}>Total Histórico</Text>
+        <View style={[adminStyles.card, { padding: 12 }]}>
+          {/* Header de columnas */}
+          <View style={{ flexDirection: 'row', marginBottom: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: AdminColors.border }}>
+            <View style={{ flex: 1 }} />
+            <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', color: AdminColors.success, textAlign: 'center' }}>Ingresos</Text>
+            <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', color: AdminColors.error, textAlign: 'center' }}>Gastos APIs</Text>
+            <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', color: AdminColors.primary, textAlign: 'center' }}>Margen</Text>
           </View>
 
-          <View style={[adminStyles.statsCard, adminStyles.gridItem2]}>
-            <MaterialCommunityIcons
-              name="calendar-month"
-              size={32}
-              color={AdminColors.primary}
-              style={adminStyles.statsCardIcon}
-            />
-            <Text style={adminStyles.statsCardValue}>
-              {formatCurrency(summary?.monthly_revenue || 0)}
-            </Text>
-            <Text style={adminStyles.statsCardLabel}>Este Mes</Text>
-          </View>
-
-          <View style={[adminStyles.statsCard, adminStyles.gridItem2]}>
-            <MaterialCommunityIcons
-              name="calendar-today"
-              size={32}
-              color={AdminColors.info}
-              style={adminStyles.statsCardIcon}
-            />
-            <Text style={adminStyles.statsCardValue}>
+          {/* Fila: Hoy */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6 }}>
+            <Text style={{ flex: 1, fontSize: 12, color: AdminColors.textSecondary }}>Hoy</Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: AdminColors.success, textAlign: 'center' }}>
               {formatCurrency(summary?.daily_revenue || 0)}
             </Text>
-            <Text style={adminStyles.statsCardLabel}>Hoy</Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: AdminColors.error, textAlign: 'center' }}>
+              {formatCurrency(apiCosts.today)}
+            </Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: (summary?.daily_revenue || 0) - apiCosts.today >= 0 ? AdminColors.primary : AdminColors.error, textAlign: 'center' }}>
+              {formatCurrency((summary?.daily_revenue || 0) - apiCosts.today)}
+            </Text>
           </View>
 
-          <View style={[adminStyles.statsCard, adminStyles.gridItem2]}>
-            <MaterialCommunityIcons
-              name="receipt"
-              size={32}
-              color={AdminColors.warning}
-              style={adminStyles.statsCardIcon}
-            />
-            <Text style={adminStyles.statsCardValue}>{summary?.total_transactions || 0}</Text>
-            <Text style={adminStyles.statsCardLabel}>Transacciones</Text>
+          {/* Fila: Este Mes */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderTopWidth: 1, borderTopColor: AdminColors.gray200 }}>
+            <Text style={{ flex: 1, fontSize: 12, color: AdminColors.textSecondary }}>Mes</Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: AdminColors.success, textAlign: 'center' }}>
+              {formatCurrency(summary?.monthly_revenue || 0)}
+            </Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: AdminColors.error, textAlign: 'center' }}>
+              {formatCurrency(apiCosts.month)}
+            </Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: (summary?.monthly_revenue || 0) - apiCosts.month >= 0 ? AdminColors.primary : AdminColors.error, textAlign: 'center' }}>
+              {formatCurrency((summary?.monthly_revenue || 0) - apiCosts.month)}
+            </Text>
+          </View>
+
+          {/* Fila: Total Histórico */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderTopWidth: 1, borderTopColor: AdminColors.gray200 }}>
+            <Text style={{ flex: 1, fontSize: 12, color: AdminColors.textSecondary }}>Total</Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: AdminColors.success, textAlign: 'center' }}>
+              {formatCurrency(summary?.total_revenue || 0)}
+            </Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: AdminColors.error, textAlign: 'center' }}>
+              {formatCurrency(apiCosts.total)}
+            </Text>
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: '600', color: (summary?.total_revenue || 0) - apiCosts.total >= 0 ? AdminColors.primary : AdminColors.error, textAlign: 'center' }}>
+              {formatCurrency((summary?.total_revenue || 0) - apiCosts.total)}
+            </Text>
+          </View>
+
+          {/* Info adicional */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: AdminColors.border }}>
+            <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
+              {summary?.total_transactions || 0} transacciones
+            </Text>
+            <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
+              Ticket prom: {formatCurrency(summary?.avg_ticket || 0)}
+            </Text>
           </View>
         </View>
 
