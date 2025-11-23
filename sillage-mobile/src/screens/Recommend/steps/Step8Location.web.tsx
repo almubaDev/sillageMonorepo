@@ -45,7 +45,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
       if (!window.google) {
         const script = document.createElement('script');
         const mapLanguage = i18n.language === 'en' ? 'en' : 'es';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBYW7kK_nRl4IHm8P5_MPqPDVPbMl7J-n0&libraries=places&language=${mapLanguage}`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=${mapLanguage}`;
         script.async = true;
         script.defer = true;
         script.onload = initMap;

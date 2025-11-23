@@ -36,7 +36,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
 
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyBYW7kK_nRl4IHm8P5_MPqPDVPbMl7J-n0&language=es`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}&language=es`
       );
       const data = await response.json();
 
@@ -75,7 +75,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
     try {
       setSearching(true);
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(searchQuery)}&key=AIzaSyBYW7kK_nRl4IHm8P5_MPqPDVPbMl7J-n0&language=es`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(searchQuery)}&key=${process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}&language=es`
       );
       const data = await response.json();
 
