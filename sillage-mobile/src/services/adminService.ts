@@ -410,10 +410,9 @@ export const adminService = {
     }
   },
 
-  async resetConsultations(password: string, target: 'all' | 'free_only' | string = 'all'): Promise<ResetResponse> {
-    const response = await api.post<ResetResponse>('/admin/tools/reset-consultations', {
-      password,
-      target
+  async resetGiftedConsultations(password: string): Promise<ResetResponse> {
+    const response = await api.post<ResetResponse>('/admin/tools/reset-gifted-consultations', {
+      password
     });
     return response.data;
   },

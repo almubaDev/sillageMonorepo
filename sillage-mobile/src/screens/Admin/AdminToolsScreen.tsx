@@ -18,7 +18,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { adminStyles, AdminColors } from './adminStyles';
 import { adminService, ResetResponse } from '../../services/adminService';
 
-type ToolAction = 'reset_consultations_all' | 'reset_consultations_free' | 'reset_api_usage_all' | 'reset_api_usage_gemini' | 'reset_api_usage_openweather' | 'reset_api_usage_google_maps';
+type ToolAction = 'reset_gifted_consultations' | 'reset_api_usage_all' | 'reset_api_usage_gemini' | 'reset_api_usage_openweather' | 'reset_api_usage_google_maps';
 
 interface ToolConfig {
   id: ToolAction;
@@ -27,24 +27,18 @@ interface ToolConfig {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   iconColor: string;
   warningLevel: 'medium' | 'high';
+  category: 'consultations' | 'api';
 }
 
 const TOOLS: ToolConfig[] = [
   {
-    id: 'reset_consultations_all',
-    title: 'Resetear Todas las Consultas',
-    description: 'Pone a 0 las consultas restantes de TODOS los usuarios',
-    icon: 'account-remove',
-    iconColor: AdminColors.error,
-    warningLevel: 'high',
-  },
-  {
-    id: 'reset_consultations_free',
-    title: 'Resetear Consultas Gratuitas',
-    description: 'Pone a 0 las consultas de usuarios que NO han pagado',
-    icon: 'account-off',
+    id: 'reset_gifted_consultations',
+    title: 'Resetear Historial de Regalos',
+    description: 'Elimina el historial de consultas regaladas (no afecta consultas de usuarios)',
+    icon: 'gift-off',
     iconColor: AdminColors.warning,
     warningLevel: 'medium',
+    category: 'consultations',
   },
   {
     id: 'reset_api_usage_all',
@@ -53,6 +47,7 @@ const TOOLS: ToolConfig[] = [
     icon: 'database-remove',
     iconColor: AdminColors.error,
     warningLevel: 'high',
+    category: 'api',
   },
   {
     id: 'reset_api_usage_gemini',
@@ -61,6 +56,7 @@ const TOOLS: ToolConfig[] = [
     icon: 'robot-off',
     iconColor: '#4285F4',
     warningLevel: 'medium',
+    category: 'api',
   },
   {
     id: 'reset_api_usage_openweather',
@@ -69,6 +65,7 @@ const TOOLS: ToolConfig[] = [
     icon: 'weather-cloudy-alert',
     iconColor: '#EB6E4B',
     warningLevel: 'medium',
+    category: 'api',
   },
   {
     id: 'reset_api_usage_google_maps',
@@ -77,6 +74,7 @@ const TOOLS: ToolConfig[] = [
     icon: 'map-marker-off',
     iconColor: '#34A853',
     warningLevel: 'medium',
+    category: 'api',
   },
 ];
 
@@ -85,12 +83,10 @@ export default function AdminToolsScreen() {
   const [selectedTool, setSelectedTool] = useState<ToolConfig | null>(null);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ResetResponse | null>(null);
 
   const handleToolPress = (tool: ToolConfig) => {
     setSelectedTool(tool);
     setPassword('');
-    setResult(null);
     setModalVisible(true);
   };
 
@@ -101,17 +97,13 @@ export default function AdminToolsScreen() {
     }
 
     setLoading(true);
-    setResult(null);
 
     try {
       let response: ResetResponse;
 
       switch (selectedTool.id) {
-        case 'reset_consultations_all':
-          response = await adminService.resetConsultations(password, 'all');
-          break;
-        case 'reset_consultations_free':
-          response = await adminService.resetConsultations(password, 'free_only');
+        case 'reset_gifted_consultations':
+          response = await adminService.resetGiftedConsultations(password);
           break;
         case 'reset_api_usage_all':
           response = await adminService.resetAPIUsage(password);
@@ -129,19 +121,12 @@ export default function AdminToolsScreen() {
           throw new Error('Acción no reconocida');
       }
 
-      setResult(response);
-
       if (response.success) {
-        Alert.alert('Operación Exitosa', response.message);
+        closeModal();
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.detail || 'Error al ejecutar la operación';
       Alert.alert('Error', errorMessage);
-      setResult({
-        success: false,
-        message: errorMessage,
-        affected_records: 0,
-      });
     } finally {
       setLoading(false);
     }
@@ -151,7 +136,6 @@ export default function AdminToolsScreen() {
     setModalVisible(false);
     setSelectedTool(null);
     setPassword('');
-    setResult(null);
   };
 
   return (
@@ -184,10 +168,10 @@ export default function AdminToolsScreen() {
 
         {/* Consultas Section */}
         <Text style={[adminStyles.sectionTitle, { marginTop: 8, marginBottom: 12 }]}>
-          Consultas de Usuarios
+          Historial de Consultas Regaladas
         </Text>
 
-        {TOOLS.filter(t => t.id.startsWith('reset_consultations')).map((tool) => (
+        {TOOLS.filter(t => t.category === 'consultations').map((tool) => (
           <TouchableOpacity
             key={tool.id}
             style={[adminStyles.card, { marginBottom: 12 }]}
@@ -215,7 +199,7 @@ export default function AdminToolsScreen() {
           Seguimiento de APIs
         </Text>
 
-        {TOOLS.filter(t => t.id.startsWith('reset_api_usage')).map((tool) => (
+        {TOOLS.filter(t => t.category === 'api').map((tool) => (
           <TouchableOpacity
             key={tool.id}
             style={[adminStyles.card, { marginBottom: 12 }]}
@@ -314,25 +298,6 @@ export default function AdminToolsScreen() {
               autoCapitalize="none"
             />
 
-            {/* Result Message */}
-            {result && (
-              <View style={{
-                backgroundColor: result.success ? '#D1FAE5' : '#FEE2E2',
-                padding: 12,
-                borderRadius: 8,
-                marginBottom: 16,
-              }}>
-                <Text style={{
-                  fontSize: 13,
-                  color: result.success ? '#065F46' : '#991B1B',
-                  textAlign: 'center',
-                }}>
-                  {result.message}
-                  {result.success && `\nRegistros afectados: ${result.affected_records}`}
-                </Text>
-              </View>
-            )}
-
             {/* Buttons */}
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity
@@ -347,7 +312,7 @@ export default function AdminToolsScreen() {
                 style={[
                   adminStyles.button,
                   { flex: 1, backgroundColor: selectedTool?.warningLevel === 'high' ? AdminColors.error : AdminColors.warning },
-                  loading && { opacity: 0.7 }
+                  (loading || !password.trim()) && { opacity: 0.5 }
                 ]}
                 onPress={executeAction}
                 disabled={loading || !password.trim()}

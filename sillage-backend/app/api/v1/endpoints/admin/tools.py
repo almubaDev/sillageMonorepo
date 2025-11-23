@@ -5,7 +5,7 @@ Todas las acciones requieren confirmación de contraseña del superusuario.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import update, delete
+from sqlalchemy import delete
 from pydantic import BaseModel
 from typing import Optional
 
@@ -14,6 +14,7 @@ from app.core.permissions import require_superuser
 from app.core.security import verify_password
 from app.models.user import User
 from app.models.api_usage import APIUsageLog, APIDailyUsage
+from app.models.role import GiftedConsultation
 
 router = APIRouter(prefix="/admin/tools", tags=["Admin - Tools"])
 
@@ -26,9 +27,8 @@ class PasswordConfirmRequest(BaseModel):
     password: str
 
 
-class ResetConsultationsRequest(BaseModel):
+class ResetGiftedConsultationsRequest(BaseModel):
     password: str
-    target: str = "all"  # "all" | "free_only" | user_id específico
 
 
 class ResetAPIUsageRequest(BaseModel):
@@ -55,18 +55,19 @@ async def verify_superuser_password(user: User, password: str) -> bool:
 # ENDPOINTS
 # ========================================================================
 
-@router.post("/reset-consultations", response_model=ResetResponse)
-async def reset_consultations(
-    request: ResetConsultationsRequest,
+@router.post("/reset-gifted-consultations", response_model=ResetResponse)
+async def reset_gifted_consultations(
+    request: ResetGiftedConsultationsRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_superuser)
 ):
     """
-    Resetear consultas regaladas de usuarios.
+    Resetear el historial de consultas regaladas.
 
-    - target: "all" resetea todos los usuarios
-    - target: "free_only" resetea solo usuarios que no han pagado nunca
-    - target: número = resetea solo ese user_id específico
+    Esto elimina todos los registros de la tabla gifted_consultations,
+    permitiendo empezar un conteo limpio de consultas regaladas.
+
+    NO afecta las consultas restantes de los usuarios.
 
     Requiere confirmación de contraseña del superusuario.
     """
@@ -78,67 +79,20 @@ async def reset_consultations(
         )
 
     try:
-        if request.target == "all":
-            # Resetear todas las consultas restantes a 0
-            result = await db.execute(
-                update(User)
-                .where(User.consultas_restantes > 0)
-                .values(consultas_restantes=0)
-            )
-            affected = result.rowcount
-            await db.commit()
+        # Eliminar todos los registros de consultas regaladas
+        result = await db.execute(delete(GiftedConsultation))
+        affected = result.rowcount
+        await db.commit()
 
-            return ResetResponse(
-                success=True,
-                message=f"Se resetearon las consultas de {affected} usuarios",
-                affected_records=affected
-            )
-
-        elif request.target == "free_only":
-            # Resetear solo usuarios no suscritos
-            result = await db.execute(
-                update(User)
-                .where(User.consultas_restantes > 0, User.suscrito == False)
-                .values(consultas_restantes=0)
-            )
-            affected = result.rowcount
-            await db.commit()
-
-            return ResetResponse(
-                success=True,
-                message=f"Se resetearon las consultas gratuitas de {affected} usuarios",
-                affected_records=affected
-            )
-
-        else:
-            # Intentar como user_id específico
-            try:
-                user_id = int(request.target)
-                result = await db.execute(
-                    update(User)
-                    .where(User.id == user_id)
-                    .values(consultas_restantes=0)
-                )
-                affected = result.rowcount
-                await db.commit()
-
-                if affected == 0:
-                    raise HTTPException(status_code=404, detail="Usuario no encontrado")
-
-                return ResetResponse(
-                    success=True,
-                    message=f"Se resetearon las consultas del usuario {user_id}",
-                    affected_records=affected
-                )
-            except ValueError:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Target inválido. Use 'all', 'free_only' o un user_id numérico"
-                )
+        return ResetResponse(
+            success=True,
+            message=f"Se eliminaron {affected} registros del historial de consultas regaladas",
+            affected_records=affected
+        )
 
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error al resetear consultas: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al resetear historial: {str(e)}")
 
 
 @router.post("/reset-api-usage", response_model=ResetResponse)
