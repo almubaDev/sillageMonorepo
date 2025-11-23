@@ -7,6 +7,7 @@ from app.api.v1.endpoints.admin import dashboard as admin_dashboard
 from app.api.v1.endpoints.admin import financial as admin_financial
 from app.api.v1.endpoints.admin import coupons as admin_coupons
 from app.api.v1.endpoints.admin import api_usage as admin_api_usage
+from app.api.v1.endpoints.admin import tools as admin_tools
 
 api_router = APIRouter()
 
@@ -93,6 +94,11 @@ api_router.include_router(
 api_router.include_router(
     admin_api_usage.router,
     tags=["Admin - API Usage"]
+)
+
+api_router.include_router(
+    admin_tools.router,
+    tags=["Admin - Tools"]
 )
 
 # Public API Usage endpoint (para reportar uso de Maps desde frontend)

@@ -177,6 +177,14 @@ export interface CouponStats {
   total_consultations_gifted: number;
 }
 
+// ==================== ADMIN TOOLS ====================
+
+export interface ResetResponse {
+  success: boolean;
+  message: string;
+  affected_records: number;
+}
+
 // ==================== API USAGE ====================
 
 export interface APIUsageLimitInfo {
@@ -389,6 +397,32 @@ export const adminService = {
 
   async getFreeTierLimits(): Promise<any> {
     const response = await api.get('/admin/api-usage/free-tier-limits');
+    return response.data;
+  },
+
+  // ========== ADMIN TOOLS ==========
+  async verifyPassword(password: string): Promise<boolean> {
+    try {
+      await api.post('/admin/tools/verify-password', { password });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async resetConsultations(password: string, target: 'all' | 'free_only' | string = 'all'): Promise<ResetResponse> {
+    const response = await api.post<ResetResponse>('/admin/tools/reset-consultations', {
+      password,
+      target
+    });
+    return response.data;
+  },
+
+  async resetAPIUsage(password: string, apiName?: string): Promise<ResetResponse> {
+    const response = await api.post<ResetResponse>('/admin/tools/reset-api-usage', {
+      password,
+      api_name: apiName
+    });
     return response.data;
   },
 };

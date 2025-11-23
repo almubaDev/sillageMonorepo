@@ -120,12 +120,13 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
           <MaterialCommunityIcons name={icon} size={24} color={iconColor} />
         </View>
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text
-            style={[adminStyles.cardTitle, Platform.OS === 'web' && { cursor: 'pointer' } as any]}
-            onPress={handleTitlePress}
-          >
-            {displayName}
-          </Text>
+          <TouchableOpacity onPress={handleTitlePress} activeOpacity={0.7}>
+            <Text
+              style={[adminStyles.cardTitle, Platform.OS === 'web' && { cursor: 'pointer' } as any]}
+            >
+              {displayName}
+            </Text>
+          </TouchableOpacity>
           <Text style={adminStyles.cardSubtitle}>
             {data.is_paid_tier ? 'Modo Pago' : 'Free Tier'}
           </Text>
@@ -171,33 +172,52 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
         </View>
       )}
 
-      {/* Uso Diario */}
-      <View style={{ marginBottom: 16 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-          <Text style={adminStyles.label}>Uso Hoy</Text>
-          <Text style={adminStyles.value}>
-            {formatNumber(data.today.calls)} / {formatNumber(data.today.limit)}
-          </Text>
+      {/* Uso Diario - Solo mostrar si hay límite diario */}
+      {data.today.limit > 0 ? (
+        <View style={{ marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={adminStyles.label}>Uso Hoy</Text>
+            <Text style={adminStyles.value}>
+              {formatNumber(data.today.calls)} / {formatNumber(data.today.limit)}
+            </Text>
+          </View>
+          <View style={{ height: 8, backgroundColor: AdminColors.gray200, borderRadius: 4, overflow: 'hidden' }}>
+            <View
+              style={{
+                height: '100%',
+                width: `${Math.min(data.today.percentage, 100)}%`,
+                backgroundColor: getProgressColor(data.today.percentage),
+                borderRadius: 4,
+              }}
+            />
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
+            <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
+              {data.today.percentage.toFixed(1)}% del límite de {limitType} diario
+            </Text>
+            <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
+              {data.is_paid_tier ? `$${todayCost.toFixed(4)} USD` : '$0.00 (Free)'}
+            </Text>
+          </View>
         </View>
-        <View style={{ height: 8, backgroundColor: AdminColors.gray200, borderRadius: 4, overflow: 'hidden' }}>
-          <View
-            style={{
-              height: '100%',
-              width: `${Math.min(data.today.percentage, 100)}%`,
-              backgroundColor: getProgressColor(data.today.percentage),
-              borderRadius: 4,
-            }}
-          />
+      ) : (
+        <View style={{ marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={adminStyles.label}>Uso Hoy</Text>
+            <Text style={adminStyles.value}>
+              {formatNumber(data.today.calls)} llamadas
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
+            <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
+              Sin límite diario
+            </Text>
+            <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
+              {data.is_paid_tier ? `$${todayCost.toFixed(4)} USD` : '$0.00 (Free)'}
+            </Text>
+          </View>
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
-          <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
-            {data.today.percentage.toFixed(1)}% del límite de {limitType} diario
-          </Text>
-          <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
-            {data.is_paid_tier ? `$${todayCost.toFixed(4)} USD` : '$0.00 (Free)'}
-          </Text>
-        </View>
-      </View>
+      )}
 
       {/* Uso Mensual */}
       <View style={{ marginBottom: 16 }}>
@@ -252,17 +272,6 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
         </View>
       )}
 
-      {/* Costo estimado (solo en modo Paid y si hay uso) */}
-      {data.is_paid_tier && data.month.calls > 0 && (
-        <View style={{ borderTopWidth: 1, borderTopColor: AdminColors.border, paddingTop: 12, marginTop: 12 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={adminStyles.label}>Costo Estimado (Mes)</Text>
-            <Text style={[adminStyles.value, { color: AdminColors.error }]}>
-              ${monthCost.toFixed(4)} USD
-            </Text>
-          </View>
-        </View>
-      )}
     </View>
   );
 }

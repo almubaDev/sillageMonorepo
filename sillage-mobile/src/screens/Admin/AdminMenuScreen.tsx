@@ -86,6 +86,14 @@ const menuItems: MenuItem[] = [
     iconColor: '#F97316',
     screen: 'APIUsage',
   },
+  {
+    id: 'admin-tools',
+    title: 'Herramientas',
+    description: 'Acciones de reseteo y mantenimiento',
+    icon: 'wrench',
+    iconColor: '#EF4444',
+    screen: 'AdminTools',
+  },
 ];
 
 export default function AdminMenuScreen() {
