@@ -119,21 +119,20 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
   const updateLocation = async (lat: number, lng: number, geocoder: any, isFromSearch: boolean = false) => {
     // Si ya se usó el ajuste después de una búsqueda, no permitir más cambios
     if (!isFromSearch && hasSearched && adjustmentUsed) {
-      Alert.alert(
-        t('recommend:step8.adjustmentUsed'),
-        t('recommend:step8.tryAgain')
-      );
-      return;
+      return; // Silenciosamente ignorar - el mapa ya no debería responder
+    }
+
+    // IMPORTANTE: Marcar ajuste como usado ANTES de hacer el geocode
+    // para evitar múltiples clicks mientras se procesa
+    if (!isFromSearch && hasSearched) {
+      setAdjustmentUsed(true);
     }
 
     try {
       geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
-        // Si ya se había buscado y no es una búsqueda nueva, marcar el ajuste como usado
+        // Solo reportar si NO es un ajuste (click inicial sin búsqueda previa)
         // El ajuste es gratis (no se reporta al backend)
-        if (!isFromSearch && hasSearched) {
-          setAdjustmentUsed(true);
-        } else if (!isFromSearch) {
-          // Solo reportar si NO es un ajuste (es un click inicial sin búsqueda previa)
+        if (!isFromSearch && !hasSearched) {
           reportMapsUsage('reverse_geocode');
         }
 

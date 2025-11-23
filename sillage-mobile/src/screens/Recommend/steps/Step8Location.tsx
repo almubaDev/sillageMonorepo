@@ -37,14 +37,16 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
   const handleMapPress = async (event: any) => {
     // Si ya se usó el ajuste después de una búsqueda, no permitir más cambios
     if (hasSearched && adjustmentUsed) {
-      Alert.alert(
-        t('recommend:step8.adjustmentUsed'),
-        t('recommend:step8.tryAgain')
-      );
-      return;
+      return; // Silenciosamente ignorar - el mapa ya no debería responder
     }
 
     const { latitude, longitude } = event.nativeEvent.coordinate;
+
+    // IMPORTANTE: Marcar ajuste como usado ANTES de hacer el fetch
+    // para evitar múltiples clicks mientras se procesa
+    if (hasSearched) {
+      setAdjustmentUsed(true);
+    }
 
     try {
       const response = await fetch(
@@ -52,12 +54,9 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
       );
       const data = await response.json();
 
-      // Si ya se había buscado, marcar el ajuste como usado
+      // Solo reportar si NO es un ajuste (click inicial sin búsqueda previa)
       // El ajuste es gratis (no se reporta al backend)
-      if (hasSearched) {
-        setAdjustmentUsed(true);
-      } else {
-        // Solo reportar si NO es un ajuste (es un click inicial sin búsqueda previa)
+      if (!hasSearched) {
         reportMapsUsage('reverse_geocode');
       }
 
