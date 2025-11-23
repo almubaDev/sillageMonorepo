@@ -172,11 +172,56 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
         </View>
       )}
 
+      {/* Tokens (solo para Gemini) - Ahora en la parte superior */}
+      {name === 'gemini' && (
+        <View style={{ marginBottom: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: AdminColors.border }}>
+          <Text style={[adminStyles.label, { marginBottom: 12 }]}>Tokens Consumidos (Cobro)</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: AdminColors.textPrimary }}>{formatNumber(data.today.tokens_input || 0)}</Text>
+              <Text style={adminStyles.statsCardLabel}>Input Hoy</Text>
+              <Text style={{ fontSize: 10, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary, marginTop: 2 }}>
+                {data.is_paid_tier ? `$${(((data.today.tokens_input || 0) / 1000000) * 0.10).toFixed(4)}` : '$0.00'}
+              </Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: AdminColors.textPrimary }}>{formatNumber(data.today.tokens_output || 0)}</Text>
+              <Text style={adminStyles.statsCardLabel}>Output Hoy</Text>
+              <Text style={{ fontSize: 10, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary, marginTop: 2 }}>
+                {data.is_paid_tier ? `$${(((data.today.tokens_output || 0) / 1000000) * 0.40).toFixed(4)}` : '$0.00'}
+              </Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: AdminColors.textPrimary }}>{formatNumber(data.month.tokens_input || 0)}</Text>
+              <Text style={adminStyles.statsCardLabel}>Input Mes</Text>
+              <Text style={{ fontSize: 10, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary, marginTop: 2 }}>
+                {data.is_paid_tier ? `$${(((data.month.tokens_input || 0) / 1000000) * 0.10).toFixed(4)}` : '$0.00'}
+              </Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: AdminColors.textPrimary }}>{formatNumber(data.month.tokens_output || 0)}</Text>
+              <Text style={adminStyles.statsCardLabel}>Output Mes</Text>
+              <Text style={{ fontSize: 10, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary, marginTop: 2 }}>
+                {data.is_paid_tier ? `$${(((data.month.tokens_output || 0) / 1000000) * 0.40).toFixed(4)}` : '$0.00'}
+              </Text>
+            </View>
+          </View>
+          {/* Costo total del mes */}
+          <View style={{ marginTop: 12, alignItems: 'center' }}>
+            <Text style={{ fontSize: 12, color: AdminColors.textSecondary }}>
+              Costo Total Mes: <Text style={{ fontWeight: '600', color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
+                {data.is_paid_tier ? `$${monthCost.toFixed(4)} USD` : '$0.00 (Free Tier)'}
+              </Text>
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* Uso Diario - Solo mostrar si hay límite diario */}
       {data.today.limit > 0 ? (
         <View style={{ marginBottom: 16 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-            <Text style={adminStyles.label}>Uso Hoy</Text>
+            <Text style={adminStyles.label}>Llamadas Hoy</Text>
             <Text style={adminStyles.value}>
               {formatNumber(data.today.calls)} / {formatNumber(data.today.limit)}
             </Text>
@@ -191,38 +236,28 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
               }}
             />
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
-            <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
-              {data.today.percentage.toFixed(1)}% del límite de {limitType} diario
-            </Text>
-            <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
-              {data.is_paid_tier ? `$${todayCost.toFixed(4)} USD` : '$0.00 (Free)'}
-            </Text>
-          </View>
+          <Text style={{ fontSize: 11, color: AdminColors.textSecondary, marginTop: 2 }}>
+            {data.today.percentage.toFixed(1)}% del límite diario
+          </Text>
         </View>
       ) : (
         <View style={{ marginBottom: 16 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-            <Text style={adminStyles.label}>Uso Hoy</Text>
+            <Text style={adminStyles.label}>Llamadas Hoy</Text>
             <Text style={adminStyles.value}>
               {formatNumber(data.today.calls)} llamadas
             </Text>
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
-            <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
-              Sin límite diario
-            </Text>
-            <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
-              {data.is_paid_tier ? `$${todayCost.toFixed(4)} USD` : '$0.00 (Free)'}
-            </Text>
-          </View>
+          <Text style={{ fontSize: 11, color: AdminColors.textSecondary, marginTop: 2 }}>
+            Sin límite diario
+          </Text>
         </View>
       )}
 
       {/* Uso Mensual */}
-      <View style={{ marginBottom: 16 }}>
+      <View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-          <Text style={adminStyles.label}>Uso Este Mes</Text>
+          <Text style={adminStyles.label}>Llamadas Este Mes</Text>
           <Text style={adminStyles.value}>
             {formatNumber(data.month.calls)} / {formatNumber(data.month.limit)}
           </Text>
@@ -239,38 +274,16 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
           <Text style={{ fontSize: 11, color: AdminColors.textSecondary }}>
-            {data.month.percentage.toFixed(1)}% del límite de {limitType} mensual
+            {data.month.percentage.toFixed(1)}% del límite mensual
           </Text>
-          <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
-            {data.is_paid_tier ? `$${monthCost.toFixed(4)} USD` : '$0.00 (Free)'}
-          </Text>
+          {/* Solo mostrar costo en barras para APIs que NO son Gemini */}
+          {name !== 'gemini' && (
+            <Text style={{ fontSize: 11, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary }}>
+              {data.is_paid_tier ? `$${monthCost.toFixed(4)} USD` : '$0.00 (Free)'}
+            </Text>
+          )}
         </View>
       </View>
-
-      {/* Tokens (solo para Gemini) */}
-      {name === 'gemini' && (
-        <View style={{ borderTopWidth: 1, borderTopColor: AdminColors.border, paddingTop: 12 }}>
-          <Text style={[adminStyles.label, { marginBottom: 8 }]}>Tokens Consumidos</Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={adminStyles.statsCardValue}>{formatNumber(data.today.tokens_input || 0)}</Text>
-              <Text style={adminStyles.statsCardLabel}>Input Hoy</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={adminStyles.statsCardValue}>{formatNumber(data.today.tokens_output || 0)}</Text>
-              <Text style={adminStyles.statsCardLabel}>Output Hoy</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={adminStyles.statsCardValue}>{formatNumber(data.month.tokens_input || 0)}</Text>
-              <Text style={adminStyles.statsCardLabel}>Input Mes</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={adminStyles.statsCardValue}>{formatNumber(data.month.tokens_output || 0)}</Text>
-              <Text style={adminStyles.statsCardLabel}>Output Mes</Text>
-            </View>
-          </View>
-        </View>
-      )}
 
     </View>
   );
