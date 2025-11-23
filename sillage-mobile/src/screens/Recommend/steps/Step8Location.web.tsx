@@ -128,12 +128,13 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
 
     try {
       geocoder.geocode({ location: { lat, lng } }, (results: any, status: any) => {
-        // Reportar uso de Maps al backend para tracking
-        reportMapsUsage('reverse_geocode');
-
         // Si ya se había buscado y no es una búsqueda nueva, marcar el ajuste como usado
+        // El ajuste es gratis (no se reporta al backend)
         if (!isFromSearch && hasSearched) {
           setAdjustmentUsed(true);
+        } else if (!isFromSearch) {
+          // Solo reportar si NO es un ajuste (es un click inicial sin búsqueda previa)
+          reportMapsUsage('reverse_geocode');
         }
 
         if (status === 'OK' && results[0]) {
@@ -258,6 +259,19 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
         </TouchableOpacity>
       </View>
 
+      {/* Indicador de ajuste - debajo del input */}
+      {hasSearched && value.latitud && value.longitud && (
+        <Text style={[
+          styles.adjustmentText,
+          { color: adjustmentUsed ? colors.secondary : colors.accent }
+        ]}>
+          {adjustmentUsed
+            ? t('recommend:step8.adjustmentUsed')
+            : t('recommend:step8.adjustmentAvailable')
+          }
+        </Text>
+      )}
+
       <View style={styles.mapContainer}>
         {!mapLoaded && (
           <View style={styles.loading}>
@@ -278,35 +292,6 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
           }}
         />
       </View>
-
-      {/* Indicador de ajuste disponible */}
-      {hasSearched && value.latitud && value.longitud && (
-        <View style={[
-          styles.adjustmentIndicator,
-          {
-            backgroundColor: adjustmentUsed ? colors.secondary + '20' : colors.accent + '20',
-            borderColor: adjustmentUsed ? colors.secondary : colors.accent,
-          }
-        ]}>
-          <MaterialCommunityIcons
-            name={adjustmentUsed ? "map-marker-off" : "map-marker-radius"}
-            size={16}
-            color={adjustmentUsed ? colors.secondary : colors.accent}
-          />
-          <Text style={[
-            styles.adjustmentText,
-            {
-              color: adjustmentUsed ? colors.secondary : colors.accent,
-              fontFamily: 'Lato-Regular',
-            }
-          ]}>
-            {adjustmentUsed
-              ? t('recommend:step8.adjustmentUsed')
-              : t('recommend:step8.adjustmentAvailable')
-            }
-          </Text>
-        </View>
-      )}
 
       {value.latitud && value.longitud && (
         <View style={[styles.selectedContainer, { backgroundColor: colors.accent + '10', borderColor: colors.accent }]}>
@@ -347,7 +332,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   searchInput: {
     flex: 1,
@@ -405,17 +390,9 @@ const styles = StyleSheet.create({
   selectedAddress: {
     fontSize: 12,
   },
-  adjustmentIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginTop: 10,
-    borderWidth: 1,
-  },
   adjustmentText: {
     fontSize: 12,
+    marginBottom: 10,
+    fontFamily: 'Lato-Regular',
   },
 });
