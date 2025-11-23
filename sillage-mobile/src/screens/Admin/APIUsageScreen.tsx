@@ -3,10 +3,17 @@
  * Muestra consumo de Gemini, OpenWeather y Google Maps
  */
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Switch, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Switch, RefreshControl, Linking, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { adminStyles, AdminColors } from './adminStyles';
 import { adminService, APIUsageSummary, APIConfigInfo } from '../../services/adminService';
+
+// URLs de los servicios de API
+const API_URLS = {
+  gemini: 'https://aistudio.google.com/',
+  openweather: 'https://openweathermap.org/api',
+  google_maps: 'https://console.cloud.google.com/apis/library/geocoding-backend.googleapis.com',
+};
 
 // Costos por API (para calcular estimados)
 const API_COSTS = {
@@ -50,10 +57,15 @@ interface APICardProps {
   data: APIUsageSummary[keyof APIUsageSummary] | undefined;
   config: APIConfigInfo | undefined;
   onToggleTier: (apiName: string, isPaid: boolean) => void;
+  url: string;
 }
 
-function APICard({ name, displayName, icon, iconColor, data, config, onToggleTier }: APICardProps) {
+function APICard({ name, displayName, icon, iconColor, data, config, onToggleTier, url }: APICardProps) {
   if (!data) return null;
+
+  const handleTitlePress = () => {
+    Linking.openURL(url);
+  };
 
   const getProgressColor = (percentage: number) => {
     if (percentage >= 95) return AdminColors.error;
@@ -108,7 +120,12 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
           <MaterialCommunityIcons name={icon} size={24} color={iconColor} />
         </View>
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={adminStyles.cardTitle}>{displayName}</Text>
+          <Text
+            style={[adminStyles.cardTitle, Platform.OS === 'web' && { cursor: 'pointer' } as any]}
+            onPress={handleTitlePress}
+          >
+            {displayName}
+          </Text>
           <Text style={adminStyles.cardSubtitle}>
             {data.is_paid_tier ? 'Modo Pago' : 'Free Tier'}
           </Text>
@@ -354,6 +371,7 @@ export default function APIUsageScreen() {
           data={summary?.gemini}
           config={getConfig('gemini')}
           onToggleTier={handleToggleTier}
+          url={API_URLS.gemini}
         />
 
         <APICard
@@ -364,6 +382,7 @@ export default function APIUsageScreen() {
           data={summary?.openweather}
           config={getConfig('openweather')}
           onToggleTier={handleToggleTier}
+          url={API_URLS.openweather}
         />
 
         <APICard
@@ -374,6 +393,7 @@ export default function APIUsageScreen() {
           data={summary?.google_maps}
           config={getConfig('google_maps')}
           onToggleTier={handleToggleTier}
+          url={API_URLS.google_maps}
         />
 
         {/* Limites Reference - Dinámico según tier */}
