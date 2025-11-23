@@ -2,7 +2,7 @@
  * AdminToolsScreen - Herramientas administrativas con acciones críticas
  * Requiere confirmación de contraseña para operaciones sensibles
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,10 +13,11 @@ import {
   ActivityIndicator,
   Modal,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { adminStyles, AdminColors } from './adminStyles';
-import { adminService, ResetResponse } from '../../services/adminService';
+import { adminService, ResetResponse, FinancialSnapshot } from '../../services/adminService';
 
 type ToolAction = 'reset_gifted_consultations' | 'reset_api_usage_all' | 'reset_api_usage_gemini' | 'reset_api_usage_openweather' | 'reset_api_usage_google_maps';
 
@@ -84,6 +85,32 @@ export default function AdminToolsScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Financial Snapshots
+  const [snapshots, setSnapshots] = useState<FinancialSnapshot[]>([]);
+  const [snapshotsLoading, setSnapshotsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadSnapshots = async () => {
+    try {
+      const data = await adminService.getFinancialSnapshots(30);
+      setSnapshots(data);
+    } catch (error) {
+      console.error('Error loading snapshots:', error);
+    } finally {
+      setSnapshotsLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadSnapshots();
+  };
+
+  useEffect(() => {
+    loadSnapshots();
+  }, []);
+
   const handleToolPress = (tool: ToolConfig) => {
     setSelectedTool(tool);
     setPassword('');
@@ -143,6 +170,9 @@ export default function AdminToolsScreen() {
       <ScrollView
         style={adminStyles.scrollContainer}
         contentContainerStyle={adminStyles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <View style={adminStyles.pageHeader}>
           <Text style={adminStyles.pageTitle}>Herramientas de Admin</Text>
@@ -221,6 +251,96 @@ export default function AdminToolsScreen() {
             </View>
           </TouchableOpacity>
         ))}
+
+        {/* Financial Logs Section */}
+        <Text style={[adminStyles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
+          Historial Financiero Diario
+        </Text>
+
+        <View style={[adminStyles.card, { padding: 0, overflow: 'hidden' }]}>
+          {/* Table Header */}
+          <View style={{
+            flexDirection: 'row',
+            backgroundColor: AdminColors.gray100,
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: AdminColors.gray200,
+          }}>
+            <Text style={{ flex: 1.2, fontSize: 12, fontWeight: '600', color: AdminColors.textSecondary }}>
+              Fecha
+            </Text>
+            <Text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: AdminColors.textSecondary, textAlign: 'right' }}>
+              Ingresos
+            </Text>
+            <Text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: AdminColors.textSecondary, textAlign: 'right' }}>
+              Gastos
+            </Text>
+            <Text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: AdminColors.textSecondary, textAlign: 'right' }}>
+              Margen
+            </Text>
+          </View>
+
+          {/* Table Body */}
+          {snapshotsLoading ? (
+            <View style={{ padding: 24, alignItems: 'center' }}>
+              <ActivityIndicator size="small" color={AdminColors.primary} />
+              <Text style={{ marginTop: 8, fontSize: 13, color: AdminColors.textSecondary }}>
+                Cargando historial...
+              </Text>
+            </View>
+          ) : snapshots.length === 0 ? (
+            <View style={{ padding: 24, alignItems: 'center' }}>
+              <MaterialCommunityIcons name="calendar-blank" size={32} color={AdminColors.gray400} />
+              <Text style={{ marginTop: 8, fontSize: 13, color: AdminColors.textSecondary }}>
+                No hay registros aún
+              </Text>
+              <Text style={{ marginTop: 4, fontSize: 12, color: AdminColors.gray400, textAlign: 'center' }}>
+                Los snapshots se generan automáticamente cada día
+              </Text>
+            </View>
+          ) : (
+            snapshots.map((snapshot, index) => {
+              const marginColor = snapshot.margin >= 0 ? AdminColors.success : AdminColors.error;
+              return (
+                <View
+                  key={snapshot.date}
+                  style={{
+                    flexDirection: 'row',
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    backgroundColor: index % 2 === 0 ? AdminColors.white : AdminColors.gray50,
+                    borderBottomWidth: index < snapshots.length - 1 ? 1 : 0,
+                    borderBottomColor: AdminColors.gray100,
+                  }}
+                >
+                  <Text style={{ flex: 1.2, fontSize: 13, color: AdminColors.textPrimary }}>
+                    {new Date(snapshot.date + 'T00:00:00').toLocaleDateString('es-ES', {
+                      day: '2-digit',
+                      month: 'short',
+                    })}
+                  </Text>
+                  <Text style={{ flex: 1, fontSize: 13, color: AdminColors.success, textAlign: 'right', fontWeight: '500' }}>
+                    ${snapshot.revenue.toFixed(2)}
+                  </Text>
+                  <Text style={{ flex: 1, fontSize: 13, color: AdminColors.error, textAlign: 'right', fontWeight: '500' }}>
+                    ${snapshot.api_costs_total.toFixed(2)}
+                  </Text>
+                  <Text style={{ flex: 1, fontSize: 13, color: marginColor, textAlign: 'right', fontWeight: '600' }}>
+                    ${snapshot.margin.toFixed(2)}
+                  </Text>
+                </View>
+              );
+            })
+          )}
+        </View>
+
+        {/* Info Note */}
+        <View style={{ marginTop: 12, marginBottom: 24 }}>
+          <Text style={{ fontSize: 12, color: AdminColors.gray400, textAlign: 'center' }}>
+            Los snapshots se generan automáticamente al acceder al panel de admin
+          </Text>
+        </View>
       </ScrollView>
 
       {/* Confirmation Modal */}

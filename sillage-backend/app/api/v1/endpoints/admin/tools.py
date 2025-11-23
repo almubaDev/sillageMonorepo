@@ -3,11 +3,13 @@
 Endpoints de herramientas de administración con acciones críticas.
 Todas las acciones requieren confirmación de contraseña del superusuario.
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+from datetime import date, timedelta
+from decimal import Decimal
 
 from app.core.database import get_db
 from app.core.permissions import require_superuser
@@ -15,6 +17,12 @@ from app.core.security import verify_password
 from app.models.user import User
 from app.models.api_usage import APIUsageLog, APIDailyUsage
 from app.models.role import GiftedConsultation
+from app.services.financial_snapshot import (
+    get_snapshots,
+    get_snapshot_summary,
+    backfill_missing_snapshots,
+    ensure_yesterday_snapshot,
+)
 
 router = APIRouter(prefix="/admin/tools", tags=["Admin - Tools"])
 
@@ -40,6 +48,34 @@ class ResetResponse(BaseModel):
     success: bool
     message: str
     affected_records: int
+
+
+class FinancialSnapshotResponse(BaseModel):
+    date: date
+    revenue: float
+    transactions_count: int
+    api_costs_gemini: float
+    api_costs_openweather: float
+    api_costs_google_maps: float
+    api_costs_total: float
+    margin: float
+
+    class Config:
+        from_attributes = True
+
+
+class SnapshotSummaryResponse(BaseModel):
+    total_revenue: float
+    total_costs: float
+    total_margin: float
+    total_transactions: int
+    days_count: int
+
+
+class BackfillResponse(BaseModel):
+    success: bool
+    message: str
+    snapshots_created: int
 
 
 # ========================================================================
@@ -175,3 +211,78 @@ async def verify_admin_password(
         raise HTTPException(status_code=403, detail="Contraseña incorrecta")
 
     return {"valid": True, "message": "Contraseña verificada correctamente"}
+
+
+# ========================================================================
+# FINANCIAL SNAPSHOTS ENDPOINTS
+# ========================================================================
+
+@router.get("/financial-snapshots", response_model=List[FinancialSnapshotResponse])
+async def list_financial_snapshots(
+    days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_superuser)
+):
+    """
+    Listar snapshots financieros de los últimos N días.
+    También ejecuta lazy snapshot para asegurar que ayer tenga datos.
+    """
+    # Lazy snapshot: asegurar que ayer tenga snapshot
+    await ensure_yesterday_snapshot(db)
+
+    # Obtener snapshots
+    end_date = date.today() - timedelta(days=1)  # Hasta ayer
+    start_date = end_date - timedelta(days=days)
+
+    snapshots = await get_snapshots(db, start_date=start_date, end_date=end_date, limit=days)
+
+    return [
+        FinancialSnapshotResponse(
+            date=s.date,
+            revenue=float(s.revenue or 0),
+            transactions_count=s.transactions_count or 0,
+            api_costs_gemini=float(s.api_costs_gemini or 0),
+            api_costs_openweather=float(s.api_costs_openweather or 0),
+            api_costs_google_maps=float(s.api_costs_google_maps or 0),
+            api_costs_total=float(s.api_costs_total or 0),
+            margin=float(s.margin or 0),
+        )
+        for s in snapshots
+    ]
+
+
+@router.get("/financial-snapshots/summary", response_model=SnapshotSummaryResponse)
+async def get_financial_snapshots_summary(
+    days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_superuser)
+):
+    """
+    Obtener resumen de snapshots financieros de los últimos N días.
+    """
+    # Lazy snapshot
+    await ensure_yesterday_snapshot(db)
+
+    summary = await get_snapshot_summary(db, days=days)
+    return SnapshotSummaryResponse(**summary)
+
+
+@router.post("/financial-snapshots/backfill", response_model=BackfillResponse)
+async def backfill_financial_snapshots(
+    days: int = Query(30, ge=1, le=90),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_superuser)
+):
+    """
+    Crear snapshots retroactivos para los últimos N días.
+    Útil para recuperar datos históricos.
+    """
+    try:
+        created = await backfill_missing_snapshots(db, days=days)
+        return BackfillResponse(
+            success=True,
+            message=f"Se crearon {len(created)} snapshots para los últimos {days} días",
+            snapshots_created=len(created)
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al crear snapshots: {str(e)}")

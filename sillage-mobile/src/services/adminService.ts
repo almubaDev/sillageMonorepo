@@ -185,6 +185,33 @@ export interface ResetResponse {
   affected_records: number;
 }
 
+// ==================== FINANCIAL SNAPSHOTS ====================
+
+export interface FinancialSnapshot {
+  date: string;
+  revenue: number;
+  transactions_count: number;
+  api_costs_gemini: number;
+  api_costs_openweather: number;
+  api_costs_google_maps: number;
+  api_costs_total: number;
+  margin: number;
+}
+
+export interface SnapshotSummary {
+  total_revenue: number;
+  total_costs: number;
+  total_margin: number;
+  total_transactions: number;
+  days_count: number;
+}
+
+export interface BackfillResponse {
+  success: boolean;
+  message: string;
+  snapshots_created: number;
+}
+
 // ==================== API USAGE ====================
 
 export interface APIUsageLimitInfo {
@@ -421,6 +448,28 @@ export const adminService = {
     const response = await api.post<ResetResponse>('/admin/tools/reset-api-usage', {
       password,
       api_name: apiName
+    });
+    return response.data;
+  },
+
+  // ========== FINANCIAL SNAPSHOTS ==========
+  async getFinancialSnapshots(days: number = 30): Promise<FinancialSnapshot[]> {
+    const response = await api.get<FinancialSnapshot[]>('/admin/tools/financial-snapshots', {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  async getSnapshotSummary(days: number = 30): Promise<SnapshotSummary> {
+    const response = await api.get<SnapshotSummary>('/admin/tools/financial-snapshots/summary', {
+      params: { days }
+    });
+    return response.data;
+  },
+
+  async backfillSnapshots(days: number = 30): Promise<BackfillResponse> {
+    const response = await api.post<BackfillResponse>('/admin/tools/financial-snapshots/backfill', null, {
+      params: { days }
     });
     return response.data;
   },
