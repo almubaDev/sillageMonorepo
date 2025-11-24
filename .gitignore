@@ -4,7 +4,8 @@
 
 # --- Claude Code ---
 .claude/
-
+respuesta.txt
+¿Cómo elegir tu Fragancia para cada estación del año_ _ Perfumes para Cada Clima del año.es.srt
 # --- Python bytecode & cache ---
 sillage-backend/__pycache__/
 sillage-backend/**/__pycache__/

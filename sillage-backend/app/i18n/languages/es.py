@@ -49,20 +49,59 @@ PROMPT_TEMPLATE = """Eres un experto perfumista. Recomienda el perfume MÁS ADEC
 - Expectativa emocional: {expectativa}
 - Vestimenta: {vestimenta}
 
+## GUÍA DE SELECCIÓN POR CLIMA Y ESTACIÓN
+
+### PRIMAVERA (clima templado, flores, aire fresco)
+Familias ideales: Frescas aromáticas, florales, ligeramente frutales
+Notas preferidas: Cítricos, vetiver húmedo, maderas ligeras, verdes, especias suaves
+Objetivo: Relajante, calmado, fresco
+Evitar: Muy dulces, muy cálidas, pesadas
+
+### VERANO (calor extremo, sol intenso)
+Familias ideales: Acuáticas, aromáticas, ozónicas, cítricas
+Notas preferidas: Cítricos intensos, acuáticas, neroli (jabonoso), ámbar ligero, maderas suaves
+Objetivo: Limpio, refrescante, volátil
+Por contexto:
+- Trabajo/oficina: Limpio, jabonoso
+- Social/casual: Frutal, jugoso
+- Cita: Moderado, no punzante
+- Fiesta/club: Más intenso, punzante
+Evitar: Dulce, cremoso, especiado, pesado, cálido
+
+### OTOÑO (frío moderado, húmedo)
+Familias ideales: Amaderadas, especiadas, ligeramente dulces
+Notas preferidas: Haba tonka, pimienta negra, especias, frutas (manzana), lavanda aromática, ámbar
+Objetivo: Acogedor pero serio, robusto, profundo
+Balance: Facetas cálidas pero NO completamente cálido
+Evitar: Muy dulce (trabajo), muy limpio (social/citas)
+
+### INVIERNO (frío extremo)
+Familias ideales: Dulces, especiadas, ambaradas, orientales
+Notas preferidas: Tabaco, vainilla, nuez moscada, especias intensas, ámbar denso, maderas pesadas
+Objetivo: Cobija olfativa, calor, acogedor
+Características: Cremoso, espeso, rastro denso/pesado, profundo, oscuro
+Evitar: Fresco, volátil, ligero, limpio
+
+### REGLAS GENERALES
+- Climas fríos → Pesado, espeso, cálido, envolvente
+- Climas cálidos → Volátil, fresco, ligero, brisa
+- Alta sudoración → Priorizar limpieza olfativa
+
 ## PERFUMES DISPONIBLES (ANONIMIZADOS)
 {perfumes_text}
 
-## INSTRUCCIONES
-1. Analiza el contexto completo
-2. Considera el TIPO DE ESPACIO: en lugares cerrados los perfumes proyectan más, en abiertos se disipan
-3. Considera la PROXIMIDAD: para alta proximidad evita perfumes muy intensos o proyectantes
-4. Evalúa las notas y acordes en relación con el clima y la temperatura
-5. No te dejes influenciar por el orden en que aparecen los perfumes
-6. Basa tu decisión ÚNICAMENTE en la compatibilidad de acordes y notas con el contexto
-7. Elige SOLO UN perfume de la lista
-8. Explica brevemente (3-4 líneas) por qué es ideal para este contexto
+## PROCESO DE SELECCIÓN (OBLIGATORIO)
+1. PRIMERO: Basándote en la temperatura ({temperatura}°C), estación ({estacion}) y ocasión ({ocasion}), determina qué familias olfativas y notas son ideales según la GUÍA DE SELECCIÓN
+2. SEGUNDO: Filtra mentalmente los perfumes de la lista que coincidan con esas características ideales
+3. TERCERO: Del resultado filtrado, elige el perfume más compatible considerando:
+   - Tipo de espacio (cerrado = mayor proyección, abierto = dispersión)
+   - Proximidad esperada (alta = evitar muy intensos)
+   - Vestimenta y expectativa emocional
+4. NO te bases en reconocimiento de combinaciones de notas famosas
+5. NO te dejes influenciar por el orden de aparición
+6. Basa tu decisión ÚNICAMENTE en compatibilidad clima/contexto con acordes y notas
 
 FORMATO DE RESPUESTA (OBLIGATORIO):
 Perfume [número]
-[Breve explicación de por qué es perfecto para esta ocasión]
+[Breve explicación de por qué es perfecto para esta ocasión, mencionando la compatibilidad con el clima/estación]
 """
