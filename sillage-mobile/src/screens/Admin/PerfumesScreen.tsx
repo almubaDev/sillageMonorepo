@@ -14,6 +14,8 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+import * as DocumentPicker from 'expo-document-picker';
 import { adminStyles, AdminColors } from './adminStyles';
 import { adminService, AdminPerfume } from '../../services/adminService';
 
@@ -26,6 +28,8 @@ const formatName = (name: string): string => {
 };
 
 export default function PerfumesScreen() {
+  const { t } = useTranslation();
+
   // Estados principales
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -287,6 +291,45 @@ export default function PerfumesScreen() {
     }
   };
 
+  const handleCsvUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'text/csv',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      setLoading(true);
+      const file = result.assets[0];
+
+      // Crear FormData
+      const formData = new FormData();
+      formData.append('file', {
+        uri: file.uri,
+        type: 'text/csv',
+        name: file.name,
+      } as any);
+
+      const response = await adminService.uploadCsvPerfumes(formData);
+
+      Alert.alert(
+        t('admin:tools.uploadCsvSimple.successTitle'),
+        t('admin:tools.uploadCsvSimple.successMessage', {
+          success: response.success_count,
+          errors: response.error_count,
+        })
+      );
+
+      // Recargar lista de perfumes
+      await loadPerfumes();
+    } catch (error: any) {
+      Alert.alert(t('common:error'), error.message || 'Error al cargar archivo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading && perfumes.length === 0) {
     return (
       <View style={adminStyles.loadingContainer}>
@@ -317,6 +360,13 @@ export default function PerfumesScreen() {
             >
               <MaterialCommunityIcons name="file-upload" size={20} color={AdminColors.textPrimary} />
               <Text style={[adminStyles.buttonText, adminStyles.buttonSecondaryText]}>Importar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[adminStyles.button, { backgroundColor: '#EC4899' }]}
+              onPress={handleCsvUpload}
+            >
+              <MaterialCommunityIcons name="file-upload" size={20} color={AdminColors.white} />
+              <Text style={adminStyles.buttonText}>{t('admin:tools.uploadCsvSimple.title')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={adminStyles.button} onPress={handleOpenCreate}>
               <MaterialCommunityIcons name="plus" size={20} color={AdminColors.white} />
