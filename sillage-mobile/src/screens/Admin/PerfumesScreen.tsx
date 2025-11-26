@@ -64,6 +64,9 @@ export default function PerfumesScreen() {
   const [bulkData, setBulkData] = useState('');
   const [bulkImporting, setBulkImporting] = useState(false);
 
+  // Estado CSV upload
+  const [csvUploading, setCsvUploading] = useState(false);
+
   useEffect(() => {
     loadPerfumes();
   }, [search]);
@@ -300,18 +303,22 @@ export default function PerfumesScreen() {
 
       if (result.canceled) return;
 
-      setLoading(true);
+      setCsvUploading(true);
       const file = result.assets[0];
 
-      // Crear FormData
-      const formData = new FormData();
-      formData.append('file', {
-        uri: file.uri,
-        type: 'text/csv',
-        name: file.name,
-      } as any);
+      console.log('📁 Archivo seleccionado:', file.name, file.uri);
 
+      // Leer el contenido del archivo
+      const fileResponse = await fetch(file.uri);
+      const blob = await fileResponse.blob();
+
+      // Crear FormData con el blob
+      const formData = new FormData();
+      formData.append('file', blob, file.name);
+
+      console.log('📤 Enviando archivo al servidor...');
       const response = await adminService.uploadCsvPerfumes(formData);
+      console.log('✅ Respuesta del servidor:', response);
 
       Alert.alert(
         t('admin:tools.uploadCsvSimple.successTitle'),
@@ -324,9 +331,16 @@ export default function PerfumesScreen() {
       // Recargar lista de perfumes
       await loadPerfumes();
     } catch (error: any) {
-      Alert.alert(t('common:error'), error.message || 'Error al cargar archivo');
+      console.error('❌ Error en handleCsvUpload:', error);
+      console.error('Error response:', error.response?.data);
+
+      const errorMsg = error.response?.data?.detail
+        || error.message
+        || 'Error al cargar archivo CSV';
+
+      Alert.alert(t('common:error'), errorMsg);
     } finally {
-      setLoading(false);
+      setCsvUploading(false);
     }
   };
 
@@ -362,11 +376,18 @@ export default function PerfumesScreen() {
               <Text style={[adminStyles.buttonText, adminStyles.buttonSecondaryText]}>Importar</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[adminStyles.button, { backgroundColor: '#EC4899' }]}
+              style={[adminStyles.button, { backgroundColor: '#EC4899' }, csvUploading && adminStyles.buttonDisabled]}
               onPress={handleCsvUpload}
+              disabled={csvUploading}
             >
-              <MaterialCommunityIcons name="file-upload" size={20} color={AdminColors.white} />
-              <Text style={adminStyles.buttonText}>{t('admin:tools.uploadCsvSimple.title')}</Text>
+              {csvUploading ? (
+                <ActivityIndicator color={AdminColors.white} size="small" />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="file-upload" size={20} color={AdminColors.white} />
+                  <Text style={adminStyles.buttonText}>{t('admin:tools.uploadCsvSimple.title')}</Text>
+                </>
+              )}
             </TouchableOpacity>
             <TouchableOpacity style={adminStyles.button} onPress={handleOpenCreate}>
               <MaterialCommunityIcons name="plus" size={20} color={AdminColors.white} />
