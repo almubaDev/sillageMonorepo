@@ -318,9 +318,42 @@ async def upload_perfumes_csv(
                 detail="No se encontraron perfumes válidos en el archivo CSV"
             )
 
-        # Reusar bulk endpoint existente
-        bulk_data = PerfumeBulkImport(perfumes=perfumes_data)
-        return await bulk_import_perfumes(bulk_data, request, db, current_user)
+        # Procesar en lotes de 100 perfumes (límite del bulk endpoint)
+        BATCH_SIZE = 100
+        total_success = 0
+        total_errors = 0
+        all_errors = []
+
+        logger.info(f"📦 Procesando {len(perfumes_data)} perfumes en lotes de {BATCH_SIZE}")
+
+        for i in range(0, len(perfumes_data), BATCH_SIZE):
+            batch = perfumes_data[i:i + BATCH_SIZE]
+            batch_num = (i // BATCH_SIZE) + 1
+            total_batches = (len(perfumes_data) + BATCH_SIZE - 1) // BATCH_SIZE
+
+            logger.info(f"📦 Procesando lote {batch_num}/{total_batches} ({len(batch)} perfumes)")
+
+            try:
+                bulk_data = PerfumeBulkImport(perfumes=batch)
+                result = await bulk_import_perfumes(bulk_data, request, db, current_user)
+
+                total_success += result.success_count
+                total_errors += result.error_count
+                if result.errors:
+                    all_errors.extend(result.errors)
+
+            except Exception as e:
+                logger.error(f"Error procesando lote {batch_num}: {e}")
+                total_errors += len(batch)
+                all_errors.append(f"Lote {batch_num}: {str(e)}")
+
+        logger.info(f"✅ CSV procesado: {total_success} éxitos, {total_errors} errores")
+
+        return PerfumeBulkImportResponse(
+            success_count=total_success,
+            error_count=total_errors,
+            errors=all_errors if all_errors else None
+        )
 
     except HTTPException:
         raise
