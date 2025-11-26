@@ -2,6 +2,8 @@
 /*.md
 !README.md
 perfumes_A_basic.csv
+render.yaml
+
 # --- Claude Code ---
 .claude/
 respuesta.txt
