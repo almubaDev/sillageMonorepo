@@ -16,10 +16,12 @@ import {
   RefreshControl,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import { useTranslation } from 'react-i18next';
 import { adminStyles, AdminColors } from './adminStyles';
 import { adminService, ResetResponse, FinancialSnapshot } from '../../services/adminService';
 
-type ToolAction = 'reset_gifted_consultations' | 'reset_api_usage_all' | 'reset_api_usage_gemini' | 'reset_api_usage_openweather' | 'reset_api_usage_google_maps';
+type ToolAction = 'reset_gifted_consultations' | 'reset_api_usage_all' | 'reset_api_usage_gemini' | 'reset_api_usage_openweather' | 'reset_api_usage_google_maps' | 'upload_csv_simple';
 
 interface ToolConfig {
   id: ToolAction;
@@ -27,8 +29,9 @@ interface ToolConfig {
   description: string;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   iconColor: string;
-  warningLevel: 'medium' | 'high';
-  category: 'consultations' | 'api';
+  warningLevel: 'low' | 'medium' | 'high';
+  category: 'consultations' | 'api' | 'perfumes';
+  requiresPassword?: boolean;
 }
 
 const TOOLS: ToolConfig[] = [
@@ -77,9 +80,20 @@ const TOOLS: ToolConfig[] = [
     warningLevel: 'medium',
     category: 'api',
   },
+  {
+    id: 'upload_csv_simple',
+    title: 'Carga Simple CSV',  // Será reemplazado por traducción
+    description: 'Cargar perfumes desde archivo CSV',
+    icon: 'file-upload',
+    iconColor: '#EC4899',  // Rosa/Pink
+    warningLevel: 'low',
+    category: 'perfumes',
+    requiresPassword: false,
+  },
 ];
 
 export default function AdminToolsScreen() {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTool, setSelectedTool] = useState<ToolConfig | null>(null);
   const [password, setPassword] = useState('');
@@ -111,7 +125,49 @@ export default function AdminToolsScreen() {
     loadSnapshots();
   }, []);
 
+  const handleCsvUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'text/csv',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      setLoading(true);
+      const file = result.assets[0];
+
+      // Crear FormData
+      const formData = new FormData();
+      formData.append('file', {
+        uri: file.uri,
+        type: 'text/csv',
+        name: file.name,
+      } as any);
+
+      const response = await adminService.uploadCsvPerfumes(formData);
+
+      Alert.alert(
+        t('admin:tools.uploadCsvSimple.successTitle'),
+        t('admin:tools.uploadCsvSimple.successMessage', {
+          success: response.success_count,
+          errors: response.error_count,
+        })
+      );
+    } catch (error: any) {
+      Alert.alert(t('common:error'), error.message || 'Error al cargar archivo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleToolPress = (tool: ToolConfig) => {
+    // Si es CSV upload, ejecutar directamente sin modal
+    if (tool.id === 'upload_csv_simple') {
+      handleCsvUpload();
+      return;
+    }
+
     setSelectedTool(tool);
     setPassword('');
     setModalVisible(true);
@@ -216,8 +272,12 @@ export default function AdminToolsScreen() {
                 <MaterialCommunityIcons name={tool.icon} size={24} color={tool.iconColor} />
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={adminStyles.cardTitle}>{tool.title}</Text>
-                <Text style={adminStyles.cardSubtitle}>{tool.description}</Text>
+                <Text style={adminStyles.cardTitle}>
+                  {tool.id === 'upload_csv_simple' ? t('admin:tools.uploadCsvSimple.title') : tool.title}
+                </Text>
+                <Text style={adminStyles.cardSubtitle}>
+                  {tool.id === 'upload_csv_simple' ? t('admin:tools.uploadCsvSimple.description') : tool.description}
+                </Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={24} color={AdminColors.gray400} />
             </View>
@@ -244,8 +304,44 @@ export default function AdminToolsScreen() {
                 <MaterialCommunityIcons name={tool.icon} size={24} color={tool.iconColor} />
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={adminStyles.cardTitle}>{tool.title}</Text>
-                <Text style={adminStyles.cardSubtitle}>{tool.description}</Text>
+                <Text style={adminStyles.cardTitle}>
+                  {tool.id === 'upload_csv_simple' ? t('admin:tools.uploadCsvSimple.title') : tool.title}
+                </Text>
+                <Text style={adminStyles.cardSubtitle}>
+                  {tool.id === 'upload_csv_simple' ? t('admin:tools.uploadCsvSimple.description') : tool.description}
+                </Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color={AdminColors.gray400} />
+            </View>
+          </TouchableOpacity>
+        ))}
+
+        {/* Perfumes Section */}
+        <Text style={[adminStyles.sectionTitle, { marginTop: 16, marginBottom: 12 }]}>
+          Gestión de Perfumes
+        </Text>
+
+        {TOOLS.filter(t => t.category === 'perfumes').map((tool) => (
+          <TouchableOpacity
+            key={tool.id}
+            style={[adminStyles.card, { marginBottom: 12 }]}
+            onPress={() => handleToolPress(tool)}
+            activeOpacity={0.7}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[
+                adminStyles.menuItemIcon,
+                { backgroundColor: 'rgba(236, 72, 153, 0.1)' }  // Rosa claro para perfumes
+              ]}>
+                <MaterialCommunityIcons name={tool.icon} size={24} color={tool.iconColor} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={adminStyles.cardTitle}>
+                  {tool.id === 'upload_csv_simple' ? t('admin:tools.uploadCsvSimple.title') : tool.title}
+                </Text>
+                <Text style={adminStyles.cardSubtitle}>
+                  {tool.id === 'upload_csv_simple' ? t('admin:tools.uploadCsvSimple.description') : tool.description}
+                </Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={24} color={AdminColors.gray400} />
             </View>

@@ -1,7 +1,10 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+import csv
+import io
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func, and_
+import logging
 
 from app.api.deps import get_db
 from app.models.user import User
@@ -20,6 +23,8 @@ from app.schemas.admin import (
     PaginatedResponse
 )
 from app.schemas.perfume import PerfumeResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/perfumes", tags=["Admin - Perfumes"])
 
@@ -243,6 +248,88 @@ async def bulk_import_perfumes(
         errors=errors,
         created_ids=created_ids
     )
+
+
+@router.post("/upload-csv", response_model=PerfumeBulkImportResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_permission(Permission.PERFUMES_WRITE))])
+async def upload_perfumes_csv(
+    file: UploadFile = File(...),
+    request: Request = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """
+    Upload CSV file with perfumes (simple format).
+    Expected columns: Perfume, Marca, URL, Acordes, Notas
+    Requiere permiso: PERFUMES_WRITE
+    """
+    # Validar extensión
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Solo se aceptan archivos CSV"
+        )
+
+    try:
+        # Leer archivo
+        content = await file.read()
+
+        # Decodificar con manejo de BOM UTF-8
+        try:
+            decoded = content.decode('utf-8-sig')
+        except UnicodeDecodeError:
+            decoded = content.decode('latin-1')
+
+        # Parse CSV
+        reader = csv.DictReader(io.StringIO(decoded))
+        perfumes_data = []
+
+        for idx, row in enumerate(reader):
+            try:
+                # Parse acordes y notas (strings delimitados por comas → arrays)
+                acordes_str = row.get('Acordes', '').strip('"')  # Remover comillas externas
+                notas_str = row.get('Notas', '').strip('"')
+
+                acordes = [a.strip() for a in acordes_str.split(',') if a.strip()]
+                notas = [n.strip() for n in notas_str.split(',') if n.strip()]
+
+                # Validar campos obligatorios
+                nombre = row.get('Perfume', '').strip()
+                marca = row.get('Marca', '').strip()
+
+                if not nombre or not marca:
+                    logger.warning(f"Fila {idx+2}: nombre o marca vacíos, saltando...")
+                    continue
+
+                perfumes_data.append(PerfumeAdminCreate(
+                    nombre=nombre,
+                    marca=marca,
+                    acordes=acordes if acordes else None,
+                    notas=notas if notas else None,
+                    is_private=False
+                ))
+
+            except Exception as e:
+                logger.warning(f"Error parsing fila {idx+2}: {e}")
+                continue
+
+        if not perfumes_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se encontraron perfumes válidos en el archivo CSV"
+            )
+
+        # Reusar bulk endpoint existente
+        bulk_data = PerfumeBulkImport(perfumes=perfumes_data)
+        return await bulk_import_perfumes(bulk_data, request, db, current_user)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error procesando CSV: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error procesando archivo CSV: {str(e)}"
+        )
 
 
 @router.put("/{perfume_id}", response_model=PerfumeResponse, dependencies=[Depends(require_permission(Permission.PERFUMES_WRITE))])

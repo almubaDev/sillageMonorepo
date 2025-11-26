@@ -1,0 +1,10 @@
+{
+  "tools": {
+    "uploadCsvSimple": {
+      "title": "Carga Simple CSV",
+      "description": "Cargar perfumes desde archivo CSV (nombre, marca, acordes, notas)",
+      "successTitle": "¡Carga Exitosa!",
+      "successMessage": "{{success}} perfumes cargados, {{errors}} errores"
+    }
+  }
+}

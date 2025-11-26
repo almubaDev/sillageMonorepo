@@ -310,6 +310,15 @@ export const adminService = {
     return response.data;
   },
 
+  async uploadCsvPerfumes(formData: FormData): Promise<any> {
+    const response = await api.post('/admin/perfumes/upload-csv', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
   // ========== CONSULTATIONS ==========
   async giftConsultations(
     userId: number,

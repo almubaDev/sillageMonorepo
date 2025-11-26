@@ -1,0 +1,10 @@
+{
+  "tools": {
+    "uploadCsvSimple": {
+      "title": "Simple CSV Upload",
+      "description": "Load perfumes from CSV file (name, brand, accords, notes)",
+      "successTitle": "Upload Successful!",
+      "successMessage": "{{success}} perfumes loaded, {{errors}} errors"
+    }
+  }
+}

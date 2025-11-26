@@ -13,6 +13,7 @@ import esRecommend from './locales/es/recommend.json';
 import esResult from './locales/es/result.json';
 import esComponents from './locales/es/components.json';
 import esPayments from './locales/es/payments.json';
+import esAdmin from './locales/es/admin.json';
 
 import enCommon from './locales/en/common.json';
 import enAuth from './locales/en/auth.json';
@@ -23,6 +24,7 @@ import enRecommend from './locales/en/recommend.json';
 import enResult from './locales/en/result.json';
 import enComponents from './locales/en/components.json';
 import enPayments from './locales/en/payments.json';
+import enAdmin from './locales/en/admin.json';
 
 const LANGUAGE_KEY = '@sillage_language';
 
@@ -38,6 +40,7 @@ const resources = {
     result: esResult,
     components: esComponents,
     payments: esPayments,
+    admin: esAdmin,
   },
   en: {
     common: enCommon,
@@ -49,6 +52,7 @@ const resources = {
     result: enResult,
     components: enComponents,
     payments: enPayments,
+    admin: enAdmin,
   },
 };
 
@@ -97,7 +101,7 @@ const initI18n = async () => {
       lng: initialLanguage,
       fallbackLng: 'es',
       defaultNS: 'common',
-      ns: ['common', 'auth', 'collection', 'profile', 'history', 'recommend', 'result', 'components', 'payments'],
+      ns: ['common', 'auth', 'collection', 'profile', 'history', 'recommend', 'result', 'components', 'payments', 'admin'],
       interpolation: {
         escapeValue: false, // React ya hace escape
       },

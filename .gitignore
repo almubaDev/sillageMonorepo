@@ -1,7 +1,7 @@
 # --- Archivos MD en raíz (excepto README.md) ---
 /*.md
 !README.md
-
+perfumes_A_basic.csv
 # --- Claude Code ---
 .claude/
 respuesta.txt
