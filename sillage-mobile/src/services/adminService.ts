@@ -315,6 +315,7 @@ export const adminService = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 120000, // 2 minutos para archivos CSV grandes
     });
     return response.data;
   },
