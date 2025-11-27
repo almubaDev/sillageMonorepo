@@ -62,11 +62,19 @@ async def list_perfumes(
     total = total_result.scalar_one()
 
     # Aplicar ordenamiento
-    order_column = getattr(Perfume, order_by)
-    if order_dir == "desc":
-        stmt = stmt.order_by(order_column.desc())
+    # Cuando se busca, ordenar por: 1) longitud del nombre (ASC), 2) nombre alfabéticamente (ASC)
+    if search:
+        stmt = stmt.order_by(
+            func.length(Perfume.nombre).asc(),
+            Perfume.nombre.asc()
+        )
     else:
-        stmt = stmt.order_by(order_column.asc())
+        # Sin búsqueda, usar el ordenamiento especificado
+        order_column = getattr(Perfume, order_by)
+        if order_dir == "desc":
+            stmt = stmt.order_by(order_column.desc())
+        else:
+            stmt = stmt.order_by(order_column.asc())
 
     # Aplicar paginación
     stmt = stmt.offset(skip).limit(limit)
