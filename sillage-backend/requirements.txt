@@ -31,7 +31,6 @@ aiohttp
 python-dateutil
 pytz
 unidecode
-psutil
 
 # Testing
 pytest

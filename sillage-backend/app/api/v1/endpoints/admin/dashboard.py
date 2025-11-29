@@ -1,7 +1,5 @@
 from typing import List, Dict
 from datetime import datetime, timedelta
-import psutil
-import os
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, extract
@@ -261,69 +259,3 @@ async def get_recent_activity(
             for g in recent_gifts
         ]
     }
-
-
-@router.get("/system-health", dependencies=[Depends(require_permission(Permission.DASHBOARD_VIEW))])
-async def get_system_health(
-    current_user: User = Depends(require_admin)
-):
-    """
-    Obtener métricas de salud del sistema (CPU, RAM, Disco).
-    Requiere permiso: DASHBOARD_VIEW
-    """
-    try:
-        # CPU
-        cpu_percent = psutil.cpu_percent(interval=1)
-        cpu_count = psutil.cpu_count()
-
-        # Memoria RAM
-        memory = psutil.virtual_memory()
-        memory_total_mb = round(memory.total / (1024 * 1024), 2)
-        memory_used_mb = round(memory.used / (1024 * 1024), 2)
-        memory_available_mb = round(memory.available / (1024 * 1024), 2)
-        memory_percent = memory.percent
-
-        # Disco
-        disk = psutil.disk_usage('/')
-        disk_total_gb = round(disk.total / (1024 * 1024 * 1024), 2)
-        disk_used_gb = round(disk.used / (1024 * 1024 * 1024), 2)
-        disk_free_gb = round(disk.free / (1024 * 1024 * 1024), 2)
-        disk_percent = disk.percent
-
-        # Proceso actual (Python/FastAPI)
-        process = psutil.Process(os.getpid())
-        process_memory_mb = round(process.memory_info().rss / (1024 * 1024), 2)
-        process_cpu_percent = process.cpu_percent(interval=1)
-
-        return {
-            "cpu": {
-                "usage_percent": cpu_percent,
-                "cores": cpu_count,
-                "status": "healthy" if cpu_percent < 70 else "warning" if cpu_percent < 90 else "critical"
-            },
-            "memory": {
-                "total_mb": memory_total_mb,
-                "used_mb": memory_used_mb,
-                "available_mb": memory_available_mb,
-                "usage_percent": memory_percent,
-                "status": "healthy" if memory_percent < 70 else "warning" if memory_percent < 90 else "critical"
-            },
-            "disk": {
-                "total_gb": disk_total_gb,
-                "used_gb": disk_used_gb,
-                "free_gb": disk_free_gb,
-                "usage_percent": disk_percent,
-                "status": "healthy" if disk_percent < 70 else "warning" if disk_percent < 90 else "critical"
-            },
-            "process": {
-                "memory_mb": process_memory_mb,
-                "cpu_percent": process_cpu_percent,
-                "pid": process.pid
-            },
-            "timestamp": datetime.now().isoformat()
-        }
-    except Exception as e:
-        return {
-            "error": f"Error obteniendo métricas del sistema: {str(e)}",
-            "timestamp": datetime.now().isoformat()
-        }

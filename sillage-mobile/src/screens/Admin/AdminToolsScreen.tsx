@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { adminStyles, AdminColors } from './adminStyles';
-import { adminService, ResetResponse, FinancialSnapshot, SystemHealth } from '../../services/adminService';
+import { adminService, ResetResponse, FinancialSnapshot } from '../../services/adminService';
 
 type ToolAction = 'reset_gifted_consultations' | 'reset_api_usage_all' | 'reset_api_usage_gemini' | 'reset_api_usage_openweather' | 'reset_api_usage_google_maps';
 
@@ -91,10 +91,6 @@ export default function AdminToolsScreen() {
   const [snapshotsLoading, setSnapshotsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // System Health
-  const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
-  const [healthLoading, setHealthLoading] = useState(true);
-
   const loadSnapshots = async () => {
     try {
       const data = await adminService.getFinancialSnapshots(30);
@@ -107,26 +103,13 @@ export default function AdminToolsScreen() {
     }
   };
 
-  const loadSystemHealth = async () => {
-    try {
-      const data = await adminService.getSystemHealth();
-      setSystemHealth(data);
-    } catch (error) {
-      console.error('Error loading system health:', error);
-    } finally {
-      setHealthLoading(false);
-    }
-  };
-
   const onRefresh = async () => {
     setRefreshing(true);
-    setHealthLoading(true);
-    await Promise.all([loadSnapshots(), loadSystemHealth()]);
+    await loadSnapshots();
   };
 
   useEffect(() => {
     loadSnapshots();
-    loadSystemHealth();
   }, []);
 
   const handleToolPress = (tool: ToolConfig) => {
@@ -277,157 +260,6 @@ export default function AdminToolsScreen() {
             </View>
           </TouchableOpacity>
         ))}
-
-        {/* System Health Section */}
-        <Text style={[adminStyles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
-          Mantenimiento del Sistema
-        </Text>
-
-        {healthLoading ? (
-          <View style={[adminStyles.card, { padding: 24, alignItems: 'center' }]}>
-            <ActivityIndicator size="small" color={AdminColors.primary} />
-            <Text style={{ marginTop: 8, fontSize: 13, color: AdminColors.textSecondary }}>
-              Obteniendo métricas del sistema...
-            </Text>
-          </View>
-        ) : systemHealth?.error ? (
-          <View style={[adminStyles.card, { padding: 16 }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <MaterialCommunityIcons name="alert-circle" size={24} color={AdminColors.error} />
-              <Text style={[adminStyles.cardTitle, { marginLeft: 12, flex: 1 }]}>
-                Error al obtener métricas
-              </Text>
-            </View>
-            <Text style={[adminStyles.cardSubtitle, { marginTop: 8 }]}>
-              {systemHealth.error}
-            </Text>
-          </View>
-        ) : systemHealth ? (
-          <View style={{ gap: 12 }}>
-            {/* CPU Card */}
-            <View style={adminStyles.card}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={[
-                    adminStyles.menuItemIcon,
-                    { backgroundColor: systemHealth.cpu.status === 'healthy' ? '#D1FAE5' : systemHealth.cpu.status === 'warning' ? '#FEF3C7' : '#FEE2E2' }
-                  ]}>
-                    <MaterialCommunityIcons
-                      name="cpu-64-bit"
-                      size={24}
-                      color={systemHealth.cpu.status === 'healthy' ? AdminColors.success : systemHealth.cpu.status === 'warning' ? AdminColors.warning : AdminColors.error}
-                    />
-                  </View>
-                  <View style={{ marginLeft: 12 }}>
-                    <Text style={adminStyles.cardTitle}>CPU</Text>
-                    <Text style={adminStyles.cardSubtitle}>{systemHealth.cpu.cores} cores</Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 20, fontWeight: '700', color: systemHealth.cpu.status === 'healthy' ? AdminColors.success : systemHealth.cpu.status === 'warning' ? AdminColors.warning : AdminColors.error }}>
-                  {systemHealth.cpu.usage_percent.toFixed(1)}%
-                </Text>
-              </View>
-              <View style={{ height: 8, backgroundColor: AdminColors.gray200, borderRadius: 4, overflow: 'hidden' }}>
-                <View style={{
-                  width: `${systemHealth.cpu.usage_percent}%`,
-                  height: '100%',
-                  backgroundColor: systemHealth.cpu.status === 'healthy' ? AdminColors.success : systemHealth.cpu.status === 'warning' ? AdminColors.warning : AdminColors.error
-                }} />
-              </View>
-            </View>
-
-            {/* Memory Card */}
-            <View style={adminStyles.card}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={[
-                    adminStyles.menuItemIcon,
-                    { backgroundColor: systemHealth.memory.status === 'healthy' ? '#D1FAE5' : systemHealth.memory.status === 'warning' ? '#FEF3C7' : '#FEE2E2' }
-                  ]}>
-                    <MaterialCommunityIcons
-                      name="memory"
-                      size={24}
-                      color={systemHealth.memory.status === 'healthy' ? AdminColors.success : systemHealth.memory.status === 'warning' ? AdminColors.warning : AdminColors.error}
-                    />
-                  </View>
-                  <View style={{ marginLeft: 12 }}>
-                    <Text style={adminStyles.cardTitle}>RAM</Text>
-                    <Text style={adminStyles.cardSubtitle}>
-                      {systemHealth.memory.used_mb.toFixed(0)} / {systemHealth.memory.total_mb.toFixed(0)} MB
-                    </Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 20, fontWeight: '700', color: systemHealth.memory.status === 'healthy' ? AdminColors.success : systemHealth.memory.status === 'warning' ? AdminColors.warning : AdminColors.error }}>
-                  {systemHealth.memory.usage_percent.toFixed(1)}%
-                </Text>
-              </View>
-              <View style={{ height: 8, backgroundColor: AdminColors.gray200, borderRadius: 4, overflow: 'hidden' }}>
-                <View style={{
-                  width: `${systemHealth.memory.usage_percent}%`,
-                  height: '100%',
-                  backgroundColor: systemHealth.memory.status === 'healthy' ? AdminColors.success : systemHealth.memory.status === 'warning' ? AdminColors.warning : AdminColors.error
-                }} />
-              </View>
-            </View>
-
-            {/* Disk Card */}
-            <View style={adminStyles.card}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={[
-                    adminStyles.menuItemIcon,
-                    { backgroundColor: systemHealth.disk.status === 'healthy' ? '#D1FAE5' : systemHealth.disk.status === 'warning' ? '#FEF3C7' : '#FEE2E2' }
-                  ]}>
-                    <MaterialCommunityIcons
-                      name="harddisk"
-                      size={24}
-                      color={systemHealth.disk.status === 'healthy' ? AdminColors.success : systemHealth.disk.status === 'warning' ? AdminColors.warning : AdminColors.error}
-                    />
-                  </View>
-                  <View style={{ marginLeft: 12 }}>
-                    <Text style={adminStyles.cardTitle}>Disco</Text>
-                    <Text style={adminStyles.cardSubtitle}>
-                      {systemHealth.disk.used_gb.toFixed(1)} / {systemHealth.disk.total_gb.toFixed(1)} GB
-                    </Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 20, fontWeight: '700', color: systemHealth.disk.status === 'healthy' ? AdminColors.success : systemHealth.disk.status === 'warning' ? AdminColors.warning : AdminColors.error }}>
-                  {systemHealth.disk.usage_percent.toFixed(1)}%
-                </Text>
-              </View>
-              <View style={{ height: 8, backgroundColor: AdminColors.gray200, borderRadius: 4, overflow: 'hidden' }}>
-                <View style={{
-                  width: `${systemHealth.disk.usage_percent}%`,
-                  height: '100%',
-                  backgroundColor: systemHealth.disk.status === 'healthy' ? AdminColors.success : systemHealth.disk.status === 'warning' ? AdminColors.warning : AdminColors.error
-                }} />
-              </View>
-            </View>
-
-            {/* Process Info */}
-            <View style={[adminStyles.card, { backgroundColor: AdminColors.gray50 }]}>
-              <Text style={[adminStyles.cardTitle, { marginBottom: 8 }]}>Proceso FastAPI</Text>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text style={adminStyles.cardSubtitle}>Memoria</Text>
-                <Text style={[adminStyles.cardSubtitle, { fontWeight: '600' }]}>
-                  {systemHealth.process.memory_mb.toFixed(2)} MB
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text style={adminStyles.cardSubtitle}>CPU</Text>
-                <Text style={[adminStyles.cardSubtitle, { fontWeight: '600' }]}>
-                  {systemHealth.process.cpu_percent.toFixed(1)}%
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={adminStyles.cardSubtitle}>PID</Text>
-                <Text style={[adminStyles.cardSubtitle, { fontWeight: '600', fontFamily: 'monospace' }]}>
-                  {systemHealth.process.pid}
-                </Text>
-              </View>
-            </View>
-          </View>
-        ) : null}
 
         {/* Financial Logs Section */}
         <Text style={[adminStyles.sectionTitle, { marginTop: 24, marginBottom: 12 }]}>
@@ -581,7 +413,7 @@ export default function AdminToolsScreen() {
             )}
 
             {/* Password Input */}
-            <Text style={[adminStyles.label, { marginBottom: 8 }]}>
+            <Text style={[adminStyles.inputLabel, { marginBottom: 8 }]}>
               Confirma tu contraseña de superusuario:
             </Text>
             <TextInput
