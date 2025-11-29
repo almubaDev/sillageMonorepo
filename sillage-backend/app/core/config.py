@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # Default (backwards compatibility)
-    ACCESS_TOKEN_EXPIRE_MINUTES_WEB: int = 60  # 1 hora para web
+    ACCESS_TOKEN_EXPIRE_MINUTES_WEB: int = 10080  # 7 días para web (7 * 24 * 60)
     ACCESS_TOKEN_EXPIRE_MINUTES_MOBILE: int = 10080  # 7 días para mobile (7 * 24 * 60)
     
     # APIs externas

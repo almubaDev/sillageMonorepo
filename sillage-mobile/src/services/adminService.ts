@@ -251,12 +251,55 @@ export interface APIConfigInfo {
   cost_per_1m_tokens_output: number;
 }
 
+// ==================== SYSTEM HEALTH ====================
+
+export interface SystemHealthMetric {
+  usage_percent: number;
+  status: 'healthy' | 'warning' | 'critical';
+}
+
+export interface CPUHealth extends SystemHealthMetric {
+  cores: number;
+}
+
+export interface MemoryHealth extends SystemHealthMetric {
+  total_mb: number;
+  used_mb: number;
+  available_mb: number;
+}
+
+export interface DiskHealth extends SystemHealthMetric {
+  total_gb: number;
+  used_gb: number;
+  free_gb: number;
+}
+
+export interface ProcessInfo {
+  memory_mb: number;
+  cpu_percent: number;
+  pid: number;
+}
+
+export interface SystemHealth {
+  cpu: CPUHealth;
+  memory: MemoryHealth;
+  disk: DiskHealth;
+  process: ProcessInfo;
+  timestamp: string;
+  error?: string;
+}
+
 // ==================== ADMIN SERVICE ====================
 
 export const adminService = {
   // ========== DASHBOARD ==========
   async getDashboardStats(): Promise<DashboardStats> {
     const response = await api.get<DashboardStats>('/admin/dashboard/stats');
+    return response.data;
+  },
+
+  async getSystemHealth(): Promise<SystemHealth> {
+    const response = await api.get<SystemHealth>('/admin/dashboard/system-health');
     return response.data;
   },
 
