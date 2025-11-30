@@ -14,7 +14,6 @@ export const AuthNavigator = () => {
 
   return (
     <Stack.Navigator
-      initialRouteName="Landing"
       screenOptions={{
         headerStyle: {
           backgroundColor: colors.bg,
