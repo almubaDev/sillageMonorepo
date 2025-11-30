@@ -4,7 +4,6 @@ import { LoginScreen } from '../screens/Auth/LoginScreen';
 import { RegisterScreen } from '../screens/Auth/RegisterScreen';
 import { ForgotPasswordScreen } from '../screens/Auth/ForgotPasswordScreen';
 import { ResetPasswordScreen } from '../screens/Auth/ResetPasswordScreen';
-import { LandingScreen } from '../screens/Landing/LandingScreen';
 import { useTheme } from '../theme/ThemeProvider';
 
 const Stack = createNativeStackNavigator();
@@ -23,11 +22,6 @@ export const AuthNavigator = () => {
         headerBackTitle: 'Atrás',
       }}
     >
-      <Stack.Screen
-        name="Landing"
-        component={LandingScreen}
-        options={{ headerShown: false }}
-      />
       <Stack.Screen
         name="Login"
         component={LoginScreen}
