@@ -1,0 +1,53 @@
+{
+  "hero": {
+    "title": "Descubre tu Fragancia Perfecta",
+    "subtitle": "Encuentra el perfume ideal para cada momento",
+    "description": "Sillage te ayuda a explorar el mundo de las fragancias, descubrir nuevos aromas basados en tus preferencias y gestionar tu colección personal de perfumes."
+  },
+  "cta": {
+    "getStarted": "Comenzar Ahora",
+    "login": "Iniciar Sesión"
+  },
+  "features": {
+    "title": "Todo lo que necesitas",
+    "subtitle": "Herramientas poderosas para los amantes de las fragancias",
+    "discover": {
+      "title": "Explora Perfumes",
+      "description": "Descubre miles de fragancias con información detallada sobre notas, acordes y características únicas."
+    },
+    "accords": {
+      "title": "Busca por Acordes",
+      "description": "Encuentra perfumes perfectos basados en tus acordes favoritos y preferencias olfativas."
+    },
+    "collection": {
+      "title": "Tu Colección",
+      "description": "Organiza y gestiona tu colección personal de fragancias en un solo lugar."
+    },
+    "recommend": {
+      "title": "Recomendaciones",
+      "description": "Recibe sugerencias personalizadas basadas en tus gustos y preferencias."
+    },
+    "history": {
+      "title": "Historial",
+      "description": "Lleva un registro de todas las fragancias que has probado y tus impresiones."
+    },
+    "purchase": {
+      "title": "Información de Compra",
+      "description": "Encuentra dónde comprar tus fragancias favoritas con enlaces directos a tiendas."
+    }
+  },
+  "stats": {
+    "perfumes": "Fragancias",
+    "users": "Usuarios",
+    "rating": "Valoración"
+  },
+  "finalCta": {
+    "title": "¿Listo para encontrar tu próxima fragancia?",
+    "subtitle": "Únete a miles de usuarios que ya descubren y organizan sus perfumes favoritos con Sillage."
+  },
+  "footer": {
+    "copyright": "© 2024 Sillage. Todos los derechos reservados.",
+    "privacy": "Privacidad",
+    "terms": "Términos"
+  }
+}
