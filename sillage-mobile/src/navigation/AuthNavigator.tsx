@@ -30,10 +30,7 @@ export const AuthNavigator = () => {
       <Stack.Screen
         name="Register"
         component={RegisterScreen}
-        options={{
-          title: 'Registro',
-          headerShown: true,
-        }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ForgotPassword"
