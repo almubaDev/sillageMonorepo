@@ -5,6 +5,7 @@ from app.models.recommendation import Recomendacion
 from app.models.subscription import Suscripcion, HistorialPago
 from app.models.role import Role, AdminLog, GiftedConsultation, user_roles
 from app.models.password_reset import PasswordResetToken
+from app.models.perfume_report import PerfumeReport
 from app.models.payment import (
     MetodoPago,
     PaqueteConsultas,
@@ -30,6 +31,7 @@ __all__ = [
     "GiftedConsultation",
     "user_roles",
     "PasswordResetToken",
+    "PerfumeReport",
     "MetodoPago",
     "PaqueteConsultas",
     "BotonPago",
