@@ -162,7 +162,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ position = '
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
+    ...(Platform.OS === 'web' ? { position: 'fixed' } : { position: 'absolute' }),
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   // Overlay transparente para web
   webOverlay: {
-    position: 'absolute',
+    ...(Platform.OS === 'web' ? { position: 'fixed' } : { position: 'absolute' }),
     top: 0,
     left: 0,
     right: 0,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   // Dropdown para web
   webDropdown: {
-    position: 'absolute',
+    ...(Platform.OS === 'web' ? { position: 'fixed' } : { position: 'absolute' }),
     top: Platform.OS === 'web' ? 65 : 95, // Debajo del botón
     width: 240,
     borderRadius: 12,
