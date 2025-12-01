@@ -31,7 +31,6 @@ export const CollectionScreen = () => {
   // Limpiar errores cuando cambia el idioma
   useLanguageChange(() => {
     setError(null);
-    setCreateErrors({ nombre: '', marca: '' });
   });
   
   const [perfumes, setPerfumes] = useState<PerfumeInCollection[]>([]);
@@ -40,25 +39,11 @@ export const CollectionScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [searchModalVisible, setSearchModalVisible] = useState(false);
-  const [createModalVisible, setCreateModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [perfumeToDelete, setPerfumeToDelete] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Perfume[]>([]);
   const [searching, setSearching] = useState(false);
-  const [creating, setCreating] = useState(false);
-
-  const [newPerfume, setNewPerfume] = useState({
-    nombre: '',
-    marca: '',
-    perfumista: '',
-    notas: '',
-    acordes: '',
-  });
-  const [createErrors, setCreateErrors] = useState({
-    nombre: '',
-    marca: '',
-  });
 
   // Cargar colección al montar el componente por primera vez
   useEffect(() => {
@@ -161,71 +146,6 @@ export const CollectionScreen = () => {
     }
   };
 
-  const validateCreateForm = () => {
-    let errors = { nombre: '', marca: '' };
-    let isValid = true;
-
-    if (!newPerfume.nombre.trim()) {
-      errors.nombre = t('collection:create.errors.nameRequired');
-      isValid = false;
-    } else if (newPerfume.nombre.trim().length < 2) {
-      errors.nombre = t('collection:create.errors.nameMinLength');
-      isValid = false;
-    }
-
-    if (!newPerfume.marca.trim()) {
-      errors.marca = t('collection:create.errors.brandRequired');
-      isValid = false;
-    } else if (newPerfume.marca.trim().length < 2) {
-      errors.marca = t('collection:create.errors.brandMinLength');
-      isValid = false;
-    }
-
-    setCreateErrors(errors);
-    return isValid;
-  };
-
-  const handleCreatePerfume = async () => {
-    // Validar formulario
-    if (!validateCreateForm()) {
-      return;
-    }
-
-    try {
-      setCreating(true);
-      const perfumeData = {
-        nombre: newPerfume.nombre.trim(),
-        marca: newPerfume.marca.trim(),
-        perfumista: newPerfume.perfumista.trim() || undefined,
-        notas: newPerfume.notas ? newPerfume.notas.split(',').map(n => n.trim()).filter(n => n) : [],
-        acordes: newPerfume.acordes ? newPerfume.acordes.split(',').map(a => a.trim()).filter(a => a) : [],
-      };
-
-      await perfumeService.createPerfume(perfumeData);
-      setCreateModalVisible(false);
-      setNewPerfume({ nombre: '', marca: '', perfumista: '', notas: '', acordes: '' });
-      setCreateErrors({ nombre: '', marca: '' });
-      await loadCollection();
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || t('collection:error.createFailed');
-      if (errorMsg.toLowerCase().includes('ya existe')) {
-        Alert.alert(t('collection:create.errors.duplicateTitle'), t('collection:create.errors.duplicateMessage'));
-      } else {
-        Alert.alert(t('collection:error.title'), errorMsg);
-      }
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const updateNewPerfumeField = (field: string, value: string) => {
-    setNewPerfume({ ...newPerfume, [field]: value });
-    // Limpiar error del campo cuando el usuario empieza a escribir
-    if (field === 'nombre' || field === 'marca') {
-      setCreateErrors({ ...createErrors, [field]: '' });
-    }
-  };
-
   if (loading && !hasLoadedOnce) {
     return (
       <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
@@ -300,13 +220,6 @@ export const CollectionScreen = () => {
           onPress={() => setSearchModalVisible(true)}
         >
           <MaterialCommunityIcons name="magnify" size={26} color={colors.bg} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.fabButton, { backgroundColor: colors.accent }]}
-          onPress={() => setCreateModalVisible(true)}
-        >
-          <MaterialCommunityIcons name="plus" size={26} color={colors.bg} />
         </TouchableOpacity>
       </View>
 
@@ -398,118 +311,6 @@ export const CollectionScreen = () => {
               contentContainerStyle={styles.resultsList}
             />
           )}
-        </View>
-      </Modal>
-
-      <Modal
-        isVisible={createModalVisible}
-        onBackdropPress={() => setCreateModalVisible(false)}
-        style={styles.modal}
-      >
-        <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
-          <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-              {t('collection:create.title')}
-            </Text>
-            <TouchableOpacity onPress={() => setCreateModalVisible(false)}>
-              <MaterialCommunityIcons name="close" size={24} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-
-          <Text style={[styles.helpText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            {t('collection:create.helpText')}
-          </Text>
-
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, {
-                backgroundColor: colors.bg,
-                color: colors.text,
-                borderColor: createErrors.nombre ? '#EF4444' : colors.accent,
-                fontFamily: 'Lato-Regular'
-              }]}
-              placeholder={t('collection:create.namePlaceholder')}
-              placeholderTextColor={colors.secondary}
-              value={newPerfume.nombre}
-              onChangeText={(text) => updateNewPerfumeField('nombre', text)}
-            />
-            {createErrors.nombre ? (
-              <Text style={[styles.fieldError, { color: '#EF4444' }]}>{createErrors.nombre}</Text>
-            ) : null}
-          </View>
-
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, {
-                backgroundColor: colors.bg,
-                color: colors.text,
-                borderColor: createErrors.marca ? '#EF4444' : colors.accent,
-                fontFamily: 'Lato-Regular'
-              }]}
-              placeholder={t('collection:create.brandPlaceholder')}
-              placeholderTextColor={colors.secondary}
-              value={newPerfume.marca}
-              onChangeText={(text) => updateNewPerfumeField('marca', text)}
-            />
-            {createErrors.marca ? (
-              <Text style={[styles.fieldError, { color: '#EF4444' }]}>{createErrors.marca}</Text>
-            ) : null}
-          </View>
-
-          <TextInput
-            style={[styles.input, {
-              backgroundColor: colors.bg,
-              color: colors.text,
-              borderColor: colors.accent,
-              fontFamily: 'Lato-Regular'
-            }]}
-            placeholder={t('collection:create.perfumerPlaceholder')}
-            placeholderTextColor={colors.secondary}
-            value={newPerfume.perfumista}
-            onChangeText={(text) => updateNewPerfumeField('perfumista', text)}
-          />
-
-          <TextInput
-            style={[styles.input, {
-              backgroundColor: colors.bg,
-              color: colors.text,
-              borderColor: colors.accent,
-              fontFamily: 'Lato-Regular'
-            }]}
-            placeholder={t('collection:create.accordsPlaceholder')}
-            placeholderTextColor={colors.secondary}
-            value={newPerfume.acordes}
-            onChangeText={(text) => updateNewPerfumeField('acordes', text)}
-            multiline
-          />
-
-          <TextInput
-            style={[styles.input, {
-              backgroundColor: colors.bg,
-              color: colors.text,
-              borderColor: colors.accent,
-              fontFamily: 'Lato-Regular'
-            }]}
-            placeholder={t('collection:create.notesPlaceholder')}
-            placeholderTextColor={colors.secondary}
-            value={newPerfume.notas}
-            onChangeText={(text) => updateNewPerfumeField('notas', text)}
-            multiline
-          />
-
-          <TouchableOpacity
-            style={[styles.createButton, { backgroundColor: colors.accent }]}
-            onPress={handleCreatePerfume}
-            disabled={creating}
-          >
-            {creating ? (
-              <ActivityIndicator color={colors.bg} />
-            ) : (
-              <Text style={[styles.createButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-                {creating ? t('collection:create.creating') : t('collection:create.button')}
-              </Text>
-            )}
-          </TouchableOpacity>
         </View>
       </Modal>
 
