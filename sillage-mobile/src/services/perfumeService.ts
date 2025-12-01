@@ -30,6 +30,21 @@ export interface SearchParams {
   limit?: number;
 }
 
+export interface PerfumeReportCreate {
+  nombre: string;
+  marca: string;
+}
+
+export interface PerfumeReport {
+  id: number;
+  nombre: string;
+  marca: string;
+  user_id: number;
+  created_at: string;
+  user_email?: string;
+  user_name?: string;
+}
+
 export const perfumeService = {
   // Buscar perfumes
   async search(params: SearchParams): Promise<Perfume[]> {
@@ -59,5 +74,22 @@ export const perfumeService = {
   async createPerfume(data: PerfumeCreate): Promise<Perfume> {
     const response = await api.post<Perfume>('/perfumes/', data);
     return response.data;
+  },
+
+  // Reportar perfume faltante
+  async reportPerfume(data: PerfumeReportCreate): Promise<PerfumeReport> {
+    const response = await api.post<PerfumeReport>('/perfume-reports', data);
+    return response.data;
+  },
+
+  // Obtener todos los reportes (solo admin)
+  async getAllReports(): Promise<PerfumeReport[]> {
+    const response = await api.get<PerfumeReport[]>('/perfume-reports');
+    return response.data;
+  },
+
+  // Eliminar un reporte (solo admin)
+  async deleteReport(reportId: number): Promise<void> {
+    await api.delete(`/perfume-reports/${reportId}`);
   },
 };

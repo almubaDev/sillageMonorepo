@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import * as DocumentPicker from 'expo-document-picker';
 import { adminStyles, AdminColors } from './adminStyles';
 import { adminService, AdminPerfume } from '../../services/adminService';
+import { perfumeService, PerfumeReport } from '../../services/perfumeService';
 
 // Función para formatear nombres (capitalizar y reemplazar guiones)
 const formatName = (name: string): string => {
@@ -43,6 +44,7 @@ export default function PerfumesScreen() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [bulkModalVisible, setBulkModalVisible] = useState(false);
+  const [reportsModalVisible, setReportsModalVisible] = useState(false);
 
   // Estados de formulario
   const [selectedPerfume, setSelectedPerfume] = useState<AdminPerfume | null>(null);
@@ -66,6 +68,11 @@ export default function PerfumesScreen() {
 
   // Estado CSV upload
   const [csvUploading, setCsvUploading] = useState(false);
+
+  // Estado reports
+  const [reports, setReports] = useState<PerfumeReport[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [deletingReportId, setDeletingReportId] = useState<number | null>(null);
 
   useEffect(() => {
     loadPerfumes();
@@ -344,6 +351,56 @@ export default function PerfumesScreen() {
     }
   };
 
+  const loadReports = async () => {
+    try {
+      setLoadingReports(true);
+      const data = await perfumeService.getAllReports();
+      setReports(data);
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.detail || t('admin:reports.deleteError');
+      Alert.alert(t('common:error'), errorMsg);
+      console.error('Error loading reports:', err);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  const handleDeleteReport = async (reportId: number) => {
+    Alert.alert(
+      t('admin:reports.delete'),
+      t('admin:reports.deleteConfirm'),
+      [
+        {
+          text: t('collection:delete.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('collection:delete.confirm'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setDeletingReportId(reportId);
+              await perfumeService.deleteReport(reportId);
+              Alert.alert(t('admin:reports.deleteSuccess'));
+              await loadReports();
+            } catch (err: any) {
+              const errorMsg = err.response?.data?.detail || t('admin:reports.deleteError');
+              Alert.alert(t('common:error'), errorMsg);
+              console.error('Error deleting report:', err);
+            } finally {
+              setDeletingReportId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleOpenReports = async () => {
+    setReportsModalVisible(true);
+    await loadReports();
+  };
+
   if (loading && perfumes.length === 0) {
     return (
       <View style={adminStyles.loadingContainer}>
@@ -368,6 +425,13 @@ export default function PerfumesScreen() {
             <Text style={adminStyles.cardSubtitle}>Total: {total} perfumes</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity
+              style={[adminStyles.button, adminStyles.buttonSecondary]}
+              onPress={handleOpenReports}
+            >
+              <MaterialCommunityIcons name="alert-circle-outline" size={20} color={AdminColors.textPrimary} />
+              <Text style={[adminStyles.buttonText, adminStyles.buttonSecondaryText]}>{t('admin:reports.viewReports')}</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               style={[adminStyles.button, adminStyles.buttonSecondary]}
               onPress={() => setBulkModalVisible(true)}
@@ -772,6 +836,90 @@ export default function PerfumesScreen() {
               )}
             </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+
+      {/* Modal Reportes de Perfumes */}
+      <Modal
+        isVisible={reportsModalVisible}
+        onBackdropPress={() => setReportsModalVisible(false)}
+        onBackButtonPress={() => setReportsModalVisible(false)}
+        style={{ margin: 0, justifyContent: 'flex-end' }}
+      >
+        <View style={{ backgroundColor: AdminColors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%' }}>
+          <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: AdminColors.border }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View>
+                <Text style={adminStyles.pageTitle}>{t('admin:reports.title')}</Text>
+                <Text style={adminStyles.cardSubtitle}>
+                  {reports.length} {reports.length === 1 ? 'reporte' : 'reportes'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setReportsModalVisible(false)}>
+                <MaterialCommunityIcons name="close" size={24} color={AdminColors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <ScrollView style={{ padding: 20 }}>
+            {loadingReports ? (
+              <View style={{ padding: 40, alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={AdminColors.primary} />
+                <Text style={[adminStyles.cardSubtitle, { marginTop: 12 }]}>Cargando reportes...</Text>
+              </View>
+            ) : reports.length === 0 ? (
+              <View style={adminStyles.emptyContainer}>
+                <MaterialCommunityIcons name="alert-circle-outline" size={64} color={AdminColors.gray300} />
+                <Text style={adminStyles.emptyText}>{t('admin:reports.noReports')}</Text>
+                <Text style={adminStyles.cardSubtitle}>{t('admin:reports.noReportsMessage')}</Text>
+              </View>
+            ) : (
+              reports.map((report) => (
+                <View
+                  key={report.id}
+                  style={[
+                    adminStyles.card,
+                    {
+                      marginBottom: 12,
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }
+                  ]}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={adminStyles.cardTitle}>{report.nombre}</Text>
+                    <Text style={adminStyles.cardSubtitle}>{report.marca}</Text>
+                    <Text style={[adminStyles.cardSubtitle, { fontSize: 12, marginTop: 4 }]}>
+                      {t('admin:reports.reportedBy')}: {report.user_email || `ID: ${report.user_id}`}
+                    </Text>
+                    <Text style={[adminStyles.cardSubtitle, { fontSize: 12 }]}>
+                      {t('admin:reports.reportedAt')}: {new Date(report.created_at).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[
+                      adminStyles.button,
+                      adminStyles.buttonDanger,
+                      { paddingHorizontal: 16, paddingVertical: 8 },
+                      deletingReportId === report.id && adminStyles.buttonDisabled
+                    ]}
+                    onPress={() => handleDeleteReport(report.id)}
+                    disabled={deletingReportId === report.id}
+                  >
+                    {deletingReportId === report.id ? (
+                      <ActivityIndicator color={AdminColors.white} size="small" />
+                    ) : (
+                      <>
+                        <MaterialCommunityIcons name="delete" size={18} color={AdminColors.white} />
+                        <Text style={[adminStyles.buttonText, { fontSize: 14 }]}>{t('admin:reports.delete')}</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+          </ScrollView>
         </View>
       </Modal>
 

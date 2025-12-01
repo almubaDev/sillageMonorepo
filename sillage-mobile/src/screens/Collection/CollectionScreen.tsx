@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { PerfumeCard } from '../../components/PerfumeCard';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { perfumeService, PerfumeInCollection, Perfume } from '../../services/perfumeService';
+import { perfumeService, PerfumeInCollection, Perfume, PerfumeReportCreate } from '../../services/perfumeService';
 import { useFocusEffect } from '@react-navigation/native';
 import { formatPerfumeName, formatBrand } from '../../utils/formatters';
 import { useLanguageChange } from '../../hooks/useLanguageChange';
@@ -44,6 +44,10 @@ export const CollectionScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Perfume[]>([]);
   const [searching, setSearching] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportData, setReportData] = useState<PerfumeReportCreate>({ nombre: '', marca: '' });
+  const [reportErrors, setReportErrors] = useState<{nombre?: string; marca?: string}>({});
+  const [sendingReport, setSendingReport] = useState(false);
 
   // Cargar colección al montar el componente por primera vez
   useEffect(() => {
@@ -146,6 +150,47 @@ export const CollectionScreen = () => {
     }
   };
 
+  const validateReportForm = (): boolean => {
+    const errors: {nombre?: string; marca?: string} = {};
+
+    if (!reportData.nombre.trim()) {
+      errors.nombre = t('collection:report.errors.nameRequired');
+    }
+
+    if (!reportData.marca.trim()) {
+      errors.marca = t('collection:report.errors.brandRequired');
+    }
+
+    setReportErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSendReport = async () => {
+    if (!validateReportForm()) return;
+
+    try {
+      setSendingReport(true);
+      await perfumeService.reportPerfume({
+        nombre: reportData.nombre.trim(),
+        marca: reportData.marca.trim(),
+      });
+
+      Alert.alert(
+        t('collection:report.success'),
+        t('collection:report.successMessage')
+      );
+
+      setReportModalVisible(false);
+      setReportData({ nombre: '', marca: '' });
+      setReportErrors({});
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || t('collection:report.errors.failed');
+      Alert.alert(t('collection:error.title'), errorMsg);
+    } finally {
+      setSendingReport(false);
+    }
+  };
+
   if (loading && !hasLoadedOnce) {
     return (
       <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
@@ -215,6 +260,12 @@ export const CollectionScreen = () => {
       )}
 
       <View style={styles.fab}>
+        <TouchableOpacity
+          style={[styles.fabButton, { backgroundColor: colors.accent }]}
+          onPress={() => setReportModalVisible(true)}
+        >
+          <MaterialCommunityIcons name="alert-circle-outline" size={26} color={colors.bg} />
+        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.fabButton, { backgroundColor: colors.accent }]}
           onPress={() => setSearchModalVisible(true)}
@@ -311,6 +362,110 @@ export const CollectionScreen = () => {
               contentContainerStyle={styles.resultsList}
             />
           )}
+        </View>
+      </Modal>
+
+      <Modal
+        isVisible={reportModalVisible}
+        onBackdropPress={() => {
+          setReportModalVisible(false);
+          setReportData({ nombre: '', marca: '' });
+          setReportErrors({});
+        }}
+        style={styles.modal}
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
+      >
+        <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
+          <View style={styles.modalHeader}>
+            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+              {t('collection:report.title')}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setReportModalVisible(false);
+                setReportData({ nombre: '', marca: '' });
+                setReportErrors({});
+              }}
+            >
+              <MaterialCommunityIcons name="close" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={[styles.helpText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            {t('collection:report.description')}
+          </Text>
+
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  color: colors.text,
+                  borderColor: reportErrors.nombre ? '#ef4444' : colors.secondary + '50',
+                  fontFamily: 'Lato-Regular'
+                }
+              ]}
+              placeholder={t('collection:report.namePlaceholder')}
+              placeholderTextColor={colors.secondary}
+              value={reportData.nombre}
+              onChangeText={(text) => {
+                setReportData({ ...reportData, nombre: text });
+                if (reportErrors.nombre) {
+                  setReportErrors({ ...reportErrors, nombre: undefined });
+                }
+              }}
+            />
+            {reportErrors.nombre && (
+              <Text style={[styles.fieldError, { color: '#ef4444', fontFamily: 'Lato-Regular' }]}>
+                {reportErrors.nombre}
+              </Text>
+            )}
+          </View>
+
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  color: colors.text,
+                  borderColor: reportErrors.marca ? '#ef4444' : colors.secondary + '50',
+                  fontFamily: 'Lato-Regular'
+                }
+              ]}
+              placeholder={t('collection:report.brandPlaceholder')}
+              placeholderTextColor={colors.secondary}
+              value={reportData.marca}
+              onChangeText={(text) => {
+                setReportData({ ...reportData, marca: text });
+                if (reportErrors.marca) {
+                  setReportErrors({ ...reportErrors, marca: undefined });
+                }
+              }}
+            />
+            {reportErrors.marca && (
+              <Text style={[styles.fieldError, { color: '#ef4444', fontFamily: 'Lato-Regular' }]}>
+                {reportErrors.marca}
+              </Text>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={[styles.createButton, {
+              backgroundColor: colors.accent,
+              opacity: sendingReport ? 0.6 : 1
+            }]}
+            onPress={handleSendReport}
+            disabled={sendingReport}
+          >
+            {sendingReport ? (
+              <ActivityIndicator color={colors.bg} />
+            ) : (
+              <Text style={[styles.createButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
+                {t('collection:report.button')}
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
       </Modal>
 
