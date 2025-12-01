@@ -366,6 +366,7 @@ export default function PerfumesScreen() {
   };
 
   const handleDeleteReport = async (reportId: number) => {
+    console.log('🗑️ handleDeleteReport called for ID:', reportId);
     Alert.alert(
       t('admin:reports.delete'),
       t('admin:reports.deleteConfirm'),
@@ -379,6 +380,7 @@ export default function PerfumesScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('🗑️ Deleting report:', reportId);
               setDeletingReportId(reportId);
               await perfumeService.deleteReport(reportId);
               Alert.alert(t('admin:reports.deleteSuccess'));
@@ -386,7 +388,7 @@ export default function PerfumesScreen() {
             } catch (err: any) {
               const errorMsg = err.response?.data?.detail || t('admin:reports.deleteError');
               Alert.alert(t('common:error'), errorMsg);
-              console.error('Error deleting report:', err);
+              console.error('❌ Error deleting report:', err);
             } finally {
               setDeletingReportId(null);
             }
@@ -887,7 +889,7 @@ export default function PerfumesScreen() {
                     }
                   ]}
                 >
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1, marginRight: 12 }}>
                     <Text style={adminStyles.cardTitle}>{report.nombre}</Text>
                     <Text style={adminStyles.cardSubtitle}>{report.marca}</Text>
                     <Text style={[adminStyles.cardSubtitle, { fontSize: 12, marginTop: 4 }]}>
@@ -898,13 +900,21 @@ export default function PerfumesScreen() {
                     </Text>
                   </View>
                   <TouchableOpacity
+                    activeOpacity={0.7}
                     style={[
                       adminStyles.button,
                       adminStyles.buttonDanger,
-                      { paddingHorizontal: 16, paddingVertical: 8 },
+                      {
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        minWidth: 100,
+                      },
                       deletingReportId === report.id && adminStyles.buttonDisabled
                     ]}
-                    onPress={() => handleDeleteReport(report.id)}
+                    onPress={() => {
+                      console.log('🔴 Delete button pressed for report:', report.id);
+                      handleDeleteReport(report.id);
+                    }}
                     disabled={deletingReportId === report.id}
                   >
                     {deletingReportId === report.id ? (
