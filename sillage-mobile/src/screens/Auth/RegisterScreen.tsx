@@ -779,6 +779,7 @@ const styles = StyleSheet.create({
     padding: 60,
   },
   brandingContent: {
+    width: '100%',
     maxWidth: 500,
     alignItems: 'center',
   },
@@ -791,6 +792,8 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: 'bold',
     marginBottom: 16,
+    textAlign: 'center',
+    flexWrap: 'nowrap',
   },
   webBrandSubtitle: {
     fontSize: 22,
@@ -875,6 +878,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 32,
     fontStyle: 'italic',
+    flexWrap: 'nowrap',
   },
   form: {
     width: '100%',
