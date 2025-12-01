@@ -6,5 +6,19 @@
       "successTitle": "Upload Successful!",
       "successMessage": "{{success}} perfumes loaded, {{errors}} errors"
     }
+  },
+  "reports": {
+    "title": "Perfume Reports",
+    "viewReports": "View Reports",
+    "noReports": "No reports",
+    "noReportsMessage": "No perfumes reported by users",
+    "perfume": "Perfume",
+    "brand": "Brand",
+    "reportedBy": "Reported by",
+    "reportedAt": "Date",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this report?",
+    "deleteSuccess": "Report deleted",
+    "deleteError": "Error deleting report"
   }
 }

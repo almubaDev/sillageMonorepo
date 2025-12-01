@@ -29,3 +29,4 @@ class User(Base):
     # Relaciones
     roles = relationship("Role", secondary="user_roles", back_populates="users")
     password_reset_tokens = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")
+    perfume_reports = relationship("PerfumeReport", back_populates="user", cascade="all, delete-orphan")

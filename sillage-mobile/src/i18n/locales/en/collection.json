@@ -18,7 +18,7 @@
     "placeholder": "Search perfume...",
     "searching": "Searching...",
     "noResults": "No perfumes found",
-    "noResultsHint": "Try another name or create a new one",
+    "noResultsHint": "Try another name or report it",
     "addButton": "Add"
   },
   "create": {
@@ -49,5 +49,20 @@
   "actions": {
     "add": "Add Perfume",
     "create": "Create Perfume"
+  },
+  "report": {
+    "title": "Report Missing Perfume",
+    "description": "If you can't find a perfume, report it and we'll add it to our database",
+    "namePlaceholder": "Perfume name",
+    "brandPlaceholder": "Brand",
+    "button": "Send Report",
+    "sending": "Sending...",
+    "success": "Report sent!",
+    "successMessage": "Thank you for your report. We'll review and add the perfume soon.",
+    "errors": {
+      "nameRequired": "Perfume name is required",
+      "brandRequired": "Brand is required",
+      "failed": "Could not send report. Please try again."
+    }
   }
 }
