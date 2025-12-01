@@ -3,7 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from typing import List
 from app.core.database import get_db
-from app.core.security import get_current_user, require_admin
+from app.api.deps import get_current_user
+from app.core.permissions import require_admin
 from app.models.user import User
 from app.models.perfume_report import PerfumeReport
 from app.schemas.perfume_report import PerfumeReportCreate, PerfumeReportResponse
