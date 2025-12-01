@@ -897,10 +897,7 @@ export default function PerfumesScreen() {
                       },
                       deletingReportId === report.id && adminStyles.buttonDisabled
                     ]}
-                    onPress={() => {
-                      console.log('🔴 Delete button pressed for report:', report.id);
-                      handleDeleteReport(report.id);
-                    }}
+                    onPress={() => handleDeleteReport(report.id)}
                     disabled={deletingReportId === report.id}
                   >
                     {deletingReportId === report.id ? (
