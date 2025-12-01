@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -367,35 +368,57 @@ export default function PerfumesScreen() {
 
   const handleDeleteReport = async (reportId: number) => {
     console.log('🗑️ handleDeleteReport called for ID:', reportId);
-    Alert.alert(
-      t('admin:reports.delete'),
-      t('admin:reports.deleteConfirm'),
-      [
-        {
-          text: t('collection:delete.cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('collection:delete.confirm'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              console.log('🗑️ Deleting report:', reportId);
-              setDeletingReportId(reportId);
-              await perfumeService.deleteReport(reportId);
-              Alert.alert(t('admin:reports.deleteSuccess'));
-              await loadReports();
-            } catch (err: any) {
-              const errorMsg = err.response?.data?.detail || t('admin:reports.deleteError');
-              Alert.alert(t('common:error'), errorMsg);
-              console.error('❌ Error deleting report:', err);
-            } finally {
-              setDeletingReportId(null);
-            }
+
+    // En web, usar window.confirm
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(t('admin:reports.deleteConfirm'));
+      if (!confirmed) return;
+
+      try {
+        console.log('🗑️ Deleting report:', reportId);
+        setDeletingReportId(reportId);
+        await perfumeService.deleteReport(reportId);
+        alert(t('admin:reports.deleteSuccess'));
+        await loadReports();
+      } catch (err: any) {
+        const errorMsg = err.response?.data?.detail || t('admin:reports.deleteError');
+        alert(`${t('common:error')}: ${errorMsg}`);
+        console.error('❌ Error deleting report:', err);
+      } finally {
+        setDeletingReportId(null);
+      }
+    } else {
+      // En móvil, usar Alert.alert nativo
+      Alert.alert(
+        t('admin:reports.delete'),
+        t('admin:reports.deleteConfirm'),
+        [
+          {
+            text: t('collection:delete.cancel'),
+            style: 'cancel',
           },
-        },
-      ]
-    );
+          {
+            text: t('collection:delete.confirm'),
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                console.log('🗑️ Deleting report:', reportId);
+                setDeletingReportId(reportId);
+                await perfumeService.deleteReport(reportId);
+                Alert.alert(t('admin:reports.deleteSuccess'));
+                await loadReports();
+              } catch (err: any) {
+                const errorMsg = err.response?.data?.detail || t('admin:reports.deleteError');
+                Alert.alert(t('common:error'), errorMsg);
+                console.error('❌ Error deleting report:', err);
+              } finally {
+                setDeletingReportId(null);
+              }
+            },
+          },
+        ]
+      );
+    }
   };
 
   const handleOpenReports = async () => {
