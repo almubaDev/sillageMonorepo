@@ -49,6 +49,13 @@ PROMPT_TEMPLATE = """Eres un experto perfumista. Recomienda el perfume MÁS ADEC
 - Expectativa emocional: {expectativa}
 - Vestimenta: {vestimenta}
 
+## REGLA CRÍTICA: NO HACER SUPOSICIONES
+- Basa tu recomendación ÚNICAMENTE en los datos proporcionados arriba
+- NO asumas condiciones que no están explícitamente indicadas (ej: aire acondicionado, calefacción, ventilación, etc.)
+- Si el espacio es "cerrado", solo significa que no hay viento/dispersión, NO asumas climatización
+- La temperatura real del ambiente es la indicada en "Clima" - úsala como referencia principal
+- NO inventes detalles sobre el lugar, las personas, o las circunstancias
+
 ## GUÍA DE SELECCIÓN POR CLIMA Y ESTACIÓN
 
 ### PRIMAVERA (clima templado, flores, aire fresco)
@@ -103,5 +110,5 @@ Evitar: Fresco, volátil, ligero, limpio
 
 FORMATO DE RESPUESTA (OBLIGATORIO):
 Perfume [número]
-[Breve explicación de por qué es perfecto para esta ocasión, mencionando la compatibilidad con el clima/estación]
+[Breve explicación de por qué es adecuado, mencionando SOLO datos proporcionados: clima ({temperatura}°C), estación ({estacion}), ocasión ({ocasion}). NO menciones condiciones asumidas como aire acondicionado, calefacción, etc.]
 """
