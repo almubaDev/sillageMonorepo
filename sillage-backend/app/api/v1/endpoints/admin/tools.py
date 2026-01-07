@@ -17,6 +17,7 @@ from app.core.security import verify_password
 from app.models.user import User
 from app.models.api_usage import APIUsageLog, APIDailyUsage
 from app.models.role import GiftedConsultation
+from app.models.perfume import Perfume
 from app.services.financial_snapshot import (
     get_snapshots,
     get_snapshot_summary,
@@ -42,6 +43,10 @@ class ResetGiftedConsultationsRequest(BaseModel):
 class ResetAPIUsageRequest(BaseModel):
     password: str
     api_name: Optional[str] = None  # None = todas las APIs
+
+
+class DeleteAllPerfumesRequest(BaseModel):
+    password: str
 
 
 class ResetResponse(BaseModel):
@@ -286,3 +291,43 @@ async def backfill_financial_snapshots(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al crear snapshots: {str(e)}")
+
+
+# ========================================================================
+# PERFUMES MANAGEMENT
+# ========================================================================
+
+@router.post("/delete-all-perfumes", response_model=ResetResponse)
+async def delete_all_perfumes(
+    request: DeleteAllPerfumesRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_superuser)
+):
+    """
+    Eliminar TODOS los perfumes de la base de datos.
+
+    Esta es una acción IRREVERSIBLE que elimina toda la colección de perfumes.
+    Requiere confirmación de contraseña del superusuario.
+    """
+    # Verificar contraseña
+    if not await verify_superuser_password(current_user, request.password):
+        raise HTTPException(
+            status_code=403,
+            detail="Contraseña incorrecta. Operación cancelada."
+        )
+
+    try:
+        # Eliminar todos los perfumes
+        result = await db.execute(delete(Perfume))
+        affected = result.rowcount
+        await db.commit()
+
+        return ResetResponse(
+            success=True,
+            message=f"Se eliminaron {affected} perfumes de la base de datos",
+            affected_records=affected
+        )
+
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al eliminar perfumes: {str(e)}")

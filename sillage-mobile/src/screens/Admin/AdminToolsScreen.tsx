@@ -19,7 +19,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { adminStyles, AdminColors } from './adminStyles';
 import { adminService, ResetResponse, FinancialSnapshot } from '../../services/adminService';
 
-type ToolAction = 'reset_gifted_consultations' | 'reset_api_usage_all' | 'reset_api_usage_gemini' | 'reset_api_usage_openweather' | 'reset_api_usage_google_maps';
+type ToolAction = 'reset_gifted_consultations' | 'reset_api_usage_all' | 'reset_api_usage_gemini' | 'reset_api_usage_openweather' | 'reset_api_usage_google_maps' | 'delete_all_perfumes';
 
 interface ToolConfig {
   id: ToolAction;
@@ -28,7 +28,7 @@ interface ToolConfig {
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
   iconColor: string;
   warningLevel: 'low' | 'medium' | 'high';
-  category: 'consultations' | 'api';
+  category: 'consultations' | 'api' | 'perfumes';
   requiresPassword?: boolean;
 }
 
@@ -77,6 +77,15 @@ const TOOLS: ToolConfig[] = [
     iconColor: '#34A853',
     warningLevel: 'medium',
     category: 'api',
+  },
+  {
+    id: 'delete_all_perfumes',
+    title: 'Eliminar Todos los Perfumes',
+    description: 'Elimina TODOS los perfumes de la base de datos. Esta acción es IRREVERSIBLE.',
+    icon: 'delete-forever',
+    iconColor: AdminColors.error,
+    warningLevel: 'high',
+    category: 'perfumes',
   },
 ];
 
@@ -144,6 +153,9 @@ export default function AdminToolsScreen() {
           break;
         case 'reset_api_usage_google_maps':
           response = await adminService.resetAPIUsage(password, 'google_maps');
+          break;
+        case 'delete_all_perfumes':
+          response = await adminService.deleteAllPerfumes(password);
           break;
         default:
           throw new Error('Acción no reconocida');
@@ -245,6 +257,38 @@ export default function AdminToolsScreen() {
               <View style={[
                 adminStyles.menuItemIcon,
                 { backgroundColor: tool.warningLevel === 'high' ? '#FEE2E2' : '#FEF3C7' }
+              ]}>
+                <MaterialCommunityIcons name={tool.icon} size={24} color={tool.iconColor} />
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={adminStyles.cardTitle}>
+                  {tool.title}
+                </Text>
+                <Text style={adminStyles.cardSubtitle}>
+                  {tool.description}
+                </Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color={AdminColors.gray400} />
+            </View>
+          </TouchableOpacity>
+        ))}
+
+        {/* Perfumes Section */}
+        <Text style={[adminStyles.sectionTitle, { marginTop: 16, marginBottom: 12 }]}>
+          Base de Datos de Perfumes
+        </Text>
+
+        {TOOLS.filter(t => t.category === 'perfumes').map((tool) => (
+          <TouchableOpacity
+            key={tool.id}
+            style={[adminStyles.card, { marginBottom: 12 }]}
+            onPress={() => handleToolPress(tool)}
+            activeOpacity={0.7}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[
+                adminStyles.menuItemIcon,
+                { backgroundColor: '#FEE2E2' }
               ]}>
                 <MaterialCommunityIcons name={tool.icon} size={24} color={tool.iconColor} />
               </View>

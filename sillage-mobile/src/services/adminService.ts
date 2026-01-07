@@ -462,6 +462,13 @@ export const adminService = {
     return response.data;
   },
 
+  async deleteAllPerfumes(password: string): Promise<ResetResponse> {
+    const response = await api.post<ResetResponse>('/admin/tools/delete-all-perfumes', {
+      password
+    });
+    return response.data;
+  },
+
   // ========== FINANCIAL SNAPSHOTS ==========
   async getFinancialSnapshots(days: number = 30): Promise<FinancialSnapshot[]> {
     const response = await api.get<FinancialSnapshot[]>('/admin/tools/financial-snapshots', {
