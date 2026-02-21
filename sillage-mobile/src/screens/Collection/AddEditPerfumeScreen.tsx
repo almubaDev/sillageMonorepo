@@ -132,13 +132,14 @@ export const AddEditPerfumeScreen = () => {
         await coleccionService.createPerfume(data);
       }
 
+      setSaving(false);
       navigation.goBack();
+      return;
     } catch (error: any) {
       const msg = isEditing
         ? t('collection:error.updateFailed')
         : t('collection:error.createFailed');
       Alert.alert(t('collection:error.title'), error.response?.data?.detail || msg);
-    } finally {
       setSaving(false);
     }
   };
