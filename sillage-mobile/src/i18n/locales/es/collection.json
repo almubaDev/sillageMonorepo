@@ -1,63 +1,118 @@
 {
-  "title": "Mi Colección",
-  "tabLabel": "Colección",
-  "loading": "Cargando tu colección...",
+  "title": "Mi Coleccion",
+  "tabLabel": "Coleccion",
+  "loading": "Cargando tu coleccion...",
   "error": {
-    "title": "Error al cargar",
-    "loadFailed": "No se pudo cargar tu colección. Verifica tu conexión.",
+    "title": "Error",
+    "loadFailed": "No se pudo cargar tu coleccion. Verifica tu conexion.",
     "searchFailed": "Error al buscar perfumes",
     "deleteFailed": "No se pudo eliminar el perfume",
     "createFailed": "No se pudo crear el perfume",
+    "updateFailed": "No se pudo actualizar el perfume",
     "retry": "Reintentar"
   },
   "empty": {
-    "title": "Tu colección está vacía",
-    "subtitle": "Busca perfumes existentes o crea uno nuevo"
+    "title": "Tu coleccion esta vacia",
+    "subtitle": "Agrega tu primer perfume con el boton +"
+  },
+  "header": {
+    "perfumes": "perfumes",
+    "investment": "Inversion"
+  },
+  "card": {
+    "ml": "ml",
+    "rating": "/10",
+    "gift": "Regalo",
+    "undeclared": "No declarado"
+  },
+  "filter": {
+    "addFilter": "Agregar filtro...",
+    "searchPlaceholder": "Buscar...",
+    "button": "Filtrar",
+    "name": "Nombre",
+    "brand": "Marca",
+    "perfumer": "Perfumista",
+    "family": "Familia olfativa",
+    "maxPrice": "Precio maximo",
+    "rating": "Calificacion",
+    "clear": "Limpiar filtros",
+    "apply": "Aplicar"
+  },
+  "momento": {
+    "dia": "Dia",
+    "noche": "Noche"
+  },
+  "estacion": {
+    "verano": "Verano",
+    "otono": "Otono",
+    "invierno": "Invierno",
+    "primavera": "Primavera"
+  },
+  "form": {
+    "addTitle": "Agregar Perfume",
+    "editTitle": "Editar Perfume",
+    "name": "Nombre",
+    "namePlaceholder": "Nombre del perfume",
+    "brand": "Marca",
+    "brandPlaceholder": "Ej: Dior, Chanel...",
+    "perfumer": "Perfumista",
+    "perfumerPlaceholder": "Ej: Francois Demachy",
+    "concentration": "Concentracion",
+    "concentrationPlaceholder": "Ej: Eau de parfum",
+    "family": "Familia olfativa",
+    "familyPlaceholder": "Ej: Amaderada Aromatica",
+    "momentLabel": "Momento del dia",
+    "seasonLabel": "Estacion",
+    "accords": "Acordes",
+    "accordPlaceholder": "Ej: Amaderado",
+    "notes": "Notas",
+    "notePlaceholder": "Ej: Bergamota",
+    "rating": "Calificacion",
+    "ratingHint": "Click = media estrella, doble click = estrella completa",
+    "ratingClear": "Limpiar",
+    "price": "Costo",
+    "pricePlaceholder": "0.00",
+    "quantity": "Cantidad (ml)",
+    "quantityPlaceholder": "Ej: 100",
+    "imageUrl": "Imagen",
+    "imageUrlPlaceholder": "URL de la imagen del perfume",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "errors": {
+      "nameRequired": "El nombre es requerido"
+    }
+  },
+  "reposicion": {
+    "title": "Reposiciones",
+    "ml": "ml",
+    "cost": "Costo",
+    "mlPlaceholder": "Ej: 100",
+    "costPlaceholder": "0.00",
+    "add": "Agregar",
+    "empty": "Sin reposiciones"
+  },
+  "delete": {
+    "title": "Eliminar Perfume",
+    "message": "Se eliminara este perfume y todas sus reposiciones. Esta accion no se puede deshacer.",
+    "confirm": "Eliminar",
+    "cancel": "Cancelar"
   },
   "search": {
     "placeholder": "Buscar perfume...",
     "searching": "Buscando...",
     "noResults": "No se encontraron perfumes",
-    "noResultsHint": "Intenta con otro nombre o repórtalo",
+    "noResultsHint": "Intenta con otro nombre o reportalo",
     "addButton": "Agregar"
-  },
-  "create": {
-    "title": "Crear Perfume",
-    "helpText": "Los campos marcados con * son obligatorios",
-    "namePlaceholder": "Nombre del perfume *",
-    "brandPlaceholder": "Marca *",
-    "perfumerPlaceholder": "Perfumista (opcional)",
-    "accordsPlaceholder": "Acordes: Ej. cítrico, amaderado, floral",
-    "notesPlaceholder": "Notas: Ej. bergamota, jazmín, vainilla",
-    "button": "Crear y Agregar",
-    "creating": "Creando...",
-    "errors": {
-      "nameRequired": "El nombre es requerido",
-      "nameMinLength": "Mínimo 2 caracteres",
-      "brandRequired": "La marca es requerida",
-      "brandMinLength": "Mínimo 2 caracteres",
-      "duplicateTitle": "Perfume duplicado",
-      "duplicateMessage": "Este perfume ya existe en la base de datos. Búscalo para agregarlo a tu colección."
-    }
-  },
-  "delete": {
-    "title": "Eliminar Perfume",
-    "message": "¿Estás seguro de que deseas eliminar este perfume de tu colección? Esta acción no se puede deshacer.",
-    "confirm": "Eliminar",
-    "cancel": "Cancelar"
-  },
-  "actions": {
-    "add": "Agregar Perfume",
-    "create": "Crear Perfume"
   },
   "report": {
     "title": "Reportar Perfume Faltante",
-    "description": "Si no encuentras un perfume, repórtalo y lo agregaremos a nuestra base de datos",
+    "description": "Si no encuentras un perfume, reportalo y lo agregaremos a nuestra base de datos",
     "namePlaceholder": "Nombre del perfume",
     "brandPlaceholder": "Marca",
     "button": "Enviar Reporte",
     "sending": "Enviando...",
-    "success": "¡Reporte enviado!",
+    "success": "Reporte enviado!",
     "successMessage": "Gracias por tu reporte. Revisaremos y agregaremos el perfume pronto.",
     "errors": {
       "nameRequired": "El nombre del perfume es requerido",

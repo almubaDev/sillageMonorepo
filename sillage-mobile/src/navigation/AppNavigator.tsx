@@ -9,9 +9,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeProvider';
-import { RecommendStackParamList, ProfileStackParamList, RootTabParamList } from './types';
+import { RecommendStackParamList, ProfileStackParamList, CollectionStackParamList, RootTabParamList } from './types';
 
 import { CollectionScreen } from '../screens/Collection/CollectionScreen';
+import { AddEditPerfumeScreen } from '../screens/Collection/AddEditPerfumeScreen';
 import { RecommendScreen } from '../screens/Recommend/RecommendScreen';
 import { RecommendationResultScreen } from '../screens/Recommend/RecommendationResultScreen';
 import { ProfileScreen } from '../screens/Profile/ProfileScreen';
@@ -26,6 +27,46 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 const Drawer = createDrawerNavigator<RootTabParamList>();
 const RecommendStack = createNativeStackNavigator<RecommendStackParamList>();
 const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
+const CollectionStack = createNativeStackNavigator<CollectionStackParamList>();
+
+// Stack Navigator para Coleccion (lista + agregar/editar perfume)
+function CollectionStackNavigator() {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
+
+  return (
+    <CollectionStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: colors.bg,
+        },
+        headerTintColor: colors.text,
+        headerShadowVisible: false,
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 20,
+          fontFamily: 'AlanSans-Bold',
+        },
+      }}
+    >
+      <CollectionStack.Screen
+        name="CollectionMain"
+        component={CollectionScreen}
+        options={{ headerShown: false }}
+      />
+      <CollectionStack.Screen
+        name="AddEditPerfume"
+        component={AddEditPerfumeScreen}
+        options={({ route }) => ({
+          headerShown: true,
+          title: route.params?.perfumeId
+            ? t('collection:form.editTitle')
+            : t('collection:form.addTitle'),
+        })}
+      />
+    </CollectionStack.Navigator>
+  );
+}
 
 // Stack Navigator para Recomendador (incluye la pantalla de resultado)
 function RecommendStackNavigator() {
@@ -202,10 +243,11 @@ function DesktopDrawerNavigator() {
     >
       <Drawer.Screen
         name="Colección"
-        component={CollectionScreen}
+        component={CollectionStackNavigator}
         options={{
           drawerLabel: t('collection:tabLabel'),
           title: t('collection:title'),
+          headerShown: false,
           drawerIcon: ({ focused, color }) => (
             <MaterialCommunityIcons
               name="view-agenda"
@@ -357,10 +399,11 @@ function MobileTabNavigator() {
     >
       <Tab.Screen
         name="Colección"
-        component={CollectionScreen}
+        component={CollectionStackNavigator}
         options={{
           tabBarLabel: t('collection:tabLabel'),
-          title: t('collection:title')
+          title: t('collection:title'),
+          headerShown: false,
         }}
       />
       <Tab.Screen

@@ -5,82 +5,72 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  TextInput,
   ActivityIndicator,
   Alert,
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
-import { PerfumeCard } from '../../components/PerfumeCard';
+import { ColeccionPerfumeCard } from '../../components/ColeccionPerfumeCard';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { perfumeService, PerfumeInCollection, Perfume, PerfumeReportCreate } from '../../services/perfumeService';
-import { useFocusEffect } from '@react-navigation/native';
-import { formatPerfumeName, formatBrand } from '../../utils/formatters';
+import { coleccionService, ColeccionStats, PerfumeColeccionData } from '../../services/coleccionService';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useLanguageChange } from '../../hooks/useLanguageChange';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { CollectionStackParamList } from '../../navigation/types';
+
+type NavigationProp = NativeStackNavigationProp<CollectionStackParamList, 'CollectionMain'>;
 
 export const CollectionScreen = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 1024;
+  const navigation = useNavigation<NavigationProp>();
 
-  // Limpiar errores cuando cambia el idioma
   useLanguageChange(() => {
     setError(null);
   });
-  
-  const [perfumes, setPerfumes] = useState<PerfumeInCollection[]>([]);
+
+  const [stats, setStats] = useState<ColeccionStats | null>(null);
+  const [perfumes, setPerfumes] = useState<PerfumeColeccionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [perfumeToDelete, setPerfumeToDelete] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Perfume[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [reportModalVisible, setReportModalVisible] = useState(false);
-  const [reportData, setReportData] = useState<PerfumeReportCreate>({ nombre: '', marca: '' });
-  const [reportErrors, setReportErrors] = useState<{nombre?: string; marca?: string}>({});
-  const [sendingReport, setSendingReport] = useState(false);
+  const [perfumeToDelete, setPerfumeToDelete] = useState<PerfumeColeccionData | null>(null);
 
-  // Cargar colección al montar el componente por primera vez
   useEffect(() => {
-    loadCollection();
+    loadData();
   }, []);
 
-  // Recargar cuando volvemos a la pantalla (si ya se cargó antes)
   useFocusEffect(
     useCallback(() => {
-      // Solo recargar si ya hemos cargado datos antes
       if (hasLoadedOnce) {
-        loadCollection();
+        loadData();
       }
     }, [hasLoadedOnce])
   );
 
-  const loadCollection = async () => {
+  const loadData = async () => {
     try {
       setError(null);
-      // Solo mostrar spinner de carga completo si no hay datos aún
-      if (!hasLoadedOnce) {
-        setLoading(true);
-      }
+      if (!hasLoadedOnce) setLoading(true);
 
-      const data = await perfumeService.getMyCollection();
-      setPerfumes(data);
+      const [statsData, perfumesData] = await Promise.all([
+        coleccionService.getColeccion(),
+        coleccionService.listPerfumes(),
+      ]);
+
+      setStats(statsData);
+      setPerfumes(perfumesData);
       setHasLoadedOnce(true);
     } catch (error: any) {
-      console.error('❌ Error cargando colección:', error);
       const errorMessage = error.response?.data?.detail || t('collection:error.loadFailed');
       setError(errorMessage);
-
-      // Solo mostrar Alert si ya habíamos cargado antes y falló
       if (hasLoadedOnce) {
         Alert.alert(t('collection:error.title'), errorMessage);
       }
@@ -91,106 +81,43 @@ export const CollectionScreen = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadCollection();
+    await loadData();
     setRefreshing(false);
   };
 
-  useEffect(() => {
-    const delaySearch = setTimeout(() => {
-      if (searchQuery.trim().length >= 1) {
-        performSearch(searchQuery);
-      } else {
-        setSearchResults([]);
-      }
-    }, 500);
-
-    return () => clearTimeout(delaySearch);
-  }, [searchQuery]);
-
-  const performSearch = async (query: string) => {
-    try {
-      setSearching(true);
-      const results = await perfumeService.search({ q: query, limit: 20 });
-      setSearchResults(results);
-    } catch (error: any) {
-      console.error('Error en búsqueda:', error);
-    } finally {
-      setSearching(false);
-    }
+  const handleEdit = (perfumeId: number) => {
+    navigation.navigate('AddEditPerfume', { perfumeId });
   };
 
-  const handleAddToCollection = async (perfumeId: number) => {
-    try {
-      await perfumeService.addToCollection(perfumeId);
-      setSearchModalVisible(false);
-      setSearchQuery('');
-      setSearchResults([]);
-      await loadCollection();
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || t('collection:error.createFailed');
-      Alert.alert(t('collection:error.title'), errorMsg);
+  const handleDelete = (perfumeId: number) => {
+    const perfume = perfumes.find((p) => p.id === perfumeId);
+    if (perfume) {
+      setPerfumeToDelete(perfume);
+      setDeleteModalVisible(true);
     }
-  };
-
-  const handleRemoveFromCollection = (perfumeId: number) => {
-    setPerfumeToDelete(perfumeId);
-    setDeleteModalVisible(true);
   };
 
   const confirmDelete = async () => {
     if (!perfumeToDelete) return;
 
     try {
-      await perfumeService.removeFromCollection(perfumeToDelete);
+      await coleccionService.deletePerfume(perfumeToDelete.id);
       setDeleteModalVisible(false);
       setPerfumeToDelete(null);
-      await loadCollection();
+      await loadData();
     } catch (error: any) {
-      Alert.alert(t('collection:error.title'), error.response?.data?.detail || t('collection:error.deleteFailed'));
-    }
-  };
-
-  const validateReportForm = (): boolean => {
-    const errors: {nombre?: string; marca?: string} = {};
-
-    if (!reportData.nombre.trim()) {
-      errors.nombre = t('collection:report.errors.nameRequired');
-    }
-
-    if (!reportData.marca.trim()) {
-      errors.marca = t('collection:report.errors.brandRequired');
-    }
-
-    setReportErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleSendReport = async () => {
-    if (!validateReportForm()) return;
-
-    try {
-      setSendingReport(true);
-      await perfumeService.reportPerfume({
-        nombre: reportData.nombre.trim(),
-        marca: reportData.marca.trim(),
-      });
-
       Alert.alert(
-        t('collection:report.success'),
-        t('collection:report.successMessage')
+        t('collection:error.title'),
+        error.response?.data?.detail || t('collection:error.deleteFailed')
       );
-
-      setReportModalVisible(false);
-      setReportData({ nombre: '', marca: '' });
-      setReportErrors({});
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || t('collection:report.errors.failed');
-      Alert.alert(t('collection:error.title'), errorMsg);
-    } finally {
-      setSendingReport(false);
     }
   };
 
+  const formatInversion = (value: number) => {
+    return `$${Number(value).toLocaleString('es-CL')}`;
+  };
+
+  // Loading state
   if (loading && !hasLoadedOnce) {
     return (
       <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
@@ -202,7 +129,7 @@ export const CollectionScreen = () => {
     );
   }
 
-  // Mostrar error solo si falló la carga inicial
+  // Error state
   if (error && !hasLoadedOnce) {
     return (
       <View style={[styles.container, styles.center, { backgroundColor: colors.bg }]}>
@@ -212,7 +139,7 @@ export const CollectionScreen = () => {
         </Text>
         <TouchableOpacity
           style={[styles.retryButton, { backgroundColor: colors.accent }]}
-          onPress={loadCollection}
+          onPress={loadData}
         >
           <MaterialCommunityIcons name="refresh" size={20} color={colors.bg} />
           <Text style={[styles.retryButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
@@ -223,34 +150,65 @@ export const CollectionScreen = () => {
     );
   }
 
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <Text style={[styles.headerTitle, { color: colors.accent, fontFamily: 'AlanSans-Bold' }]}>
+          {stats?.nombre || t('collection:title')}
+        </Text>
+        <View style={styles.headerStats}>
+          <Text style={[styles.headerStat, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            {stats?.perfumes_count || 0} {t('collection:header.perfumes')}
+          </Text>
+          <Text style={[styles.headerStat, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            {t('collection:header.investment')} {formatInversion(stats?.inversion_total || 0)}
+          </Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={[styles.addButton, { backgroundColor: colors.accent }]}
+        onPress={() => navigation.navigate('AddEditPerfume')}
+      >
+        <MaterialCommunityIcons name="plus" size={20} color={colors.bg} />
+        <Text style={[styles.addButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
+          {t('collection:form.addTitle')}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
       {perfumes.length === 0 ? (
-        <View style={styles.empty}>
-          <MaterialCommunityIcons name="flask-empty-outline" size={80} color={colors.secondary} />
-          <Text style={[styles.emptyText, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-            {t('collection:empty.title')}
-          </Text>
-          <Text style={[styles.emptySubtext, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            {t('collection:empty.subtitle')}
-          </Text>
+        <View style={styles.emptyContainer}>
+          {renderHeader()}
+          <View style={styles.empty}>
+            <MaterialCommunityIcons name="flask-empty-outline" size={80} color={colors.secondary} />
+            <Text style={[styles.emptyText, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+              {t('collection:empty.title')}
+            </Text>
+            <Text style={[styles.emptySubtext, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+              {t('collection:empty.subtitle')}
+            </Text>
+          </View>
         </View>
       ) : (
         <View style={[styles.listContainer, isDesktop && styles.listContainerDesktop]}>
           <FlatList
             data={perfumes}
-            keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+            keyExtractor={(item) => item.id.toString()}
+            ListHeaderComponent={renderHeader}
             renderItem={({ item }) => (
-              <PerfumeCard 
-                perfume={item} 
-                onRemove={handleRemoveFromCollection}
-                showRemove={true}
+              <ColeccionPerfumeCard
+                perfume={item}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
             )}
             contentContainerStyle={styles.list}
             refreshControl={
-              <RefreshControl 
-                refreshing={refreshing} 
+              <RefreshControl
+                refreshing={refreshing}
                 onRefresh={onRefresh}
                 tintColor={colors.accent}
               />
@@ -259,220 +217,26 @@ export const CollectionScreen = () => {
         </View>
       )}
 
-      <View style={styles.fab}>
-        <TouchableOpacity
-          style={[styles.fabButton, { backgroundColor: colors.accent }]}
-          onPress={() => setReportModalVisible(true)}
-        >
-          <MaterialCommunityIcons name="alert-circle-outline" size={26} color={colors.bg} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.fabButton, { backgroundColor: colors.accent }]}
-          onPress={() => setSearchModalVisible(true)}
-        >
-          <MaterialCommunityIcons name="magnify" size={26} color={colors.bg} />
-        </TouchableOpacity>
-      </View>
-
-      <Modal
-        isVisible={searchModalVisible}
-        onBackdropPress={() => {
-          setSearchModalVisible(false);
-          setSearchQuery('');
-          setSearchResults([]);
-        }}
-        style={styles.modalFullScreen}
-        animationIn="slideInRight"
-        animationOut="slideOutRight"
-      >
-        <View style={[styles.modalFullContent, { backgroundColor: colors.bg }]}>
-          <View style={[styles.searchHeader, { backgroundColor: colors.bg, borderBottomColor: colors.accent + '30' }]}>
-            <TouchableOpacity 
-              onPress={() => {
-                setSearchModalVisible(false);
-                setSearchQuery('');
-                setSearchResults([]);
-              }}
-              style={styles.backButton}
-            >
-              <MaterialCommunityIcons name="arrow-left" size={24} color={colors.text} />
-            </TouchableOpacity>
-
-            <View style={styles.searchInputContainer}>
-              <MaterialCommunityIcons name="magnify" size={20} color={colors.secondary} />
-              <TextInput
-                style={[styles.searchInputInline, { 
-                  color: colors.text,
-                  fontFamily: 'Lato-Regular'
-                }]}
-                placeholder={t('collection:search.placeholder')}
-                placeholderTextColor={colors.secondary}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                autoFocus
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <MaterialCommunityIcons name="close-circle" size={20} color={colors.secondary} />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-
-          {searching && searchQuery.length >= 1 ? (
-            <View style={styles.searchingContainer}>
-              <ActivityIndicator color={colors.accent} size="large" />
-              <Text style={[styles.searchingText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                {t('collection:search.searching')}
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              data={searchResults}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.resultItem, { borderBottomColor: colors.secondary + '15' }]}
-                  onPress={() => handleAddToCollection(item.id)}
-                >
-                  <View style={styles.resultInfo}>
-                    <Text style={[styles.resultName, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-                      {formatPerfumeName(item.nombre)}
-                    </Text>
-                    <Text style={[styles.resultBrand, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                      {formatBrand(item.marca)}
-                    </Text>
-                  </View>
-                  <MaterialCommunityIcons name="plus-circle" size={28} color={colors.accent} />
-                </TouchableOpacity>
-              )}
-              ListEmptyComponent={
-                searchQuery.length >= 1 && !searching ? (
-                  <View style={styles.emptySearch}>
-                    <MaterialCommunityIcons name="flask-empty-off-outline" size={64} color={colors.secondary} />
-                    <Text style={[styles.emptySearchText, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-                      {t('collection:search.noResults')}
-                    </Text>
-                    <Text style={[styles.emptySearchSubtext, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-                      {t('collection:search.noResultsHint')}
-                    </Text>
-                  </View>
-                ) : null
-              }
-              contentContainerStyle={styles.resultsList}
-            />
-          )}
-        </View>
-      </Modal>
-
-      <Modal
-        isVisible={reportModalVisible}
-        onBackdropPress={() => {
-          setReportModalVisible(false);
-          setReportData({ nombre: '', marca: '' });
-          setReportErrors({});
-        }}
-        style={styles.modal}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-      >
-        <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
-          <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-              {t('collection:report.title')}
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                setReportModalVisible(false);
-                setReportData({ nombre: '', marca: '' });
-                setReportErrors({});
-              }}
-            >
-              <MaterialCommunityIcons name="close" size={24} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-
-          <Text style={[styles.helpText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            {t('collection:report.description')}
-          </Text>
-
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  color: colors.text,
-                  borderColor: reportErrors.nombre ? '#ef4444' : colors.secondary + '50',
-                  fontFamily: 'Lato-Regular'
-                }
-              ]}
-              placeholder={t('collection:report.namePlaceholder')}
-              placeholderTextColor={colors.secondary}
-              value={reportData.nombre}
-              onChangeText={(text) => {
-                setReportData({ ...reportData, nombre: text });
-                if (reportErrors.nombre) {
-                  setReportErrors({ ...reportErrors, nombre: undefined });
-                }
-              }}
-            />
-            {reportErrors.nombre && (
-              <Text style={[styles.fieldError, { color: '#ef4444', fontFamily: 'Lato-Regular' }]}>
-                {reportErrors.nombre}
-              </Text>
-            )}
-          </View>
-
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  color: colors.text,
-                  borderColor: reportErrors.marca ? '#ef4444' : colors.secondary + '50',
-                  fontFamily: 'Lato-Regular'
-                }
-              ]}
-              placeholder={t('collection:report.brandPlaceholder')}
-              placeholderTextColor={colors.secondary}
-              value={reportData.marca}
-              onChangeText={(text) => {
-                setReportData({ ...reportData, marca: text });
-                if (reportErrors.marca) {
-                  setReportErrors({ ...reportErrors, marca: undefined });
-                }
-              }}
-            />
-            {reportErrors.marca && (
-              <Text style={[styles.fieldError, { color: '#ef4444', fontFamily: 'Lato-Regular' }]}>
-                {reportErrors.marca}
-              </Text>
-            )}
-          </View>
-
+      {/* FAB para agregar (solo mobile, en desktop hay boton en header) */}
+      {!isDesktop && perfumes.length > 0 && (
+        <View style={styles.fab}>
           <TouchableOpacity
-            style={[styles.createButton, {
-              backgroundColor: colors.accent,
-              opacity: sendingReport ? 0.6 : 1
-            }]}
-            onPress={handleSendReport}
-            disabled={sendingReport}
+            style={[styles.fabButton, { backgroundColor: colors.accent }]}
+            onPress={() => navigation.navigate('AddEditPerfume')}
           >
-            {sendingReport ? (
-              <ActivityIndicator color={colors.bg} />
-            ) : (
-              <Text style={[styles.createButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-                {t('collection:report.button')}
-              </Text>
-            )}
+            <MaterialCommunityIcons name="plus" size={28} color={colors.bg} />
           </TouchableOpacity>
         </View>
-      </Modal>
+      )}
 
       <ConfirmModal
         visible={deleteModalVisible}
         title={t('collection:delete.title')}
-        message={t('collection:delete.message')}
+        message={
+          perfumeToDelete
+            ? `${t('collection:delete.message')}\n\n${perfumeToDelete.nombre}${perfumeToDelete.marca ? ` - ${perfumeToDelete.marca}` : ''}`
+            : t('collection:delete.message')
+        }
         confirmText={t('collection:delete.confirm')}
         cancelText={t('collection:delete.cancel')}
         type="danger"
@@ -516,17 +280,54 @@ const styles = StyleSheet.create({
   retryButtonText: {
     fontSize: 16,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 16,
+    marginBottom: 8,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontStyle: 'italic',
+  },
+  headerStats: {
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 4,
+  },
+  headerStat: {
+    fontSize: 13,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  addButtonText: {
+    fontSize: 14,
+  },
   listContainer: {
     flex: 1,
     alignSelf: 'center',
     width: '100%',
   },
   listContainerDesktop: {
-    maxWidth: 800,
+    maxWidth: 900,
   },
   list: {
     padding: 16,
     paddingBottom: 100,
+  },
+  emptyContainer: {
+    flex: 1,
+    padding: 16,
   },
   empty: {
     flex: 1,
@@ -548,7 +349,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 24,
     right: 20,
-    gap: 12,
   },
   fabButton: {
     width: 60,
@@ -561,125 +361,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 8,
-  },
-  modalFullScreen: {
-    margin: 0,
-  },
-  modalFullContent: {
-    flex: 1,
-  },
-  searchHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    marginRight: 12,
-  },
-  searchInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  searchInputInline: {
-    flex: 1,
-    fontSize: 16,
-    paddingVertical: 8,
-  },
-  searchingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchingText: {
-    marginTop: 12,
-    fontSize: 14,
-  },
-  resultsList: {
-    padding: 16,
-  },
-  resultItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  resultInfo: {
-    flex: 1,
-  },
-  resultName: {
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  resultBrand: {
-    fontSize: 14,
-  },
-  emptySearch: {
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptySearchText: {
-    marginTop: 16,
-    fontSize: 18,
-    textAlign: 'center',
-  },
-  emptySearchSubtext: {
-    marginTop: 8,
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  modal: {
-    margin: 0,
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    maxHeight: '85%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 24,
-  },
-  input: {
-    height: 50,
-    borderWidth: 2,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 14,
-    fontSize: 16,
-  },
-  createButton: {
-    height: 52,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  createButtonText: {
-    fontSize: 16,
-  },
-  helpText: {
-    fontSize: 13,
-    marginBottom: 16,
-    fontStyle: 'italic',
-  },
-  inputWrapper: {
-    marginBottom: 14,
-  },
-  fieldError: {
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
   },
 });

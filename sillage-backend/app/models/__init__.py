@@ -16,6 +16,7 @@ from app.models.payment import (
 from app.models.coupon import Coupon, CouponBatch, CouponType
 from app.models.api_usage import APIUsageLog, APIDailyUsage, APIUsageConfig
 from app.models.financial_snapshot import DailyFinancialSnapshot
+from app.models.coleccion import Coleccion, PerfumeColeccion, Reposicion
 
 # Esto es importante para que Alembic detecte todos los modelos
 __all__ = [
@@ -43,5 +44,8 @@ __all__ = [
     "APIUsageLog",
     "APIDailyUsage",
     "APIUsageConfig",
-    "DailyFinancialSnapshot"
+    "DailyFinancialSnapshot",
+    "Coleccion",
+    "PerfumeColeccion",
+    "Reposicion",
 ]

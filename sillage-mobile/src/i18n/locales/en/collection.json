@@ -3,16 +3,100 @@
   "tabLabel": "Collection",
   "loading": "Loading your collection...",
   "error": {
-    "title": "Loading error",
+    "title": "Error",
     "loadFailed": "Could not load your collection. Check your connection.",
     "searchFailed": "Error searching perfumes",
     "deleteFailed": "Could not delete perfume",
     "createFailed": "Could not create perfume",
+    "updateFailed": "Could not update perfume",
     "retry": "Retry"
   },
   "empty": {
     "title": "Your collection is empty",
-    "subtitle": "Search existing perfumes or create a new one"
+    "subtitle": "Add your first perfume with the + button"
+  },
+  "header": {
+    "perfumes": "perfumes",
+    "investment": "Investment"
+  },
+  "card": {
+    "ml": "ml",
+    "rating": "/10",
+    "gift": "Gift",
+    "undeclared": "Undeclared"
+  },
+  "filter": {
+    "addFilter": "Add filter...",
+    "searchPlaceholder": "Search...",
+    "button": "Filter",
+    "name": "Name",
+    "brand": "Brand",
+    "perfumer": "Perfumer",
+    "family": "Olfactory family",
+    "maxPrice": "Max price",
+    "rating": "Rating",
+    "clear": "Clear filters",
+    "apply": "Apply"
+  },
+  "momento": {
+    "dia": "Day",
+    "noche": "Night"
+  },
+  "estacion": {
+    "verano": "Summer",
+    "otono": "Autumn",
+    "invierno": "Winter",
+    "primavera": "Spring"
+  },
+  "form": {
+    "addTitle": "Add Perfume",
+    "editTitle": "Edit Perfume",
+    "name": "Name",
+    "namePlaceholder": "Perfume name",
+    "brand": "Brand",
+    "brandPlaceholder": "E.g.: Dior, Chanel...",
+    "perfumer": "Perfumer",
+    "perfumerPlaceholder": "E.g.: Francois Demachy",
+    "concentration": "Concentration",
+    "concentrationPlaceholder": "E.g.: Eau de parfum",
+    "family": "Olfactory family",
+    "familyPlaceholder": "E.g.: Woody Aromatic",
+    "momentLabel": "Time of day",
+    "seasonLabel": "Season",
+    "accords": "Accords",
+    "accordPlaceholder": "E.g.: Woody",
+    "notes": "Notes",
+    "notePlaceholder": "E.g.: Bergamot",
+    "rating": "Rating",
+    "ratingHint": "Click = half star, double click = full star",
+    "ratingClear": "Clear",
+    "price": "Cost",
+    "pricePlaceholder": "0.00",
+    "quantity": "Quantity (ml)",
+    "quantityPlaceholder": "E.g.: 100",
+    "imageUrl": "Image",
+    "imageUrlPlaceholder": "Perfume image URL",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "errors": {
+      "nameRequired": "Name is required"
+    }
+  },
+  "reposicion": {
+    "title": "Repurchases",
+    "ml": "ml",
+    "cost": "Cost",
+    "mlPlaceholder": "E.g.: 100",
+    "costPlaceholder": "0.00",
+    "add": "Add",
+    "empty": "No repurchases"
+  },
+  "delete": {
+    "title": "Delete Perfume",
+    "message": "This will delete the perfume and all its repurchases. This action cannot be undone.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
   },
   "search": {
     "placeholder": "Search perfume...",
@@ -20,35 +104,6 @@
     "noResults": "No perfumes found",
     "noResultsHint": "Try another name or report it",
     "addButton": "Add"
-  },
-  "create": {
-    "title": "Create Perfume",
-    "helpText": "Fields marked with * are required",
-    "namePlaceholder": "Perfume name *",
-    "brandPlaceholder": "Brand *",
-    "perfumerPlaceholder": "Perfumer (optional)",
-    "accordsPlaceholder": "Accords: e.g. citrus, woody, floral",
-    "notesPlaceholder": "Notes: e.g. bergamot, jasmine, vanilla",
-    "button": "Create and Add",
-    "creating": "Creating...",
-    "errors": {
-      "nameRequired": "Name is required",
-      "nameMinLength": "Minimum 2 characters",
-      "brandRequired": "Brand is required",
-      "brandMinLength": "Minimum 2 characters",
-      "duplicateTitle": "Duplicate perfume",
-      "duplicateMessage": "This perfume already exists in the database. Search for it to add it to your collection."
-    }
-  },
-  "delete": {
-    "title": "Delete Perfume",
-    "message": "Are you sure you want to remove this perfume from your collection? This action cannot be undone.",
-    "confirm": "Delete",
-    "cancel": "Cancel"
-  },
-  "actions": {
-    "add": "Add Perfume",
-    "create": "Create Perfume"
   },
   "report": {
     "title": "Report Missing Perfume",

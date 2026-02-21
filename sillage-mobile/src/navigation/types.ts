@@ -17,6 +17,11 @@ export type ProfileStackParamList = {
   };
 };
 
+export type CollectionStackParamList = {
+  CollectionMain: undefined;
+  AddEditPerfume: { perfumeId?: number } | undefined;
+};
+
 export type RootTabParamList = {
   Colección: undefined;
   Recomendador: undefined;
