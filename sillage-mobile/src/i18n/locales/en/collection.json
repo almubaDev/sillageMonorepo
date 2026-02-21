@@ -92,7 +92,7 @@
       "quantity": "Bottle size in milliliters. E.g.: 50, 100, 200.",
       "price": "Price paid for the perfume. Leave at 0 if it was a gift.",
       "rating": "Your personal rating from 0.5 to 10. Click = half star, double click = full star.",
-      "image": "URL of a perfume image. You can copy it from Fragrantica or Google.",
+      "image": "URL of a perfume image. You can copy it from any website.",
       "perfumer": "Type the perfumer's name and press + to add. You can add multiple.",
       "accords": "Type an accord and press + to add it. E.g.: Woody, Sweet, Floral, Citrus.",
       "notes": "Type a note and press + to add it. E.g.: Bergamot, Vanilla, Sandalwood."

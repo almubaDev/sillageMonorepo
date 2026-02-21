@@ -121,7 +121,7 @@ export const AddEditPerfumeScreen = () => {
         acordes,
         notas,
         calificacion,
-        precio: precio ? parseFloat(precio) : null,
+        precio: precio !== '' ? parseFloat(precio) : null,
         cantidad_ml: cantidadMl ? parseInt(cantidadMl, 10) : 1,
         imagen: imagen.trim(),
       };
