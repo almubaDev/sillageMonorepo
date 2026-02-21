@@ -17,10 +17,10 @@ from app.models.api_usage import APIUsageLog, APIDailyUsage, APIUsageConfig
 # Configuración por defecto de las APIs - FREE TIER
 DEFAULT_API_CONFIGS = {
     'gemini': {
-        'free_daily_limit': 200,
-        'free_monthly_limit': 6000,
-        'cost_per_1m_tokens_input': Decimal('0.10'),
-        'cost_per_1m_tokens_output': Decimal('0.40'),
+        'free_daily_limit': 500,
+        'free_monthly_limit': 15000,
+        'cost_per_1m_tokens_input': Decimal('0.30'),
+        'cost_per_1m_tokens_output': Decimal('2.50'),
         'cost_per_call': Decimal('0'),
     },
     'openweather': {

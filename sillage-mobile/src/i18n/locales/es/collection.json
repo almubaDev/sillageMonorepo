@@ -94,8 +94,8 @@
       "rating": "Tu calificacion personal de 0.5 a 10. Click = media estrella, doble click = completa.",
       "image": "URL de una imagen del perfume. Puedes copiarla desde cualquier sitio web.",
       "perfumer": "Escribe el nombre del perfumista y presiona + para agregarlo. Puedes agregar varios.",
-      "accords": "Escribe un acorde y presiona + para agregarlo. Ej: Amaderado, Dulce, Floral, Citrico.",
-      "notes": "Escribe una nota y presiona + para agregarla. Ej: Bergamota, Vainilla, Sandalo."
+      "accords": "Escribe un acorde y presiona + para agregarlo. Ej: Amaderado.",
+      "notes": "Escribe una nota y presiona + para agregarla. Ej: Bergamota."
     }
   },
   "reposicion": {

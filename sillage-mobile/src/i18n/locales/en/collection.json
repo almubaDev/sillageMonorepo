@@ -94,8 +94,8 @@
       "rating": "Your personal rating from 0.5 to 10. Click = half star, double click = full star.",
       "image": "URL of a perfume image. You can copy it from any website.",
       "perfumer": "Type the perfumer's name and press + to add. You can add multiple.",
-      "accords": "Type an accord and press + to add it. E.g.: Woody, Sweet, Floral, Citrus.",
-      "notes": "Type a note and press + to add it. E.g.: Bergamot, Vanilla, Sandalwood."
+      "accords": "Type an accord and press + to add it. E.g.: Woody.",
+      "notes": "Type a note and press + to add it. E.g.: Bergamot."
     }
   },
   "reposicion": {
