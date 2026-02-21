@@ -119,8 +119,8 @@ export const ColeccionPerfumeCard: React.FC<ColeccionPerfumeCardProps> = ({
           {/* Perfumista */}
           {!!perfume.perfumista && (
             <View style={styles.perfumistaRow}>
-              <MaterialCommunityIcons name="account-edit" size={12} color={colors.secondary} />
-              <Text style={[styles.perfumistaText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]} numberOfLines={1}>
+              <MaterialCommunityIcons name="account-edit" size={12} color="#7DD3FC" />
+              <Text style={[styles.perfumistaText, { color: '#7DD3FC', fontFamily: 'Lato-Regular' }]} numberOfLines={1}>
                 {perfume.perfumista}
               </Text>
             </View>
