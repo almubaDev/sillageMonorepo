@@ -42,7 +42,7 @@ export const AddEditPerfumeScreen = () => {
   // Form state
   const [nombre, setNombre] = useState('');
   const [marca, setMarca] = useState('');
-  const [perfumista, setPerfumista] = useState('');
+  const [perfumistas, setPerfumistas] = useState<string[]>([]);
   const [concentracion, setConcentracion] = useState('');
   const [familiaOlfativa, setFamiliaOlfativa] = useState('');
   const [momentoDia, setMomentoDia] = useState('');
@@ -76,7 +76,7 @@ export const AddEditPerfumeScreen = () => {
       const data = await coleccionService.getPerfume(id);
       setNombre(data.nombre);
       setMarca(data.marca || '');
-      setPerfumista(data.perfumista || '');
+      setPerfumistas(data.perfumistas || []);
       setConcentracion(data.concentracion || '');
       setFamiliaOlfativa(data.familia_olfativa || '');
       setMomentoDia(data.momento_dia || '');
@@ -113,7 +113,7 @@ export const AddEditPerfumeScreen = () => {
       const data = {
         nombre: nombre.trim(),
         marca: marca.trim(),
-        perfumista: perfumista.trim(),
+        perfumistas,
         concentracion: concentracion.trim(),
         familia_olfativa: familiaOlfativa.trim(),
         momento_dia: momentoDia,
@@ -296,8 +296,17 @@ export const AddEditPerfumeScreen = () => {
         {/* Imagen */}
         {renderInput(t('collection:form.imageUrl'), imagen, setImagen, t('collection:form.imageUrlPlaceholder'))}
 
-        {/* Perfumista */}
-        {renderInput(t('collection:form.perfumer'), perfumista, setPerfumista, t('collection:form.perfumerPlaceholder'))}
+        {/* Perfumistas */}
+        <View style={styles.fieldContainer}>
+          <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
+            {t('collection:form.perfumer')}
+          </Text>
+          <TagInput
+            tags={perfumistas}
+            onChange={setPerfumistas}
+            placeholder={t('collection:form.perfumerPlaceholder')}
+          />
+        </View>
 
         {/* Acordes */}
         <View style={styles.fieldContainer}>

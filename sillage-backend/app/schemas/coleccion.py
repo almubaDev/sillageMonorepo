@@ -50,7 +50,7 @@ class ColeccionWithStats(ColeccionResponse):
 class PerfumeColeccionBase(BaseModel):
     nombre: str = Field(..., min_length=1, max_length=200)
     marca: str = Field(default="", max_length=200)
-    perfumista: Optional[str] = Field(default="", max_length=500)
+    perfumistas: Optional[List[str]] = Field(default_factory=list)
     acordes: Optional[List[str]] = Field(default_factory=list)
     notas: Optional[List[str]] = Field(default_factory=list)
     familia_olfativa: Optional[str] = Field(default="", max_length=200)
@@ -92,7 +92,7 @@ class PerfumeColeccionCreate(PerfumeColeccionBase):
 class PerfumeColeccionUpdate(BaseModel):
     nombre: Optional[str] = Field(None, min_length=1, max_length=200)
     marca: Optional[str] = Field(None, max_length=200)
-    perfumista: Optional[str] = Field(None, max_length=500)
+    perfumistas: Optional[List[str]] = None
     acordes: Optional[List[str]] = None
     notas: Optional[List[str]] = None
     familia_olfativa: Optional[str] = Field(None, max_length=200)

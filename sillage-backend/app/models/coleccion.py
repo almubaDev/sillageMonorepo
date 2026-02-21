@@ -25,7 +25,7 @@ class PerfumeColeccion(Base):
     coleccion_id = Column(Integer, ForeignKey("colecciones.id", ondelete="CASCADE"), nullable=False)
     nombre = Column(String(200), nullable=False, index=True)
     marca = Column(String(200), nullable=False, default="")
-    perfumista = Column(Text, nullable=True, default="")
+    perfumistas = Column(JSON, nullable=True, default=list)
 
     # JSON arrays
     acordes = Column(JSON, nullable=True, default=list)

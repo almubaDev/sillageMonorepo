@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_
+from sqlalchemy import select, func, or_, String
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from decimal import Decimal
@@ -79,7 +79,7 @@ async def get_my_coleccion(
 async def list_perfumes(
     nombre: Optional[str] = Query(None),
     marca: Optional[str] = Query(None),
-    perfumista: Optional[str] = Query(None),
+    perfumistas: Optional[str] = Query(None),
     familia_olfativa: Optional[str] = Query(None),
     momento_dia: Optional[str] = Query(None),
     estacion: Optional[str] = Query(None),
@@ -100,8 +100,8 @@ async def list_perfumes(
         query = query.where(PerfumeColeccion.nombre.ilike(f"%{nombre}%"))
     if marca:
         query = query.where(PerfumeColeccion.marca.ilike(f"%{marca}%"))
-    if perfumista:
-        query = query.where(PerfumeColeccion.perfumista.ilike(f"%{perfumista}%"))
+    if perfumistas:
+        query = query.where(PerfumeColeccion.perfumistas.cast(String).ilike(f"%{perfumistas}%"))
     if familia_olfativa:
         query = query.where(PerfumeColeccion.familia_olfativa.ilike(f"%{familia_olfativa}%"))
 
@@ -232,13 +232,11 @@ async def import_perfumes(
     imported = 0
 
     for item in data.perfumes:
-        perfumista = ", ".join(item.perfumistas) if item.perfumistas else ""
-
         perfume = PerfumeColeccion(
             coleccion_id=coleccion.id,
             nombre=item.nombre,
             marca=item.marca or "",
-            perfumista=perfumista,
+            perfumistas=item.perfumistas or [],
             acordes=item.acordes or [],
             notas=item.notas or [],
             familia_olfativa=item.familia_olfativa or "",

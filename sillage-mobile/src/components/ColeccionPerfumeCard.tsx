@@ -116,16 +116,19 @@ export const ColeccionPerfumeCard: React.FC<ColeccionPerfumeCardProps> = ({
             )}
           </View>
 
-          {/* Perfumista */}
-          {!!perfume.perfumista && (
+          {/* Perfumistas */}
+          {perfume.perfumistas && perfume.perfumistas.length > 0 ? (
             <View style={styles.perfumistaRow}>
               <MaterialCommunityIcons name="account-edit" size={12} color="#7DD3FC" />
-              <Text style={[styles.perfumistaText, { color: '#7DD3FC', fontFamily: 'Lato-Regular' }]} numberOfLines={1}>
-                {perfume.perfumista}
-              </Text>
+              {perfume.perfumistas.map((p, i) => (
+                <View key={`${p}-${i}`} style={[styles.perfumistaTag, { backgroundColor: '#7DD3FC18', borderColor: '#7DD3FC35' }]}>
+                  <Text style={[styles.perfumistaTagText, { color: '#7DD3FC', fontFamily: 'Lato-Regular' }]}>
+                    {p}
+                  </Text>
+                </View>
+              ))}
             </View>
-          )}
-          {!perfume.perfumista && (
+          ) : (
             <View style={styles.perfumistaRow}>
               <MaterialCommunityIcons name="account-edit" size={12} color={colors.secondary + '60'} />
               <Text style={[styles.perfumistaText, { color: colors.secondary + '60', fontFamily: 'Lato-Regular', fontStyle: 'italic' }]}>
@@ -275,9 +278,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    flexWrap: 'wrap',
   },
   perfumistaText: {
     fontSize: 11,
+  },
+  perfumistaTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  perfumistaTagText: {
+    fontSize: 10,
   },
   tagsContainer: {
     flexDirection: 'row',

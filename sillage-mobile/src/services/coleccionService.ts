@@ -30,7 +30,7 @@ export interface PerfumeColeccionData {
   coleccion_id: number;
   nombre: string;
   marca: string;
-  perfumista: string;
+  perfumistas: string[];
   acordes: string[];
   notas: string[];
   familia_olfativa: string;
@@ -49,7 +49,7 @@ export interface PerfumeColeccionData {
 export interface PerfumeColeccionCreate {
   nombre: string;
   marca?: string;
-  perfumista?: string;
+  perfumistas?: string[];
   acordes?: string[];
   notas?: string[];
   familia_olfativa?: string;
@@ -89,7 +89,7 @@ export interface ImportResponse {
 export interface PerfumeFilters {
   nombre?: string;
   marca?: string;
-  perfumista?: string;
+  perfumistas?: string;
   familia_olfativa?: string;
   momento_dia?: string;
   estacion?: string;
