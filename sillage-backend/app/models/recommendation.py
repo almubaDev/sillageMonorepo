@@ -38,7 +38,7 @@ class Recomendacion(Base):
     respuesta_ia = Column(Text)
     
     # Resultado
-    perfume_recomendado_id = Column(Integer, ForeignKey("perfumes.id", ondelete="SET NULL"), nullable=True)
+    perfume_recomendado_id = Column(Integer, ForeignKey("perfumes_coleccion.id", ondelete="SET NULL"), nullable=True)
     explicacion = Column(Text)
     
     # Timestamps

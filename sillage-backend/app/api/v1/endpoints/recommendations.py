@@ -7,7 +7,7 @@ from sqlalchemy import select, and_
 
 from app.api.deps import get_db, get_current_active_user
 from app.models.user import User
-from app.models.perfume import Perfume, perfume_collection
+from app.models.coleccion import Coleccion, PerfumeColeccion
 from app.models.recommendation import Recomendacion
 from app.schemas.recommendation import RecommendationRequest, RecommendationResponse
 from app.services.recommendation_engine import generate_recommendation
@@ -38,18 +38,18 @@ async def create_recommendation(
             detail="No tienes consultas disponibles. Usa un cupón o adquiere más consultas."
         )
     
-    # Verificar que el usuario tiene perfumes en su colección
-    collection_query = select(Perfume).join(
-        perfume_collection,
-        and_(
-            perfume_collection.c.perfume_id == Perfume.id,
-            perfume_collection.c.user_id == current_user.id,
-            perfume_collection.c.removed_at.is_(None)  # Solo perfumes activos
-        )
+    # Verificar que el usuario tiene perfumes en su colección (nuevo sistema)
+    coleccion_result = await db.execute(
+        select(Coleccion).where(Coleccion.usuario_id == current_user.id)
     )
-    
-    result = await db.execute(collection_query)
-    user_perfumes = result.scalars().all()
+    coleccion = coleccion_result.scalar_one_or_none()
+
+    user_perfumes = []
+    if coleccion:
+        perfumes_result = await db.execute(
+            select(PerfumeColeccion).where(PerfumeColeccion.coleccion_id == coleccion.id)
+        )
+        user_perfumes = perfumes_result.scalars().all()
     
     if not user_perfumes:
         raise HTTPException(
@@ -94,19 +94,19 @@ async def create_recommendation(
             "prompt_enviado": recommendation.prompt  # Prompt completo enviado a Gemini
         }
         
-        # Buscar datos completos del perfume recomendado
+        # Buscar datos completos del perfume recomendado (nuevo sistema)
         if recommendation.perfume_recomendado_id:
             perfume_result = await db.execute(
-                select(Perfume).where(Perfume.id == recommendation.perfume_recomendado_id)
+                select(PerfumeColeccion).where(PerfumeColeccion.id == recommendation.perfume_recomendado_id)
             )
             perfume = perfume_result.scalar_one_or_none()
-            
+
             if perfume:
                 response_dict["perfume_recomendado"] = {
                     "id": perfume.id,
                     "nombre": perfume.nombre,
                     "marca": perfume.marca,
-                    "perfumista": perfume.perfumista,
+                    "perfumistas": perfume.perfumistas or [],
                     "notas": perfume.notas or [],
                     "acordes": perfume.acordes or []
                 }
@@ -165,7 +165,7 @@ async def get_recommendation_history(
         
         if rec.perfume_recomendado_id:
             perfume_result = await db.execute(
-                select(Perfume).where(Perfume.id == rec.perfume_recomendado_id)
+                select(PerfumeColeccion).where(PerfumeColeccion.id == rec.perfume_recomendado_id)
             )
             perfume = perfume_result.scalar_one_or_none()
             if perfume:
@@ -173,13 +173,13 @@ async def get_recommendation_history(
                     "id": perfume.id,
                     "nombre": perfume.nombre,
                     "marca": perfume.marca,
-                    "perfumista": perfume.perfumista,
+                    "perfumistas": perfume.perfumistas or [],
                     "notas": perfume.notas or [],
                     "acordes": perfume.acordes or []
                 }
-        
+
         response_list.append(rec_dict)
-    
+
     return response_list
 
 
@@ -230,7 +230,7 @@ async def get_recommendation(
     
     if recommendation.perfume_recomendado_id:
         perfume_result = await db.execute(
-            select(Perfume).where(Perfume.id == recommendation.perfume_recomendado_id)
+            select(PerfumeColeccion).where(PerfumeColeccion.id == recommendation.perfume_recomendado_id)
         )
         perfume = perfume_result.scalar_one_or_none()
         if perfume:
@@ -238,9 +238,9 @@ async def get_recommendation(
                 "id": perfume.id,
                 "nombre": perfume.nombre,
                 "marca": perfume.marca,
-                "perfumista": perfume.perfumista,
+                "perfumistas": perfume.perfumistas or [],
                 "notas": perfume.notas or [],
                 "acordes": perfume.acordes or []
             }
-    
+
     return response_dict

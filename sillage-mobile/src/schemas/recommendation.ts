@@ -17,7 +17,7 @@ export interface PerfumeRecomendado {
   id: number;
   nombre: string;
   marca: string;
-  perfumista?: string;
+  perfumistas?: string[];
   notas: string[];
   acordes: string[];
 }

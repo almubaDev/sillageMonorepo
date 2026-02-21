@@ -46,8 +46,8 @@ class PerfumeRecomendado(BaseModel):
     id: int
     nombre: str
     marca: str
-    perfumista: Optional[str] = None
-    notas: Optional[dict | List[str]] = None
+    perfumistas: Optional[List[str]] = None
+    notas: Optional[List[str]] = None
     acordes: Optional[List[str]] = None
 
     class Config:

@@ -4,12 +4,12 @@ import time as time_module
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
-from app.models.perfume import Perfume
+from app.models.coleccion import PerfumeColeccion
 from app.i18n.loader import language_loader
 
 
 def build_prompt(
-    perfumes: List[Perfume],
+    perfumes: List[PerfumeColeccion],
     fecha_evento,
     hora_evento,
     lugar_nombre: str,
@@ -22,7 +22,7 @@ def build_prompt(
     humedad: float,
     clima_descripcion: str,
     idioma: str = "es"
-) -> tuple[str, List[Perfume]]:
+) -> tuple[str, List[PerfumeColeccion]]:
     """
     Construir el prompt para Gemini en el idioma especificado.
 

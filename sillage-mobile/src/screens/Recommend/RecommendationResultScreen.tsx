@@ -16,7 +16,7 @@ import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthContext } from '../../utils/AuthContext';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RecommendStackParamList } from '../../navigation/types';
-import { formatPerfumeName, formatBrand, formatPerfumista } from '../../utils/formatters';
+import { formatPerfumeName, formatBrand } from '../../utils/formatters';
 
 // Importar CSS para scrollbars visibles en web
 if (Platform.OS === 'web') {
@@ -150,9 +150,10 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
             {formatBrand(recommendation.perfume_recomendado.marca)}
           </Text>
 
-          {recommendation.perfume_recomendado.perfumista && (
+          {recommendation.perfume_recomendado.perfumistas &&
+           recommendation.perfume_recomendado.perfumistas.length > 0 && (
             <Text style={[styles.perfumista, { color: colors.secondary, fontFamily: 'Lato-Italic' }]}>
-              {t('result:perfume.by')} {formatPerfumista(recommendation.perfume_recomendado.perfumista)}
+              {t('result:perfume.by')} {recommendation.perfume_recomendado.perfumistas.join(', ')}
             </Text>
           )}
 

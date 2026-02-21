@@ -3,13 +3,13 @@ from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.models.perfume import Perfume
+from app.models.coleccion import PerfumeColeccion
 from app.models.recommendation import Recomendacion
 from app.services.weather import get_weather_data
 from app.services.gemini import build_prompt, get_ai_recommendation
 
 
-def extract_perfume_by_number(ai_response: str, perfumes_ordenados: List[Perfume]) -> Optional[Perfume]:
+def extract_perfume_by_number(ai_response: str, perfumes_ordenados: List[PerfumeColeccion]) -> Optional[PerfumeColeccion]:
     """
     Extraer el perfume recomendado de la respuesta de la IA usando el número asignado.
 
@@ -38,7 +38,7 @@ def extract_perfume_by_number(ai_response: str, perfumes_ordenados: List[Perfume
     return None
 
 
-def replace_perfume_numbers_with_names(ai_response: str, perfumes_ordenados: List[Perfume]) -> str:
+def replace_perfume_numbers_with_names(ai_response: str, perfumes_ordenados: List[PerfumeColeccion]) -> str:
     """
     Reemplazar todas las referencias "Perfume X" en la respuesta por el nombre real del perfume.
     """
@@ -58,7 +58,7 @@ def replace_perfume_numbers_with_names(ai_response: str, perfumes_ordenados: Lis
 async def generate_recommendation(
     db: AsyncSession,
     user_id: int,
-    perfumes: List[Perfume],
+    perfumes: List[PerfumeColeccion],
     fecha_evento,
     hora_evento,
     latitud: float,
