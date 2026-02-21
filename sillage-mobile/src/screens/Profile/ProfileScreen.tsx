@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions, Modal, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Pressable, StyleSheet, ScrollView, useWindowDimensions, Modal, TextInput, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -746,15 +746,12 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         animationType="fade"
         onRequestClose={() => setDeleteAccountModalVisible(false)}
       >
-        <TouchableOpacity
+        <Pressable
           style={styles.modalOverlay}
-          activeOpacity={1}
           onPress={() => setDeleteAccountModalVisible(false)}
         >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-          >
+          <Pressable onPress={() => {}}>
+
             <View style={[styles.modalContent, { backgroundColor: colors.bg }]}>
               <View style={{ alignItems: 'center', marginBottom: 16 }}>
                 <MaterialCommunityIcons name="alert-circle" size={64} color="#EF4444" />
@@ -909,8 +906,8 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </Pressable>
+        </Pressable>
       </Modal>
     </ScrollView>
   );

@@ -81,6 +81,21 @@
     "cancel": "Cancelar",
     "errors": {
       "nameRequired": "El nombre es requerido"
+    },
+    "hints": {
+      "brand": "Casa o marca del perfume. Ej: Dior, Chanel, Tom Ford.",
+      "name": "Nombre completo del perfume tal como aparece en el frasco.",
+      "concentration": "Tipo de concentracion: Eau de Toilette, Eau de Parfum, Parfum, Extrait, etc.",
+      "family": "Familia olfativa principal. Ej: Amaderada, Floral, Oriental, Fresca, Aromatica.",
+      "moment": "Selecciona cuando prefieres usar este perfume. Puedes elegir ambos.",
+      "season": "Estaciones del año ideales para este perfume. Puedes elegir varias.",
+      "quantity": "Cantidad en mililitros del frasco. Ej: 50, 100, 200.",
+      "price": "Precio pagado por el perfume. Dejalo en 0 si fue un regalo.",
+      "rating": "Tu calificacion personal de 0.5 a 10. Click = media estrella, doble click = completa.",
+      "image": "URL de una imagen del perfume. Puedes copiarla desde Fragrantica o Google.",
+      "perfumer": "Escribe el nombre del perfumista y presiona + para agregarlo. Puedes agregar varios.",
+      "accords": "Escribe un acorde y presiona + para agregarlo. Ej: Amaderado, Dulce, Floral, Citrico.",
+      "notes": "Escribe una nota y presiona + para agregarla. Ej: Bergamota, Vainilla, Sandalo."
     }
   },
   "reposicion": {

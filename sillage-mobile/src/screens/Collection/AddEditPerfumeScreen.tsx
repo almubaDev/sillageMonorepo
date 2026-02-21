@@ -63,6 +63,11 @@ export const AddEditPerfumeScreen = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ nombre?: string }>({});
+  const [activeHint, setActiveHint] = useState<string | null>(null);
+
+  const toggleHint = (key: string) => {
+    setActiveHint(activeHint === key ? null : key);
+  };
 
   useEffect(() => {
     if (isEditing && perfumeId) {
@@ -176,17 +181,47 @@ export const AddEditPerfumeScreen = () => {
     );
   }
 
+  const renderLabel = (label: string, hintKey: string) => (
+    <View style={styles.labelRow}>
+      <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
+        {label}
+      </Text>
+      <TouchableOpacity
+        onPress={() => toggleHint(hintKey)}
+        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+      >
+        <MaterialCommunityIcons
+          name="help-circle-outline"
+          size={16}
+          color={activeHint === hintKey ? colors.accent : colors.secondary + '80'}
+        />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderHint = (hintKey: string) =>
+    activeHint === hintKey ? (
+      <View style={[styles.hintBox, { backgroundColor: colors.accent + '12', borderColor: colors.accent + '30' }]}>
+        <Text style={[styles.hintText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
+          {t(`collection:form.hints.${hintKey}`)}
+        </Text>
+      </View>
+    ) : null;
+
   const renderInput = (
     label: string,
     value: string,
     onChangeText: (text: string) => void,
     placeholder: string,
-    options?: { keyboardType?: 'default' | 'numeric' | 'decimal-pad'; error?: string; multiline?: boolean }
+    options?: { keyboardType?: 'default' | 'numeric' | 'decimal-pad'; error?: string; multiline?: boolean; hintKey?: string }
   ) => (
     <View style={styles.fieldContainer}>
-      <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-        {label}
-      </Text>
+      {options?.hintKey ? renderLabel(label, options.hintKey) : (
+        <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
+          {label}
+        </Text>
+      )}
+      {options?.hintKey && renderHint(options.hintKey)}
       <TextInput
         style={[
           styles.input,
@@ -226,24 +261,23 @@ export const AddEditPerfumeScreen = () => {
         keyboardShouldPersistTaps="handled"
       >
         {/* Marca */}
-        {renderInput(t('collection:form.brand'), marca, setMarca, t('collection:form.brandPlaceholder'))}
+        {renderInput(t('collection:form.brand'), marca, setMarca, t('collection:form.brandPlaceholder'), { hintKey: 'brand' })}
 
         {/* Nombre */}
         {renderInput(t('collection:form.name'), nombre, setNombre, t('collection:form.namePlaceholder'), {
-          error: errors.nombre,
+          error: errors.nombre, hintKey: 'name',
         })}
 
         {/* Concentracion */}
-        {renderInput(t('collection:form.concentration'), concentracion, setConcentracion, t('collection:form.concentrationPlaceholder'))}
+        {renderInput(t('collection:form.concentration'), concentracion, setConcentracion, t('collection:form.concentrationPlaceholder'), { hintKey: 'concentration' })}
 
         {/* Familia olfativa */}
-        {renderInput(t('collection:form.family'), familiaOlfativa, setFamiliaOlfativa, t('collection:form.familyPlaceholder'))}
+        {renderInput(t('collection:form.family'), familiaOlfativa, setFamiliaOlfativa, t('collection:form.familyPlaceholder'), { hintKey: 'family' })}
 
         {/* Momento del dia */}
         <View style={styles.fieldContainer}>
-          <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-            {t('collection:form.momentLabel')}
-          </Text>
+          {renderLabel(t('collection:form.momentLabel'), 'moment')}
+          {renderHint('moment')}
           <MultiSelectIcons
             options={MOMENTO_OPTIONS}
             selected={momentoDia}
@@ -253,9 +287,8 @@ export const AddEditPerfumeScreen = () => {
 
         {/* Estacion */}
         <View style={styles.fieldContainer}>
-          <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-            {t('collection:form.seasonLabel')}
-          </Text>
+          {renderLabel(t('collection:form.seasonLabel'), 'season')}
+          {renderHint('season')}
           <MultiSelectIcons
             options={ESTACION_OPTIONS}
             selected={estacion}
@@ -265,20 +298,18 @@ export const AddEditPerfumeScreen = () => {
 
         {/* Cantidad ML */}
         {renderInput(t('collection:form.quantity'), cantidadMl, setCantidadMl, t('collection:form.quantityPlaceholder'), {
-          keyboardType: 'numeric',
+          keyboardType: 'numeric', hintKey: 'quantity',
         })}
 
         {/* Precio */}
         {renderInput(t('collection:form.price'), precio, setPrecio, t('collection:form.pricePlaceholder'), {
-          keyboardType: 'decimal-pad',
+          keyboardType: 'decimal-pad', hintKey: 'price',
         })}
 
         {/* Calificacion */}
         <View style={styles.fieldContainer}>
           <View style={styles.ratingHeader}>
-            <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-              {t('collection:form.rating')}
-            </Text>
+            {renderLabel(t('collection:form.rating'), 'rating')}
             {calificacion !== null && (
               <TouchableOpacity onPress={() => setCalificacion(null)}>
                 <Text style={[styles.clearRating, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
@@ -287,20 +318,17 @@ export const AddEditPerfumeScreen = () => {
               </TouchableOpacity>
             )}
           </View>
+          {renderHint('rating')}
           <StarRating value={calificacion} onChange={setCalificacion} size={26} />
-          <Text style={[styles.ratingHint, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-            {t('collection:form.ratingHint')}
-          </Text>
         </View>
 
         {/* Imagen */}
-        {renderInput(t('collection:form.imageUrl'), imagen, setImagen, t('collection:form.imageUrlPlaceholder'))}
+        {renderInput(t('collection:form.imageUrl'), imagen, setImagen, t('collection:form.imageUrlPlaceholder'), { hintKey: 'image' })}
 
         {/* Perfumistas */}
         <View style={styles.fieldContainer}>
-          <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-            {t('collection:form.perfumer')}
-          </Text>
+          {renderLabel(t('collection:form.perfumer'), 'perfumer')}
+          {renderHint('perfumer')}
           <TagInput
             tags={perfumistas}
             onChange={setPerfumistas}
@@ -310,9 +338,8 @@ export const AddEditPerfumeScreen = () => {
 
         {/* Acordes */}
         <View style={styles.fieldContainer}>
-          <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-            {t('collection:form.accords')}
-          </Text>
+          {renderLabel(t('collection:form.accords'), 'accords')}
+          {renderHint('accords')}
           <TagInput
             tags={acordes}
             onChange={setAcordes}
@@ -322,9 +349,8 @@ export const AddEditPerfumeScreen = () => {
 
         {/* Notas */}
         <View style={styles.fieldContainer}>
-          <Text style={[styles.fieldLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-            {t('collection:form.notes')}
-          </Text>
+          {renderLabel(t('collection:form.notes'), 'notes')}
+          {renderHint('notes')}
           <TagInput
             tags={notas}
             onChange={setNotas}
@@ -435,9 +461,25 @@ const styles = StyleSheet.create({
   fieldContainer: {
     marginBottom: 20,
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
   fieldLabel: {
     fontSize: 14,
-    marginBottom: 6,
+  },
+  hintBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  hintText: {
+    fontSize: 12,
+    lineHeight: 18,
   },
   input: {
     height: 46,
