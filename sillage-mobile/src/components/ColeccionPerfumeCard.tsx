@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeProvider';
@@ -11,16 +11,16 @@ interface ColeccionPerfumeCardProps {
   onDelete: (id: number) => void;
 }
 
-const MOMENTO_ICON_MAP: Record<string, { icon: string; color: string }> = {
-  dia: { icon: 'weather-sunny', color: '#FBBF24' },
-  noche: { icon: 'moon-waning-crescent', color: '#818CF8' },
+const MOMENTO_ICON_MAP: Record<string, { icon: string; color: string; label: string }> = {
+  dia: { icon: 'weather-sunny', color: '#FBBF24', label: 'Dia' },
+  noche: { icon: 'moon-waning-crescent', color: '#818CF8', label: 'Noche' },
 };
 
-const ESTACION_ICON_MAP: Record<string, { icon: string; color: string }> = {
-  verano: { icon: 'waves', color: '#FB923C' },
-  otono: { icon: 'leaf', color: '#D97706' },
-  invierno: { icon: 'weather-rainy', color: '#22D3EE' },
-  primavera: { icon: 'sprout', color: '#4ADE80' },
+const ESTACION_ICON_MAP: Record<string, { icon: string; color: string; label: string }> = {
+  verano: { icon: 'waves', color: '#FB923C', label: 'Verano' },
+  otono: { icon: 'leaf', color: '#D97706', label: 'Otoño' },
+  invierno: { icon: 'weather-rainy', color: '#22D3EE', label: 'Invierno' },
+  primavera: { icon: 'sprout', color: '#4ADE80', label: 'Primavera' },
 };
 
 export const ColeccionPerfumeCard: React.FC<ColeccionPerfumeCardProps> = ({
@@ -30,6 +30,9 @@ export const ColeccionPerfumeCard: React.FC<ColeccionPerfumeCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 1024;
+  const [tagsExpanded, setTagsExpanded] = useState(false);
 
   const momentoValues = perfume.momento_dia ? perfume.momento_dia.split(',').filter(Boolean) : [];
   const estacionValues = perfume.estacion ? perfume.estacion.split(',').filter(Boolean) : [];
@@ -40,10 +43,10 @@ export const ColeccionPerfumeCard: React.FC<ColeccionPerfumeCardProps> = ({
     return `$${Number(price).toLocaleString('es-CL')}`;
   };
 
-  const allTags = [
-    ...(perfume.acordes || []).map((a) => ({ text: a, type: 'acorde' as const })),
-    ...(perfume.notas || []).map((n) => ({ text: n, type: 'nota' as const })),
-  ];
+  const acordesTags = (perfume.acordes || []).map((a) => ({ text: a, type: 'acorde' as const }));
+  const notasTags = (perfume.notas || []).map((n) => ({ text: n, type: 'nota' as const }));
+  const allTags = [...acordesTags, ...notasTags];
+  const hasIcons = momentoValues.length > 0 || estacionValues.length > 0;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.bg, borderColor: colors.secondary + '25' }]}>
@@ -65,11 +68,12 @@ export const ColeccionPerfumeCard: React.FC<ColeccionPerfumeCardProps> = ({
 
         {/* Info central */}
         <View style={styles.infoContainer}>
-          <Text style={[styles.name, { color: colors.text, fontFamily: 'AlanSans-Bold' }]} numberOfLines={1}>
+          {/* Nombre - sin truncar */}
+          <Text style={[styles.name, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
             {perfume.nombre}
           </Text>
 
-          {/* Marca · Concentracion · Familia · Iconos */}
+          {/* Marca · Concentracion · Familia */}
           <View style={styles.metaRow}>
             {!!perfume.marca && (
               <Text style={[styles.metaText, { color: colors.accent, fontFamily: 'Lato-Regular' }]}>
@@ -92,29 +96,35 @@ export const ColeccionPerfumeCard: React.FC<ColeccionPerfumeCardProps> = ({
                 </Text>
               </>
             )}
-
-            {/* Iconos momento y estacion inline */}
-            {(momentoValues.length > 0 || estacionValues.length > 0) && (
-              <>
-                <Text style={[styles.metaDot, { color: colors.secondary }]}> · </Text>
-                {momentoValues.map((val) => {
-                  const config = MOMENTO_ICON_MAP[val];
-                  return config ? (
-                    <MaterialCommunityIcons key={val} name={config.icon as any} size={14} color={config.color} style={{ marginHorizontal: 1 }} />
-                  ) : null;
-                })}
-                {momentoValues.length > 0 && estacionValues.length > 0 && (
-                  <Text style={[styles.metaDot, { color: colors.secondary }]}> · </Text>
-                )}
-                {estacionValues.map((val) => {
-                  const config = ESTACION_ICON_MAP[val];
-                  return config ? (
-                    <MaterialCommunityIcons key={val} name={config.icon as any} size={14} color={config.color} style={{ marginHorizontal: 1 }} />
-                  ) : null;
-                })}
-              </>
-            )}
           </View>
+
+          {/* Iconos momento y estacion en su propia linea */}
+          {hasIcons && (
+            <View style={styles.iconsRow}>
+              {momentoValues.map((val) => {
+                const config = MOMENTO_ICON_MAP[val];
+                return config ? (
+                  <View key={val} style={styles.iconChip}>
+                    <MaterialCommunityIcons name={config.icon as any} size={13} color={config.color} />
+                    <Text style={[styles.iconChipText, { color: config.color, fontFamily: 'Lato-Regular' }]}>
+                      {config.label}
+                    </Text>
+                  </View>
+                ) : null;
+              })}
+              {estacionValues.map((val) => {
+                const config = ESTACION_ICON_MAP[val];
+                return config ? (
+                  <View key={val} style={styles.iconChip}>
+                    <MaterialCommunityIcons name={config.icon as any} size={13} color={config.color} />
+                    <Text style={[styles.iconChipText, { color: config.color, fontFamily: 'Lato-Regular' }]}>
+                      {config.label}
+                    </Text>
+                  </View>
+                ) : null;
+              })}
+            </View>
+          )}
 
           {/* Perfumistas */}
           {perfume.perfumistas && perfume.perfumistas.length > 0 ? (
@@ -137,37 +147,54 @@ export const ColeccionPerfumeCard: React.FC<ColeccionPerfumeCardProps> = ({
             </View>
           )}
 
-          {/* Tags acordes + notas */}
+          {/* Tags acordes + notas - desplegable */}
           {allTags.length > 0 && (
-            <View style={styles.tagsContainer}>
-              {allTags.map((tag, i) => (
-                <View
-                  key={`${tag.text}-${i}`}
-                  style={[
-                    styles.tag,
-                    {
-                      backgroundColor: tag.type === 'acorde'
-                        ? colors.accent + '18'
-                        : '#4ADE80' + '18',
-                      borderColor: tag.type === 'acorde'
-                        ? colors.accent + '35'
-                        : '#4ADE80' + '35',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.tagText,
-                      {
-                        color: tag.type === 'acorde' ? colors.accent : '#4ADE80',
-                        fontFamily: 'Lato-Regular',
-                      },
-                    ]}
-                  >
-                    {tag.text}
-                  </Text>
+            <View>
+              <TouchableOpacity
+                style={styles.tagsToggle}
+                onPress={() => setTagsExpanded(!tagsExpanded)}
+              >
+                <Text style={[styles.tagsToggleText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+                  {t('collection:form.accords')} & {t('collection:form.notes')} ({allTags.length})
+                </Text>
+                <MaterialCommunityIcons
+                  name={tagsExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={colors.secondary}
+                />
+              </TouchableOpacity>
+              {tagsExpanded && (
+                <View style={styles.tagsContainer}>
+                  {allTags.map((tag, i) => (
+                    <View
+                      key={`${tag.text}-${i}`}
+                      style={[
+                        styles.tag,
+                        {
+                          backgroundColor: tag.type === 'acorde'
+                            ? colors.accent + '18'
+                            : '#4ADE80' + '18',
+                          borderColor: tag.type === 'acorde'
+                            ? colors.accent + '35'
+                            : '#4ADE80' + '35',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.tagText,
+                          {
+                            color: tag.type === 'acorde' ? colors.accent : '#4ADE80',
+                            fontFamily: 'Lato-Regular',
+                          },
+                        ]}
+                      >
+                        {tag.text}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
+              )}
             </View>
           )}
         </View>
@@ -274,6 +301,20 @@ const styles = StyleSheet.create({
   metaDot: {
     fontSize: 12,
   },
+  iconsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  iconChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  iconChipText: {
+    fontSize: 10,
+  },
   perfumistaRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -291,6 +332,15 @@ const styles = StyleSheet.create({
   },
   perfumistaTagText: {
     fontSize: 10,
+  },
+  tagsToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  tagsToggleText: {
+    fontSize: 11,
   },
   tagsContainer: {
     flexDirection: 'row',
