@@ -16,6 +16,8 @@ from app.schemas.coleccion import (
     PerfumeColeccionResponse,
     ReposicionCreate,
     ReposicionResponse,
+    ImportColeccionRequest,
+    ImportColeccionResponse,
 )
 
 router = APIRouter()
@@ -217,6 +219,56 @@ async def delete_perfume(
     await db.delete(perfume)
     await db.commit()
     return None
+
+
+# POST /coleccion/import - Importar perfumes desde JSON
+@router.post("/import", response_model=ImportColeccionResponse)
+async def import_perfumes(
+    data: ImportColeccionRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    coleccion = await get_or_create_coleccion(db, current_user)
+    imported = 0
+
+    for item in data.perfumes:
+        perfumista = ", ".join(item.perfumistas) if item.perfumistas else ""
+
+        perfume = PerfumeColeccion(
+            coleccion_id=coleccion.id,
+            nombre=item.nombre,
+            marca=item.marca or "",
+            perfumista=perfumista,
+            acordes=item.acordes or [],
+            notas=item.notas or [],
+            familia_olfativa=item.familia_olfativa or "",
+            concentracion=item.concentracion or "",
+            momento_dia=item.momento_dia or "",
+            estacion=item.estacion or "",
+            cantidad_ml=item.cantidad_ml or 1,
+            precio=item.precio,
+            calificacion=item.calificacion,
+            imagen=item.imagen or "",
+        )
+        db.add(perfume)
+        await db.flush()
+
+        if item.reposiciones:
+            for repo in item.reposiciones:
+                reposicion = Reposicion(
+                    perfume_coleccion_id=perfume.id,
+                    cantidad_ml=repo.cantidad_ml,
+                    costo=repo.costo,
+                )
+                db.add(reposicion)
+
+        imported += 1
+
+    await db.commit()
+    return ImportColeccionResponse(
+        imported=imported,
+        message=f"Se importaron {imported} perfumes exitosamente",
+    )
 
 
 # POST /coleccion/perfumes/{id}/reposiciones - Agregar reposicion

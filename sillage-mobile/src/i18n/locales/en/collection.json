@@ -92,6 +92,17 @@
     "add": "Add",
     "empty": "No repurchases"
   },
+  "import": {
+    "button": "Import",
+    "title": "Import Collection",
+    "message": "Perfumes will be imported from your backup file. Existing perfumes will not be affected.",
+    "confirm": "Import",
+    "cancel": "Cancel",
+    "success": "Import successful",
+    "successMessage": "{{count}} perfumes were imported to your collection.",
+    "failed": "Could not import collection",
+    "importing": "Importing..."
+  },
   "delete": {
     "title": "Delete Perfume",
     "message": "This will delete the perfume and all its repurchases. This action cannot be undone.",

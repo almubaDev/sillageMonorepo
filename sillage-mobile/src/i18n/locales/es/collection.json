@@ -92,6 +92,17 @@
     "add": "Agregar",
     "empty": "Sin reposiciones"
   },
+  "import": {
+    "button": "Importar",
+    "title": "Importar Coleccion",
+    "message": "Se importaran los perfumes desde tu archivo de respaldo. Los perfumes existentes no se veran afectados.",
+    "confirm": "Importar",
+    "cancel": "Cancelar",
+    "success": "Importacion exitosa",
+    "successMessage": "Se importaron {{count}} perfumes a tu coleccion.",
+    "failed": "No se pudo importar la coleccion",
+    "importing": "Importando..."
+  },
   "delete": {
     "title": "Eliminar Perfume",
     "message": "Se eliminara este perfume y todas sus reposiciones. Esta accion no se puede deshacer.",

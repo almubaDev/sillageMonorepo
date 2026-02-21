@@ -127,6 +127,34 @@ class PerfumeColeccionUpdate(BaseModel):
         return v
 
 
+# --- Import ---
+
+class PerfumeImportItem(BaseModel):
+    nombre: str = Field(..., min_length=1, max_length=200)
+    marca: str = Field(default="", max_length=200)
+    perfumistas: Optional[List[str]] = Field(default_factory=list)
+    acordes: Optional[List[str]] = Field(default_factory=list)
+    notas: Optional[List[str]] = Field(default_factory=list)
+    familia_olfativa: Optional[str] = Field(default="", max_length=200)
+    concentracion: Optional[str] = Field(default="", max_length=100)
+    momento_dia: Optional[str] = Field(default="", max_length=20)
+    estacion: Optional[str] = Field(default="", max_length=60)
+    cantidad_ml: int = Field(default=1, ge=1)
+    precio: Optional[Decimal] = Field(default=None, ge=0)
+    calificacion: Optional[Decimal] = Field(default=None, ge=Decimal("0.5"), le=Decimal("10"))
+    imagen: Optional[str] = Field(default="", max_length=500)
+    reposiciones: Optional[List[ReposicionBase]] = Field(default_factory=list)
+
+
+class ImportColeccionRequest(BaseModel):
+    perfumes: List[PerfumeImportItem]
+
+
+class ImportColeccionResponse(BaseModel):
+    imported: int
+    message: str
+
+
 class PerfumeColeccionResponse(PerfumeColeccionBase):
     id: int
     coleccion_id: int

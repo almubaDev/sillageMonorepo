@@ -64,6 +64,28 @@ export interface PerfumeColeccionCreate {
 
 export interface PerfumeColeccionUpdate extends Partial<PerfumeColeccionCreate> {}
 
+export interface ImportPerfumeItem {
+  nombre: string;
+  marca?: string;
+  perfumistas?: string[];
+  acordes?: string[];
+  notas?: string[];
+  familia_olfativa?: string;
+  concentracion?: string;
+  momento_dia?: string;
+  estacion?: string;
+  cantidad_ml?: number;
+  precio?: number | null;
+  calificacion?: number | null;
+  imagen?: string;
+  reposiciones?: { cantidad_ml: number; costo: number }[];
+}
+
+export interface ImportResponse {
+  imported: number;
+  message: string;
+}
+
 export interface PerfumeFilters {
   nombre?: string;
   marca?: string;
@@ -125,5 +147,10 @@ export const coleccionService = {
 
   async deleteReposicion(reposicionId: number): Promise<void> {
     await api.delete(`/coleccion/reposiciones/${reposicionId}`);
+  },
+
+  async importPerfumes(perfumes: ImportPerfumeItem[]): Promise<ImportResponse> {
+    const response = await api.post<ImportResponse>('/coleccion/import', { perfumes });
+    return response.data;
   },
 };
