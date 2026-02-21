@@ -17,7 +17,7 @@ const MOMENTO_ICON_MAP: Record<string, { icon: string; color: string }> = {
 };
 
 const ESTACION_ICON_MAP: Record<string, { icon: string; color: string }> = {
-  verano: { icon: 'water', color: '#FB923C' },
+  verano: { icon: 'waves', color: '#FB923C' },
   otono: { icon: 'leaf', color: '#D97706' },
   invierno: { icon: 'weather-rainy', color: '#22D3EE' },
   primavera: { icon: 'sprout', color: '#4ADE80' },

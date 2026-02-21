@@ -22,7 +22,7 @@ export const MOMENTO_OPTIONS: IconOption[] = [
 ];
 
 export const ESTACION_OPTIONS: IconOption[] = [
-  { value: 'verano', icon: 'water', label: 'verano', activeColor: '#FB923C' },
+  { value: 'verano', icon: 'waves', label: 'verano', activeColor: '#FB923C' },
   { value: 'otono', icon: 'leaf', label: 'otono', activeColor: '#D97706' },
   { value: 'invierno', icon: 'weather-rainy', label: 'invierno', activeColor: '#22D3EE' },
   { value: 'primavera', icon: 'sprout', label: 'primavera', activeColor: '#4ADE80' },
