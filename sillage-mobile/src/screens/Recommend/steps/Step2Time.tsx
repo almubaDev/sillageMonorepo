@@ -1,24 +1,144 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import React, { useState, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
-
-// Importar CSS para inputs de fecha/hora en web
-if (Platform.OS === 'web') {
-  require('../date-time-picker.css');
-}
 
 interface Step2TimeProps {
   value: Date | null;
   onChange: (time: Date) => void;
 }
 
+const ITEM_HEIGHT = 36;
+const VISIBLE_ITEMS = 5;
+const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
+
+const hours = Array.from({ length: 24 }, (_, i) => i);
+const minutes = Array.from({ length: 12 }, (_, i) => i * 5); // 0, 5, 10, ... 55
+
+interface ScrollPickerProps {
+  items: number[];
+  selected: number;
+  onSelect: (val: number) => void;
+  accentColor: string;
+  textColor: string;
+  secondaryColor: string;
+  formatItem?: (val: number) => string;
+}
+
+const ScrollPicker: React.FC<ScrollPickerProps> = ({ items, selected, onSelect, accentColor, textColor, secondaryColor, formatItem }) => {
+  const scrollRef = useRef<ScrollView>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const format = formatItem || ((v: number) => v.toString().padStart(2, '0'));
+
+  // Padding items para centrar
+  const paddedItems = [null, null, ...items, null, null];
+
+  const selectedIndex = items.indexOf(selected);
+
+  const handleScrollEnd = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = e.nativeEvent.contentOffset.y;
+    const index = Math.round(offsetY / ITEM_HEIGHT);
+    const clampedIndex = Math.max(0, Math.min(index, items.length - 1));
+    if (items[clampedIndex] !== selected) {
+      onSelect(items[clampedIndex]);
+    }
+    scrollRef.current?.scrollTo({ y: clampedIndex * ITEM_HEIGHT, animated: true });
+    setIsScrolling(false);
+  }, [items, selected, onSelect]);
+
+  const scrollToIndex = useCallback((index: number) => {
+    scrollRef.current?.scrollTo({ y: index * ITEM_HEIGHT, animated: true });
+  }, []);
+
+  // Scroll inicial al valor seleccionado
+  React.useEffect(() => {
+    if (!isScrolling && selectedIndex >= 0) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ y: selectedIndex * ITEM_HEIGHT, animated: false });
+      }, 50);
+    }
+  }, []);
+
+  return (
+    <View style={[pickerStyles.container, { height: PICKER_HEIGHT }]}>
+      {/* Highlight de seleccion */}
+      <View style={[pickerStyles.highlight, {
+        top: ITEM_HEIGHT * 2,
+        backgroundColor: accentColor + '25',
+        borderColor: accentColor + '50',
+      }]} pointerEvents="none" />
+
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={ITEM_HEIGHT}
+        decelerationRate="fast"
+        onScrollBeginDrag={() => setIsScrolling(true)}
+        onMomentumScrollEnd={handleScrollEnd}
+        onScrollEndDrag={(e) => {
+          // Si no hay momentum, manejar aqui
+          if (e.nativeEvent.velocity?.y === 0) {
+            handleScrollEnd(e);
+          }
+        }}
+        contentContainerStyle={{ paddingVertical: 0 }}
+      >
+        {paddedItems.map((item, idx) => {
+          const isSelected = item !== null && item === selected;
+          return (
+            <TouchableOpacity
+              key={idx}
+              style={pickerStyles.item}
+              onPress={() => {
+                if (item !== null) {
+                  const itemIndex = items.indexOf(item);
+                  onSelect(item);
+                  scrollToIndex(itemIndex);
+                }
+              }}
+              activeOpacity={item !== null ? 0.6 : 1}
+            >
+              <Text style={[
+                pickerStyles.itemText,
+                { fontFamily: 'Lato-Regular', color: secondaryColor },
+                item === null && { opacity: 0 },
+                isSelected && { color: textColor, fontFamily: 'Lato-Bold', fontSize: 18 },
+              ]}>
+                {item !== null ? format(item) : '00'}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+};
+
 export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const [showPicker, setShowPicker] = useState(Platform.OS === 'ios');
+
+  const selectedHour = value ? value.getHours() : 12;
+  const selectedMinute = value ? Math.round(value.getMinutes() / 5) * 5 : 0;
+
+  const handleHourSelect = (hour: number) => {
+    const newTime = value ? new Date(value) : new Date();
+    newTime.setHours(hour);
+    newTime.setMinutes(selectedMinute);
+    newTime.setSeconds(0);
+    onChange(newTime);
+  };
+
+  const handleMinuteSelect = (minute: number) => {
+    const newTime = value ? new Date(value) : new Date();
+    newTime.setHours(selectedHour);
+    newTime.setMinutes(minute);
+    newTime.setSeconds(0);
+    onChange(newTime);
+  };
 
   const handleTimeChange = (event: any, selectedTime?: Date) => {
     if (Platform.OS === 'android') {
@@ -26,16 +146,6 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
     }
     if (selectedTime) {
       onChange(selectedTime);
-    }
-  };
-
-  const handleWebTimeChange = (timeString: string) => {
-    if (timeString) {
-      const [hours, minutes] = timeString.split(':');
-      const newTime = new Date();
-      newTime.setHours(parseInt(hours, 10));
-      newTime.setMinutes(parseInt(minutes, 10));
-      onChange(newTime);
     }
   };
 
@@ -47,21 +157,15 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
     });
   };
 
-  const formatTimeForInput = (time: Date) => {
-    const hours = time.getHours().toString().padStart(2, '0');
-    const minutes = time.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
-
   return (
     <View style={styles.container}>
-      <MaterialCommunityIcons 
-        name="clock-outline" 
-        size={64} 
-        color={colors.accent} 
+      <MaterialCommunityIcons
+        name="clock-outline"
+        size={40}
+        color={colors.accent}
         style={styles.icon}
       />
-      
+
       <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
         {t('recommend:step2.title')}
       </Text>
@@ -71,36 +175,34 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
       </Text>
 
       {Platform.OS === 'web' ? (
-        <View style={styles.webPickerContainer}>
-          <input
-            type="time"
-            value={value ? formatTimeForInput(value) : ''}
-            onChange={(e) => handleWebTimeChange(e.target.value)}
-            style={{
-              height: 56,
-              width: 162,
-              borderWidth: 2,
-              borderStyle: 'solid',
-              borderColor: colors.accent,
-              borderRadius: 12,
-              paddingLeft: 16,
-              paddingRight: 16,
-              fontSize: 16,
-              backgroundColor: colors.accent + '20',
-              color: colors.text,
-              fontFamily: 'Lato-Regular',
-              textAlign: 'center',
-              display: 'block',
-            }}
-          />
+        <View style={[styles.clockContainer, { backgroundColor: colors.card, borderColor: colors.accent + '40' }]}>
+          <View style={styles.pickersRow}>
+            <ScrollPicker
+              items={hours}
+              selected={selectedHour}
+              onSelect={handleHourSelect}
+              accentColor={colors.accent}
+              textColor={colors.text}
+              secondaryColor={colors.secondary}
+            />
+            <Text style={[styles.separator, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>:</Text>
+            <ScrollPicker
+              items={minutes}
+              selected={selectedMinute}
+              onSelect={handleMinuteSelect}
+              accentColor={colors.accent}
+              textColor={colors.text}
+              secondaryColor={colors.secondary}
+            />
+          </View>
         </View>
       ) : (
         <>
           {Platform.OS === 'android' && (
             <TouchableOpacity
-              style={[styles.timeButton, { 
-                backgroundColor: colors.accent + '20', 
-                borderColor: colors.accent 
+              style={[styles.timeButton, {
+                backgroundColor: colors.accent + '20',
+                borderColor: colors.accent
               }]}
               onPress={() => setShowPicker(true)}
             >
@@ -128,7 +230,7 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
 
       {value && (
         <View style={[styles.selectedContainer, { backgroundColor: colors.accent + '10' }]}>
-          <MaterialCommunityIcons name="check-circle" size={24} color={colors.accent} />
+          <MaterialCommunityIcons name="check-circle" size={18} color={colors.accent} />
           <Text style={[styles.selectedText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
             {formatTime(value)}
           </Text>
@@ -138,32 +240,66 @@ export const Step2Time: React.FC<Step2TimeProps> = ({ value, onChange }) => {
   );
 };
 
+const pickerStyles = StyleSheet.create({
+  container: {
+    width: 60,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  highlight: {
+    position: 'absolute',
+    left: 4,
+    right: 4,
+    height: ITEM_HEIGHT,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  item: {
+    height: ITEM_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  itemText: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    padding: 16,
     alignItems: 'center',
   },
   icon: {
-    marginTop: 20,
-    marginBottom: 24,
+    marginTop: 8,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 12,
+    fontSize: 20,
+    marginBottom: 6,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
-    marginBottom: 32,
+    fontSize: 13,
+    marginBottom: 16,
     textAlign: 'center',
   },
-  webPickerContainer: {
-    width: '100%',
-    maxWidth: 162,
-    marginBottom: 24,
+  clockContainer: {
+    maxWidth: 180,
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 8,
+    marginBottom: 8,
+  },
+  pickersRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  separator: {
+    fontSize: 22,
+    marginHorizontal: 6,
   },
   timeButton: {
     flexDirection: 'row',
@@ -185,13 +321,13 @@ const styles = StyleSheet.create({
   selectedContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginTop: 20,
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    marginTop: 10,
   },
   selectedText: {
-    fontSize: 14,
+    fontSize: 12,
   },
 });
