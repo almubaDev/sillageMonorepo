@@ -107,14 +107,25 @@ export const recommendationService = {
     } catch (error: any) {
       // Manejo detallado de errores
       if (error.response) {
+        // Extraer mensaje de error - puede ser string o array (Pydantic validation errors)
+        let detailMsg = 'Error al generar recomendación';
+        const rawDetail = error.response.data?.detail;
+
+        if (typeof rawDetail === 'string') {
+          detailMsg = rawDetail;
+        } else if (Array.isArray(rawDetail)) {
+          // Pydantic validation errors: [{type, loc, msg, input, ctx}]
+          detailMsg = rawDetail.map((e: any) => e.msg || JSON.stringify(e)).join('; ');
+        }
+
         const errorDetail: RecommendationError = {
-          detail: error.response.data?.detail || 'Error al generar recomendación',
+          detail: detailMsg,
           status: error.response.status
         };
-        
+
         // Errores específicos
         if (error.response.status === 400) {
-          if (error.response.data?.detail?.includes('colección')) {
+          if (detailMsg.includes('colección')) {
             errorDetail.detail = 'Necesitas tener al menos un perfume en tu colección';
           }
         } else if (error.response.status === 402) {
@@ -122,7 +133,7 @@ export const recommendationService = {
         } else if (error.response.status === 429) {
           errorDetail.detail = 'No tienes consultas disponibles este mes. Considera renovar tu suscripción.';
         }
-        
+
         throw errorDetail;
       }
       

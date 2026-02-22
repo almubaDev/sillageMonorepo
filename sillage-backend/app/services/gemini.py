@@ -134,7 +134,7 @@ async def get_ai_recommendation(
     tokens_output = 0
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(url, json=payload)
             response.raise_for_status()
 
@@ -143,9 +143,25 @@ async def get_ai_recommendation(
             # Extraer información de tokens del usageMetadata
             usage_metadata = data.get('usageMetadata', {})
             tokens_input = usage_metadata.get('promptTokenCount', 0)
+            # candidatesTokenCount + thoughtsTokenCount = tokens de salida totales facturados
             tokens_output = usage_metadata.get('candidatesTokenCount', 0)
+            thinking_tokens = usage_metadata.get('thoughtsTokenCount', 0)
+            tokens_output += thinking_tokens  # Los thinking tokens se facturan como output
 
-            return data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+            # Gemini 2.5 Flash es un modelo "thinking" - puede retornar
+            # thought parts antes del texto real. Necesitamos extraer
+            # solo el texto de respuesta, no los pensamientos.
+            parts = data.get('candidates', [{}])[0].get('content', {}).get('parts', [])
+
+            # Buscar el último part que NO sea thought (la respuesta real)
+            response_text = ''
+            for part in parts:
+                if part.get('thought'):
+                    continue  # Saltar thought parts
+                if 'text' in part:
+                    response_text = part['text']
+
+            return response_text
 
     except Exception as e:
         success = False
