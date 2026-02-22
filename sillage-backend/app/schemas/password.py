@@ -12,7 +12,7 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetVerify(BaseModel):
     """Schema para verificar token de recuperación"""
     email: EmailStr = Field(..., description="Email del usuario")
-    token: str = Field(..., min_length=6, max_length=6, description="Código de 6 dígitos")
+    token: str = Field(..., min_length=20, description="Token de recuperación")
     new_password: str = Field(..., min_length=8, max_length=100, description="Nueva contraseña")
 
     @validator('new_password')

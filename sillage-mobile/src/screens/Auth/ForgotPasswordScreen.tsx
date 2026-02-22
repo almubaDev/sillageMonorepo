@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -27,6 +26,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [sent, setSent] = useState(false);
 
   const validateEmail = (text: string) => {
     setEmail(text);
@@ -37,11 +37,9 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleSendCode = async () => {
-    // Limpiar errores
+  const handleSendLink = async () => {
     setEmailError('');
 
-    // Validaciones
     if (!email.trim()) {
       setEmailError(t('auth:forgotPassword.errors.emailRequired'));
       return;
@@ -55,31 +53,44 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setLoading(true);
       await authService.requestPasswordReset(email.trim());
-
-      // Mostrar mensaje de éxito
-      Alert.alert(
-        t('auth:forgotPassword.success.title'),
-        t('auth:forgotPassword.success.message'),
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navegar a la pantalla de reset con el email
-              navigation.navigate('ResetPassword', { email: email.trim() });
-            },
-          },
-        ]
-      );
+      setSent(true);
     } catch (error: any) {
       console.error('Error solicitando recuperación:', error);
-      Alert.alert(
-        t('auth:forgotPassword.errors.title'),
+      setEmailError(
         error.response?.data?.detail || t('auth:forgotPassword.errors.sendFailed')
       );
     } finally {
       setLoading(false);
     }
   };
+
+  if (sent) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.bg }]}>
+        <View style={styles.sentContent}>
+          <View style={[styles.iconContainer, { backgroundColor: '#10B98120' }]}>
+            <MaterialCommunityIcons name="email-check" size={64} color="#10B981" />
+          </View>
+
+          <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+            {t('auth:forgotPassword.success.title')}
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            {t('auth:forgotPassword.success.message')}
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: colors.accent }]}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
+              {t('auth:forgotPassword.backToLogin')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -88,7 +99,6 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          {/* Header con ícono */}
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
@@ -100,17 +110,16 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
             <MaterialCommunityIcons name="lock-reset" size={64} color={colors.accent} />
           </View>
 
-          <Text style={[styles.title, { color: colors.text }]}>
+          <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
             {t('auth:forgotPassword.title')}
           </Text>
-          <Text style={[styles.subtitle, { color: colors.secondary }]}>
+          <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
             {t('auth:forgotPassword.subtitle')}
           </Text>
 
-          {/* Formulario */}
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>
+              <Text style={[styles.label, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
                 {t('auth:forgotPassword.email')}
               </Text>
               <TextInput
@@ -120,6 +129,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
                     backgroundColor: colors.bg,
                     color: colors.text,
                     borderColor: emailError ? '#EF4444' : colors.accent,
+                    fontFamily: 'Lato-Regular',
                   },
                 ]}
                 placeholder={t('auth:forgotPassword.emailPlaceholder')}
@@ -132,19 +142,19 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
                 editable={!loading}
               />
               {emailError ? (
-                <Text style={[styles.fieldError, { color: '#EF4444' }]}>{emailError}</Text>
+                <Text style={[styles.fieldError, { color: '#EF4444', fontFamily: 'Lato-Regular' }]}>{emailError}</Text>
               ) : null}
             </View>
 
             <TouchableOpacity
               style={[styles.button, { backgroundColor: colors.accent }]}
-              onPress={handleSendCode}
+              onPress={handleSendLink}
               disabled={loading}
             >
               {loading ? (
                 <ActivityIndicator color={colors.bg} />
               ) : (
-                <Text style={[styles.buttonText, { color: colors.bg }]}>
+                <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
                   {t('auth:forgotPassword.sendButton')}
                 </Text>
               )}
@@ -156,7 +166,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               disabled={loading}
             >
               <MaterialCommunityIcons name="arrow-left" size={18} color={colors.accent} />
-              <Text style={[styles.backToLoginText, { color: colors.accent }]}>
+              <Text style={[styles.backToLoginText, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
                 {t('auth:forgotPassword.backToLogin')}
               </Text>
             </TouchableOpacity>
@@ -179,6 +189,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
     paddingTop: 60,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  sentContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
   },
   backButton: {
     position: 'absolute',
@@ -197,7 +219,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 12,
   },
@@ -216,7 +237,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
     marginBottom: 8,
     marginLeft: 4,
   },
@@ -236,13 +256,11 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '700',
   },
   fieldError: {
     fontSize: 12,
     marginTop: 6,
     marginLeft: 4,
-    fontWeight: '500',
   },
   backToLoginContainer: {
     flexDirection: 'row',
@@ -252,6 +270,5 @@ const styles = StyleSheet.create({
   },
   backToLoginText: {
     fontSize: 15,
-    fontWeight: '600',
   },
 });

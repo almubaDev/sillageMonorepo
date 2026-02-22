@@ -24,38 +24,58 @@ interface Props {
 export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { email } = route.params || {};
+  const { token, email } = route.params || {};
 
-  const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [codeError, setCodeError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
+  // Si no hay token o email, mostrar error
+  if (!token || !email) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.bg }]}>
+        <View style={styles.errorContent}>
+          <View style={[styles.iconContainer, { backgroundColor: '#EF444420' }]}>
+            <MaterialCommunityIcons name="link-off" size={64} color="#EF4444" />
+          </View>
+          <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+            {t('auth:resetPassword.invalidLink')}
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            {t('auth:resetPassword.invalidLinkDesc')}
+          </Text>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: colors.accent }]}
+            onPress={() => navigation.navigate('ForgotPassword')}
+          >
+            <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
+              {t('auth:resetPassword.requestNewLink')}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.backToLoginContainer}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <MaterialCommunityIcons name="arrow-left" size={18} color={colors.accent} />
+            <Text style={[styles.backToLoginText, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
+              {t('auth:forgotPassword.backToLogin')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   const handleResetPassword = async () => {
-    // Limpiar errores
-    setCodeError('');
     setPasswordError('');
     setConfirmPasswordError('');
 
-    // Validaciones
     let hasError = false;
-
-    if (!code.trim()) {
-      setCodeError(t('auth:resetPassword.errors.codeRequired'));
-      hasError = true;
-    } else if (code.trim().length !== 6) {
-      setCodeError(t('auth:resetPassword.errors.codeInvalid'));
-      hasError = true;
-    } else if (!/^\d{6}$/.test(code.trim())) {
-      setCodeError(t('auth:resetPassword.errors.codeInvalid'));
-      hasError = true;
-    }
 
     if (!newPassword) {
       setPasswordError(t('auth:resetPassword.errors.passwordRequired'));
@@ -83,19 +103,15 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
 
     try {
       setLoading(true);
-      await authService.resetPassword(email, code.trim(), newPassword);
+      await authService.resetPassword(email, token, newPassword);
 
-      // Mostrar mensaje de éxito
       Alert.alert(
         t('auth:resetPassword.success.title'),
         t('auth:resetPassword.success.message'),
         [
           {
             text: 'OK',
-            onPress: () => {
-              // Volver al login
-              navigation.navigate('Login');
-            },
+            onPress: () => navigation.navigate('Login'),
           },
         ]
       );
@@ -104,11 +120,17 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
 
       const errorMessage = error.response?.data?.detail || t('auth:resetPassword.errors.resetFailed');
 
-      // Identificar el tipo de error
-      if (errorMessage.toLowerCase().includes('expirado')) {
-        setCodeError(t('auth:resetPassword.errors.codeExpired'));
-      } else if (errorMessage.toLowerCase().includes('inválido') || errorMessage.toLowerCase().includes('invalid')) {
-        setCodeError(t('auth:resetPassword.errors.codeInvalid'));
+      if (errorMessage.toLowerCase().includes('expirado') || errorMessage.toLowerCase().includes('expired')) {
+        Alert.alert(
+          t('auth:resetPassword.errors.title'),
+          t('auth:resetPassword.errors.linkExpired'),
+          [
+            {
+              text: t('auth:resetPassword.requestNewLink'),
+              onPress: () => navigation.navigate('ForgotPassword'),
+            },
+          ]
+        );
       } else {
         Alert.alert(
           t('auth:resetPassword.errors.title'),
@@ -127,61 +149,21 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          {/* Header con ícono */}
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.text} />
-          </TouchableOpacity>
-
           <View style={[styles.iconContainer, { backgroundColor: colors.accent + '15' }]}>
             <MaterialCommunityIcons name="key" size={64} color={colors.accent} />
           </View>
 
-          <Text style={[styles.title, { color: colors.text }]}>
+          <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
             {t('auth:resetPassword.title')}
           </Text>
-          <Text style={[styles.subtitle, { color: colors.secondary }]}>
+          <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
             {t('auth:resetPassword.subtitle', { email })}
           </Text>
 
-          {/* Formulario */}
           <View style={styles.form}>
-            {/* Código de 6 dígitos */}
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                {t('auth:resetPassword.code')}
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  styles.codeInput,
-                  {
-                    backgroundColor: colors.bg,
-                    color: colors.text,
-                    borderColor: codeError ? '#EF4444' : colors.accent,
-                  },
-                ]}
-                placeholder="000000"
-                placeholderTextColor={colors.secondary}
-                value={code}
-                onChangeText={(text) => {
-                  setCode(text);
-                  setCodeError('');
-                }}
-                keyboardType="number-pad"
-                maxLength={6}
-                editable={!loading}
-              />
-              {codeError ? (
-                <Text style={[styles.fieldError, { color: '#EF4444' }]}>{codeError}</Text>
-              ) : null}
-            </View>
-
             {/* Nueva contraseña */}
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>
+              <Text style={[styles.label, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
                 {t('auth:resetPassword.newPassword')}
               </Text>
               <View style={styles.passwordContainer}>
@@ -193,6 +175,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                       backgroundColor: colors.bg,
                       color: colors.text,
                       borderColor: passwordError ? '#EF4444' : colors.accent,
+                      fontFamily: 'Lato-Regular',
                     },
                   ]}
                   placeholder={t('auth:resetPassword.passwordPlaceholder')}
@@ -218,13 +201,13 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
               {passwordError ? (
-                <Text style={[styles.fieldError, { color: '#EF4444' }]}>{passwordError}</Text>
+                <Text style={[styles.fieldError, { color: '#EF4444', fontFamily: 'Lato-Regular' }]}>{passwordError}</Text>
               ) : null}
             </View>
 
             {/* Confirmar contraseña */}
             <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: colors.text }]}>
+              <Text style={[styles.label, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
                 {t('auth:resetPassword.confirmPassword')}
               </Text>
               <View style={styles.passwordContainer}>
@@ -236,6 +219,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                       backgroundColor: colors.bg,
                       color: colors.text,
                       borderColor: confirmPasswordError ? '#EF4444' : colors.accent,
+                      fontFamily: 'Lato-Regular',
                     },
                   ]}
                   placeholder={t('auth:resetPassword.confirmPlaceholder')}
@@ -261,22 +245,22 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
                 </TouchableOpacity>
               </View>
               {confirmPasswordError ? (
-                <Text style={[styles.fieldError, { color: '#EF4444' }]}>{confirmPasswordError}</Text>
+                <Text style={[styles.fieldError, { color: '#EF4444', fontFamily: 'Lato-Regular' }]}>{confirmPasswordError}</Text>
               ) : null}
             </View>
 
-            {/* Requisitos de contraseña */}
+            {/* Requisitos */}
             <View style={[styles.requirementsBox, { backgroundColor: colors.accent + '10' }]}>
-              <Text style={[styles.requirementsTitle, { color: colors.text }]}>
+              <Text style={[styles.requirementsTitle, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
                 {t('auth:resetPassword.requirements.title')}
               </Text>
-              <Text style={[styles.requirementText, { color: colors.secondary }]}>
+              <Text style={[styles.requirementText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
                 • {t('auth:resetPassword.requirements.minLength')}
               </Text>
-              <Text style={[styles.requirementText, { color: colors.secondary }]}>
+              <Text style={[styles.requirementText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
                 • {t('auth:resetPassword.requirements.uppercase')}
               </Text>
-              <Text style={[styles.requirementText, { color: colors.secondary }]}>
+              <Text style={[styles.requirementText, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
                 • {t('auth:resetPassword.requirements.number')}
               </Text>
             </View>
@@ -289,19 +273,19 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
               {loading ? (
                 <ActivityIndicator color={colors.bg} />
               ) : (
-                <Text style={[styles.buttonText, { color: colors.bg }]}>
+                <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
                   {t('auth:resetPassword.resetButton')}
                 </Text>
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.resendContainer}
-              onPress={() => navigation.goBack()}
+              style={styles.backToLoginContainer}
+              onPress={() => navigation.navigate('ForgotPassword')}
               disabled={loading}
             >
-              <Text style={[styles.resendText, { color: colors.accent }]}>
-                {t('auth:resetPassword.resendCode')}
+              <Text style={[styles.backToLoginText, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
+                {t('auth:resetPassword.requestNewLink')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -327,11 +311,14 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
-  backButton: {
-    position: 'absolute',
-    top: 20,
-    left: 24,
-    zIndex: 10,
+  errorContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
   },
   iconContainer: {
     width: 120,
@@ -344,7 +331,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 12,
   },
@@ -363,7 +349,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
     marginBottom: 8,
     marginLeft: 4,
   },
@@ -373,12 +358,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-  },
-  codeInput: {
-    textAlign: 'center',
-    fontSize: 24,
-    letterSpacing: 8,
-    fontWeight: 'bold',
   },
   passwordContainer: {
     position: 'relative',
@@ -401,7 +380,6 @@ const styles = StyleSheet.create({
   },
   requirementsTitle: {
     fontSize: 14,
-    fontWeight: '600',
     marginBottom: 8,
   },
   requirementText: {
@@ -417,19 +395,19 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '700',
   },
   fieldError: {
     fontSize: 12,
     marginTop: 6,
     marginLeft: 4,
-    fontWeight: '500',
   },
-  resendContainer: {
+  backToLoginContainer: {
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
-  resendText: {
+  backToLoginText: {
     fontSize: 15,
-    fontWeight: '600',
   },
 });

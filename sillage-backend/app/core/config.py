@@ -59,8 +59,9 @@ class Settings(BaseSettings):
     PAYPAL_BUSINESS_EMAIL: str
     PAYPAL_MODE: str = "production"  # "production" o "sandbox"
 
-    # Backend URL (para redirecciones de PayPal)
+    # URLs
     BACKEND_URL: str = "http://localhost:8000"
+    FRONTEND_URL: str = "http://localhost:8081"
 
     @property
     def PAYPAL_URL(self) -> str:

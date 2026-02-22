@@ -1,8 +1,8 @@
 import 'react-native-gesture-handler'; // Debe ser la primera importación
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
-import { View, ActivityIndicator } from 'react-native';
+import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
+import { View, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Font from 'expo-font';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
@@ -45,8 +45,23 @@ function AppContent() {
     );
   }
 
+  const linking: LinkingOptions<any> = {
+    prefixes: [Platform.OS === 'web' ? window.location.origin : 'sillage://'],
+    config: {
+      screens: {
+        ResetPassword: {
+          path: 'reset-password',
+          parse: {
+            token: (token: string) => token,
+            email: (email: string) => decodeURIComponent(email),
+          },
+        },
+      },
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <RootNavigator />
       <StatusBar style="auto" />
     </NavigationContainer>

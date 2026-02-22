@@ -135,7 +135,7 @@ class EmailService:
         return await EmailService.send_email(user_email, subject, html_content, text_content)
 
     @staticmethod
-    async def send_password_reset_email(user_email: str, user_name: str, reset_token: str) -> bool:
+    async def send_password_reset_email(user_email: str, user_name: str, reset_url: str) -> bool:
         subject = "Recuperación de contraseña - Sillage"
 
         html_content = f"""
@@ -148,9 +148,10 @@ class EmailService:
                 .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
                 .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
                 .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-                .token-box {{ background: #fff; border: 2px dashed #667eea; padding: 15px; margin: 20px 0; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 2px; }}
+                .reset-button {{ display: inline-block; padding: 14px 32px; background: #667eea; color: white !important; text-decoration: none; border-radius: 8px; margin: 24px 0; font-size: 16px; font-weight: bold; }}
                 .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
                 .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 12px; }}
+                .url-fallback {{ word-break: break-all; font-size: 12px; color: #667eea; margin-top: 8px; }}
             </style>
         </head>
         <body>
@@ -162,17 +163,17 @@ class EmailService:
                     <h2>Hola {user_name},</h2>
                     <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Sillage.</p>
 
-                    <p>Tu código de recuperación es:</p>
-                    <div class="token-box">
-                        {reset_token}
+                    <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+                    <div style="text-align: center;">
+                        <a href="{reset_url}" class="reset-button">Restablecer Contraseña</a>
                     </div>
 
-                    <p>Ingresa este código en la aplicación para crear una nueva contraseña.</p>
+                    <p class="url-fallback">Si el botón no funciona, copia y pega este enlace en tu navegador:<br>{reset_url}</p>
 
                     <div class="warning">
                         <strong>Importante:</strong>
                         <ul>
-                            <li>Este código expira en 1 hora</li>
+                            <li>Este enlace expira en 1 hora</li>
                             <li>Solo puede usarse una vez</li>
                             <li>Si no solicitaste este cambio, ignora este mensaje</li>
                         </ul>
@@ -195,12 +196,11 @@ class EmailService:
 
         Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Sillage.
 
-        Tu código de recuperación es: {reset_token}
-
-        Ingresa este código en la aplicación para crear una nueva contraseña.
+        Haz clic en el siguiente enlace para crear una nueva contraseña:
+        {reset_url}
 
         IMPORTANTE:
-        - Este código expira en 1 hora
+        - Este enlace expira en 1 hora
         - Solo puede usarse una vez
         - Si no solicitaste este cambio, ignora este mensaje
 

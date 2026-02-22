@@ -16,7 +16,7 @@ class PasswordResetToken(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    token = Column(String(6), unique=True, index=True, nullable=False)  # Código de 6 dígitos
+    token = Column(String(64), unique=True, index=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     used = Column(Boolean, default=False, nullable=False)
@@ -27,8 +27,8 @@ class PasswordResetToken(Base):
 
     @staticmethod
     def generate_token() -> str:
-        """Generar un código de 6 dígitos"""
-        return ''.join([str(secrets.randbelow(10)) for _ in range(6)])
+        """Generar un token URL-safe seguro"""
+        return secrets.token_urlsafe(48)
 
     @staticmethod
     def create_expiration_time() -> datetime:

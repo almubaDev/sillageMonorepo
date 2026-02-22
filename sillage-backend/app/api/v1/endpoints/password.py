@@ -29,8 +29,11 @@ async def request_password_reset(
 ):
     """
     Solicitar recuperación de contraseña.
-    Envía un código de 6 dígitos por email.
+    Envía un enlace tokenizado por email.
     """
+    from app.core.config import settings
+    from urllib.parse import quote
+
     # Buscar usuario por email
     result = await db.execute(
         select(User).where(User.email == request.email)
@@ -40,7 +43,7 @@ async def request_password_reset(
     # Siempre retornar éxito (seguridad: no revelar si el email existe)
     if not user:
         return PasswordResetResponse(
-            message="Si el email existe, recibirás un código de recuperación",
+            message="Si el email existe, recibirás un enlace de recuperación",
             email=request.email
         )
 
@@ -64,22 +67,23 @@ async def request_password_reset(
     db.add(reset_token)
     await db.commit()
 
-    # IMPORTANTE: En desarrollo, imprimir el código en consola
-    from app.core.config import settings
+    # Construir URL de recuperación
+    reset_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_token.token}&email={quote(user.email)}"
+
+    # En desarrollo, imprimir el enlace en consola
     if settings.ENVIRONMENT == "local":
         print("=" * 80)
-        print(f"🔑 CÓDIGO DE RECUPERACIÓN GENERADO")
-        print(f"📧 Email: {user.email}")
-        print(f"👤 Usuario: {user.first_name or 'Usuario'}")
-        print(f"🔢 CÓDIGO: {reset_token.token}")
-        print(f"⏰ Expira: {reset_token.expires_at}")
+        print(f"ENLACE DE RECUPERACION GENERADO")
+        print(f"Email: {user.email}")
+        print(f"URL: {reset_url}")
+        print(f"Expira: {reset_token.expires_at}")
         print("=" * 80)
 
     # Enviar email
     email_sent = await email_service.send_password_reset_email(
         user_email=user.email,
         user_name=user.first_name or "Usuario",
-        reset_token=reset_token.token
+        reset_url=reset_url
     )
 
     # Solo lanzar error si no estamos en desarrollo
@@ -90,7 +94,7 @@ async def request_password_reset(
         )
 
     return PasswordResetResponse(
-        message="Si el email existe, recibirás un código de recuperación",
+        message="Si el email existe, recibirás un enlace de recuperación",
         email=request.email
     )
 
@@ -101,7 +105,7 @@ async def reset_password(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Restablecer contraseña usando el código recibido por email
+    Restablecer contraseña usando el token del enlace enviado por email
     """
     # Buscar usuario
     result = await db.execute(
@@ -112,7 +116,7 @@ async def reset_password(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Código inválido o expirado"
+            detail="Enlace inválido o expirado"
         )
 
     # Buscar token válido
@@ -128,14 +132,14 @@ async def reset_password(
     if not reset_token:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Código inválido o expirado"
+            detail="Enlace inválido o expirado"
         )
 
     # Verificar si expiró
     if reset_token.is_expired():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El código ha expirado. Solicita uno nuevo."
+            detail="El enlace ha expirado. Solicita uno nuevo."
         )
 
     # Cambiar contraseña
