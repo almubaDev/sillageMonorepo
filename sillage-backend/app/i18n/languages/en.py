@@ -82,11 +82,6 @@ Goal: Olfactory blanket, warmth, cozy
 Characteristics: Creamy, thick, dense/heavy trail, deep, dark
 Avoid: Fresh, volatile, light, clean
 
-### RULES BY TIME OF DAY
-- Morning → Fresh, citrus, aromatic, clean, light. Avoid heavy, sweet, intense
-- Afternoon → Versatile, can be more intense than morning. Soft woods, florals, light spices
-- Night → Intense, warm, sweet, spicy, ambery, oriental. Avoid fresh, aquatic, pure citrus
-
 ### GENERAL RULES
 - Cold weather → Heavy, thick, warm, enveloping
 - Warm weather → Volatile, fresh, light, breeze

@@ -89,11 +89,6 @@ Objetivo: Cobija olfativa, calor, acogedor
 Características: Cremoso, espeso, rastro denso/pesado, profundo, oscuro
 Evitar: Fresco, volátil, ligero, limpio
 
-### REGLAS POR MOMENTO DEL DÍA
-- Mañana → Frescas, cítricas, aromáticas, limpias, ligeras. Evitar pesadas, dulces, intensas
-- Tarde → Versátil, puede ser más intenso que la mañana. Amaderadas suaves, florales, especiadas ligeras
-- Noche → Intensas, cálidas, dulces, especiadas, ambaradas, orientales. Evitar frescas, acuáticas, cítricas puras
-
 ### REGLAS GENERALES
 - Climas fríos → Pesado, espeso, cálido, envolvente
 - Climas cálidos → Volátil, fresco, ligero, brisa
