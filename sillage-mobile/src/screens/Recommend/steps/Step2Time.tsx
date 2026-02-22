@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -29,32 +29,52 @@ interface ScrollPickerProps {
 
 const ScrollPicker: React.FC<ScrollPickerProps> = ({ items, selected, onSelect, accentColor, textColor, secondaryColor, formatItem }) => {
   const scrollRef = useRef<ScrollView>(null);
-  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const format = formatItem || ((v: number) => v.toString().padStart(2, '0'));
 
-  // Padding items para centrar
+  // Padding items para centrar (2 arriba, 2 abajo)
   const paddedItems = [null, null, ...items, null, null];
 
   const selectedIndex = items.indexOf(selected);
 
-  const handleScrollEnd = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = e.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / ITEM_HEIGHT);
-    const clampedIndex = Math.max(0, Math.min(index, items.length - 1));
-    if (items[clampedIndex] !== selected) {
-      onSelect(items[clampedIndex]);
+  // Auto-seleccionar el item centrado cuando el scroll se detiene
+  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // Limpiar timer anterior
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current);
     }
-    scrollRef.current?.scrollTo({ y: clampedIndex * ITEM_HEIGHT, animated: true });
-    setIsScrolling(false);
+
+    const offsetY = e.nativeEvent.contentOffset.y;
+
+    // Debounce: esperar 100ms sin scroll para considerar que se detuvo
+    scrollTimerRef.current = setTimeout(() => {
+      const index = Math.round(offsetY / ITEM_HEIGHT);
+      const clampedIndex = Math.max(0, Math.min(index, items.length - 1));
+
+      // Snap al item mas cercano
+      scrollRef.current?.scrollTo({ y: clampedIndex * ITEM_HEIGHT, animated: true });
+
+      // Seleccionar automaticamente
+      if (items[clampedIndex] !== selected) {
+        onSelect(items[clampedIndex]);
+      }
+    }, 100);
   }, [items, selected, onSelect]);
+
+  // Limpiar timer al desmontar
+  useEffect(() => {
+    return () => {
+      if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    };
+  }, []);
 
   const scrollToIndex = useCallback((index: number) => {
     scrollRef.current?.scrollTo({ y: index * ITEM_HEIGHT, animated: true });
   }, []);
 
   // Scroll inicial al valor seleccionado
-  React.useEffect(() => {
-    if (!isScrolling && selectedIndex >= 0) {
+  useEffect(() => {
+    if (selectedIndex >= 0) {
       setTimeout(() => {
         scrollRef.current?.scrollTo({ y: selectedIndex * ITEM_HEIGHT, animated: false });
       }, 50);
@@ -75,14 +95,8 @@ const ScrollPicker: React.FC<ScrollPickerProps> = ({ items, selected, onSelect, 
         showsVerticalScrollIndicator={false}
         snapToInterval={ITEM_HEIGHT}
         decelerationRate="fast"
-        onScrollBeginDrag={() => setIsScrolling(true)}
-        onMomentumScrollEnd={handleScrollEnd}
-        onScrollEndDrag={(e) => {
-          // Si no hay momentum, manejar aqui
-          if (e.nativeEvent.velocity?.y === 0) {
-            handleScrollEnd(e);
-          }
-        }}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={{ paddingVertical: 0 }}
       >
         {paddedItems.map((item, idx) => {
