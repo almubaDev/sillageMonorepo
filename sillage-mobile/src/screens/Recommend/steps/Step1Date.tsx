@@ -22,7 +22,7 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
 
   const today = new Date();
   const maxDate = new Date(today);
-  maxDate.setDate(maxDate.getDate() + 5);
+  maxDate.setDate(maxDate.getDate() + 4);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {

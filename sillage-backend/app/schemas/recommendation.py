@@ -24,7 +24,7 @@ class RecommendationRequest(BaseModel):
     def validate_fecha(cls, v):
         from datetime import date, timedelta
         today = date.today()
-        max_date = today + timedelta(days=5)
+        max_date = today + timedelta(days=4)
 
         if v < today:
             raise ValueError('La fecha no puede ser anterior a hoy')
