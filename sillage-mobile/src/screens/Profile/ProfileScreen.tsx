@@ -303,21 +303,6 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         </Text>
       </View>
 
-      {/* Cards de info */}
-      <View style={[styles.statsGrid, isDesktop && styles.statsGridDesktop]}>
-        <View style={[styles.statCard, { backgroundColor: colors.accent + '15', borderLeftColor: colors.accent }]}>
-          <MaterialCommunityIcons name="counter" size={24} color={colors.accent} />
-          <View style={styles.statInfo}>
-            <Text style={[styles.statLabel, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-              {t('profile:queries.label')}
-            </Text>
-            <Text style={[styles.statValue, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
-              {t('profile:queries.remaining', { count: user?.consultas_restantes || 0 })}
-            </Text>
-          </View>
-        </View>
-      </View>
-
       {/* Acciones */}
       <View style={styles.actions}>
         <TouchableOpacity
@@ -922,31 +907,6 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 14,
     textAlign: 'center',
-  },
-  statsGrid: {
-    gap: 16,
-    marginBottom: 32,
-  },
-  statsGridDesktop: {
-    flexDirection: 'row',
-  },
-  statCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    gap: 16,
-  },
-  statInfo: {
-    flex: 1,
-  },
-  statLabel: {
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: 16,
   },
   actions: {
     gap: 12,

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useAuthContext } from '../../utils/AuthContext';
+
 interface Props {
   navigation: any;
 }
@@ -10,6 +12,7 @@ interface Props {
 export const RecommendLanding: React.FC<Props> = ({ navigation }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { user } = useAuthContext();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
@@ -27,6 +30,13 @@ export const RecommendLanding: React.FC<Props> = ({ navigation }) => {
       <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
         {t('recommend:landing.subtitle')}
       </Text>
+
+      <View style={[styles.queriesCard, { backgroundColor: colors.accent + '15', borderColor: colors.accent + '40' }]}>
+        <MaterialCommunityIcons name="counter" size={20} color={colors.accent} />
+        <Text style={[styles.queriesText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
+          {t('recommend:landing.queriesRemaining', { count: user?.consultas_restantes || 0 })}
+        </Text>
+      </View>
 
       <View style={styles.buttons}>
         <TouchableOpacity
@@ -73,6 +83,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     maxWidth: 300,
+  },
+  queriesCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 32,
+  },
+  queriesText: {
+    fontSize: 13,
   },
   buttons: {
     width: '100%',
