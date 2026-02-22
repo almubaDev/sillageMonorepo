@@ -60,6 +60,7 @@ class RecommendationResponse(BaseModel):
     fecha_evento: date
     hora_evento: time
     lugar_nombre: str
+    lugar_descripcion: Optional[str] = None
     lugar_tipo: str
     ocasion: str
     expectativa: str

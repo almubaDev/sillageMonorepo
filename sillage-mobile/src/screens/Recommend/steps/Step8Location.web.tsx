@@ -129,7 +129,7 @@ export const Step8Location: React.FC<Step8LocationProps> = ({ value, onChange })
           onChange({
             latitud: lat,
             longitud: lng,
-            nombre: results[0].address_components?.[0]?.long_name || searchQuery,
+            nombre: searchQuery,
             direccion: results[0].formatted_address,
           });
           setSearchQuery('');
