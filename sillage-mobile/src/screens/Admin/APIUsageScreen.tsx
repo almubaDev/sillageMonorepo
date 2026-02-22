@@ -18,8 +18,8 @@ const API_URLS = {
 // Costos por API (para calcular estimados)
 const API_COSTS = {
   gemini: {
-    costPer1MTokensInput: 0.30,
-    costPer1MTokensOutput: 2.50,
+    costPer1MTokensInput: 0.10,
+    costPer1MTokensOutput: 0.40,
     costPerCall: 0,
     limitType: 'llamadas', // El límite es por llamadas, no tokens
   },
@@ -36,7 +36,7 @@ const API_COSTS = {
 // Límites por tier
 const API_LIMITS = {
   gemini: {
-    free: { daily: 500, monthly: 15000 },
+    free: { daily: 200, monthly: 6000 },
     paid: { daily: 10000, monthly: 300000 },
   },
   openweather: {
@@ -181,28 +181,28 @@ function APICard({ name, displayName, icon, iconColor, data, config, onToggleTie
               <Text style={{ fontSize: 16, fontWeight: '600', color: AdminColors.textPrimary }}>{formatNumber(data.today.tokens_input || 0)}</Text>
               <Text style={adminStyles.statsCardLabel}>Input Hoy</Text>
               <Text style={{ fontSize: 10, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary, marginTop: 2 }}>
-                {data.is_paid_tier ? `$${(((data.today.tokens_input || 0) / 1000000) * 0.30).toFixed(4)}` : '$0.00'}
+                {data.is_paid_tier ? `$${(((data.today.tokens_input || 0) / 1000000) * 0.10).toFixed(4)}` : '$0.00'}
               </Text>
             </View>
             <View style={{ alignItems: 'center' }}>
               <Text style={{ fontSize: 16, fontWeight: '600', color: AdminColors.textPrimary }}>{formatNumber(data.today.tokens_output || 0)}</Text>
               <Text style={adminStyles.statsCardLabel}>Output Hoy</Text>
               <Text style={{ fontSize: 10, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary, marginTop: 2 }}>
-                {data.is_paid_tier ? `$${(((data.today.tokens_output || 0) / 1000000) * 2.50).toFixed(4)}` : '$0.00'}
+                {data.is_paid_tier ? `$${(((data.today.tokens_output || 0) / 1000000) * 0.40).toFixed(4)}` : '$0.00'}
               </Text>
             </View>
             <View style={{ alignItems: 'center' }}>
               <Text style={{ fontSize: 16, fontWeight: '600', color: AdminColors.textPrimary }}>{formatNumber(data.month.tokens_input || 0)}</Text>
               <Text style={adminStyles.statsCardLabel}>Input Mes</Text>
               <Text style={{ fontSize: 10, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary, marginTop: 2 }}>
-                {data.is_paid_tier ? `$${(((data.month.tokens_input || 0) / 1000000) * 0.30).toFixed(4)}` : '$0.00'}
+                {data.is_paid_tier ? `$${(((data.month.tokens_input || 0) / 1000000) * 0.10).toFixed(4)}` : '$0.00'}
               </Text>
             </View>
             <View style={{ alignItems: 'center' }}>
               <Text style={{ fontSize: 16, fontWeight: '600', color: AdminColors.textPrimary }}>{formatNumber(data.month.tokens_output || 0)}</Text>
               <Text style={adminStyles.statsCardLabel}>Output Mes</Text>
               <Text style={{ fontSize: 10, color: data.is_paid_tier ? AdminColors.error : AdminColors.textSecondary, marginTop: 2 }}>
-                {data.is_paid_tier ? `$${(((data.month.tokens_output || 0) / 1000000) * 2.50).toFixed(4)}` : '$0.00'}
+                {data.is_paid_tier ? `$${(((data.month.tokens_output || 0) / 1000000) * 0.40).toFixed(4)}` : '$0.00'}
               </Text>
             </View>
           </View>
@@ -387,7 +387,7 @@ export default function APIUsageScreen() {
         {/* API Cards */}
         <APICard
           name="gemini"
-          displayName="Google Gemini 2.5 Flash"
+          displayName="Google Gemini 2.0 Flash"
           icon="robot"
           iconColor="#4285F4"
           data={summary?.gemini}
@@ -428,7 +428,7 @@ export default function APIUsageScreen() {
           <View style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: AdminColors.border }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={adminStyles.label}>Gemini 2.5 Flash</Text>
+                <Text style={adminStyles.label}>Gemini 2.0 Flash</Text>
                 <View style={{
                   marginLeft: 8,
                   paddingHorizontal: 6,
@@ -449,7 +449,7 @@ export default function APIUsageScreen() {
               </Text>
             </View>
             <Text style={{ fontSize: 10, color: AdminColors.textSecondary, marginTop: 2 }}>
-              {summary?.gemini?.is_paid_tier ? '$0.30/1M input + $2.50/1M output' : 'Sin costo'}
+              {summary?.gemini?.is_paid_tier ? '$0.10/1M input + $0.40/1M output' : 'Sin costo'}
             </Text>
           </View>
 

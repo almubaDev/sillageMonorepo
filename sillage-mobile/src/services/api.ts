@@ -19,7 +19,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 90000, // 90s para soportar llamadas a Gemini 2.5 Flash con thinking
+  timeout: 30000,
 });
 
 // Interceptor para agregar token JWT en cada petición
