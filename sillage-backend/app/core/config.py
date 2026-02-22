@@ -43,13 +43,17 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: str = "*"  # Comma-separated list of allowed origins
 
-    # Email
+    # Email (legacy SMTP)
     EMAIL_HOST: str = "smtp.gmail.com"
     EMAIL_PORT: int = 587
     EMAIL_USE_TLS: bool = True
     EMAIL_HOST_USER: str
     EMAIL_HOST_PASSWORD: str
     DEFAULT_FROM_EMAIL: str
+
+    # Resend (email transaccional)
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "noreply@services.sillage.pro"
 
     # PayPal
     PAYPAL_BUSINESS_EMAIL: str

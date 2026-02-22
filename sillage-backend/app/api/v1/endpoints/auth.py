@@ -73,7 +73,7 @@ async def register(
 
     # Enviar email de bienvenida (no bloquear si falla)
     try:
-        email_service.send_welcome_email(
+        await email_service.send_welcome_email(
             user_email=db_user.email,
             user_name=db_user.first_name or "Usuario"
         )

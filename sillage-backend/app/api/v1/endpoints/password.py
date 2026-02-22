@@ -76,7 +76,7 @@ async def request_password_reset(
         print("=" * 80)
 
     # Enviar email
-    email_sent = email_service.send_password_reset_email(
+    email_sent = await email_service.send_password_reset_email(
         user_email=user.email,
         user_name=user.first_name or "Usuario",
         reset_token=reset_token.token

@@ -1,42 +1,30 @@
 """
-Servicio de envío de emails para Sillage
+Servicio de envío de emails para Sillage (via Resend API)
 """
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import httpx
 from typing import List, Optional
 from app.core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
 
+RESEND_API_URL = "https://api.resend.com/emails"
+
 
 class EmailService:
-    """Servicio para enviar emails"""
+    """Servicio para enviar emails via Resend"""
 
     @staticmethod
-    def send_email(
+    async def send_email(
         to_email: str | List[str],
         subject: str,
         html_content: str,
         text_content: Optional[str] = None
     ) -> bool:
-        """
-        Enviar email usando SMTP
-
-        Args:
-            to_email: Email(s) destinatario(s)
-            subject: Asunto del email
-            html_content: Contenido HTML del email
-            text_content: Contenido en texto plano (opcional)
-
-        Returns:
-            bool: True si se envió exitosamente
-        """
         # MODO DESARROLLO: Si estamos en local, solo logueamos el email
         if settings.ENVIRONMENT == "local":
             logger.warning("=" * 80)
-            logger.warning("📧 MODO DESARROLLO - EMAIL NO ENVIADO")
+            logger.warning("MODO DESARROLLO - EMAIL NO ENVIADO")
             logger.warning(f"Para: {to_email}")
             logger.warning(f"Asunto: {subject}")
             logger.warning("-" * 80)
@@ -46,58 +34,39 @@ class EmailService:
             return True
 
         try:
-            # Crear mensaje
-            msg = MIMEMultipart('alternative')
-            msg['From'] = settings.DEFAULT_FROM_EMAIL
-            msg['Subject'] = subject
-
-            # Convertir to_email a lista si es string
             if isinstance(to_email, str):
                 to_email = [to_email]
 
-            msg['To'] = ', '.join(to_email)
-
-            # Agregar contenido de texto plano
+            payload = {
+                "from": settings.RESEND_FROM_EMAIL,
+                "to": to_email,
+                "subject": subject,
+                "html": html_content,
+            }
             if text_content:
-                part1 = MIMEText(text_content, 'plain')
-                msg.attach(part1)
+                payload["text"] = text_content
 
-            # Agregar contenido HTML
-            part2 = MIMEText(html_content, 'html')
-            msg.attach(part2)
-
-            # Conectar al servidor SMTP
-            with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
-                if settings.EMAIL_USE_TLS:
-                    server.starttls()
-
-                server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-                server.send_message(msg)
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(
+                    RESEND_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                )
+                response.raise_for_status()
 
             logger.info(f"Email enviado exitosamente a {to_email}")
             return True
 
         except Exception as e:
             logger.error(f"Error enviando email a {to_email}: {str(e)}")
-            # En desarrollo, retornar True para no bloquear el flujo
-            if settings.ENVIRONMENT == "local":
-                logger.warning("⚠️ Error de email ignorado en modo desarrollo")
-                return True
             return False
 
     @staticmethod
-    def send_welcome_email(user_email: str, user_name: str) -> bool:
-        """
-        Enviar email de bienvenida a nuevo usuario
-
-        Args:
-            user_email: Email del usuario
-            user_name: Nombre del usuario
-
-        Returns:
-            bool: True si se envió exitosamente
-        """
-        subject = "¡Bienvenido a Sillage! 🌸"
+    async def send_welcome_email(user_email: str, user_name: str) -> bool:
+        subject = "¡Bienvenido a Sillage!"
 
         html_content = f"""
         <!DOCTYPE html>
@@ -124,11 +93,11 @@ class EmailService:
 
                     <h3>¿Qué puedes hacer en Sillage?</h3>
                     <ul>
-                        <li>🌸 Gestionar tu colección personal de perfumes</li>
-                        <li>🤖 Obtener recomendaciones personalizadas con IA</li>
-                        <li>📍 Recomendaciones basadas en clima y ubicación</li>
-                        <li>📊 Consultar tu historial de recomendaciones</li>
-                        <li>🌍 Disponible en múltiples idiomas</li>
+                        <li>Gestionar tu colección personal de perfumes</li>
+                        <li>Obtener recomendaciones personalizadas con IA</li>
+                        <li>Recomendaciones basadas en clima y ubicación</li>
+                        <li>Consultar tu historial de recomendaciones</li>
+                        <li>Disponible en múltiples idiomas</li>
                     </ul>
 
                     <p>Empieza agregando tus perfumes favoritos a tu colección y obtén tu primera recomendación.</p>
@@ -163,26 +132,11 @@ class EmailService:
         El equipo de Sillage
         """
 
-        return EmailService.send_email(user_email, subject, html_content, text_content)
+        return await EmailService.send_email(user_email, subject, html_content, text_content)
 
     @staticmethod
-    def send_password_reset_email(user_email: str, user_name: str, reset_token: str) -> bool:
-        """
-        Enviar email de recuperación de contraseña
-
-        Args:
-            user_email: Email del usuario
-            user_name: Nombre del usuario
-            reset_token: Token de recuperación
-
-        Returns:
-            bool: True si se envió exitosamente
-        """
-        subject = "Recuperación de contraseña - Sillage 🔒"
-
-        # En producción, esto debería ser tu dominio real
-        # Por ahora usamos un placeholder
-        reset_link = f"sillage://reset-password?token={reset_token}"
+    async def send_password_reset_email(user_email: str, user_name: str, reset_token: str) -> bool:
+        subject = "Recuperación de contraseña - Sillage"
 
         html_content = f"""
         <!DOCTYPE html>
@@ -194,7 +148,6 @@ class EmailService:
                 .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
                 .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
                 .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-                .button {{ display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
                 .token-box {{ background: #fff; border: 2px dashed #667eea; padding: 15px; margin: 20px 0; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 2px; }}
                 .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
                 .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 12px; }}
@@ -203,7 +156,7 @@ class EmailService:
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🔒 Recuperación de Contraseña</h1>
+                    <h1>Recuperación de Contraseña</h1>
                 </div>
                 <div class="content">
                     <h2>Hola {user_name},</h2>
@@ -217,7 +170,7 @@ class EmailService:
                     <p>Ingresa este código en la aplicación para crear una nueva contraseña.</p>
 
                     <div class="warning">
-                        <strong>⚠️ Importante:</strong>
+                        <strong>Importante:</strong>
                         <ul>
                             <li>Este código expira en 1 hora</li>
                             <li>Solo puede usarse una vez</li>
@@ -255,21 +208,11 @@ class EmailService:
         El equipo de Sillage
         """
 
-        return EmailService.send_email(user_email, subject, html_content, text_content)
+        return await EmailService.send_email(user_email, subject, html_content, text_content)
 
     @staticmethod
-    def send_password_changed_email(user_email: str, user_name: str) -> bool:
-        """
-        Enviar email de confirmación de cambio de contraseña
-
-        Args:
-            user_email: Email del usuario
-            user_name: Nombre del usuario
-
-        Returns:
-            bool: True si se envió exitosamente
-        """
-        subject = "Tu contraseña ha sido cambiada - Sillage ✅"
+    async def send_password_changed_email(user_email: str, user_name: str) -> bool:
+        subject = "Tu contraseña ha sido cambiada - Sillage"
 
         html_content = f"""
         <!DOCTYPE html>
@@ -289,13 +232,13 @@ class EmailService:
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>✅ Contraseña Actualizada</h1>
+                    <h1>Contraseña Actualizada</h1>
                 </div>
                 <div class="content">
                     <h2>Hola {user_name},</h2>
 
                     <div class="success-box">
-                        <strong>✅ Tu contraseña ha sido cambiada exitosamente.</strong>
+                        <strong>Tu contraseña ha sido cambiada exitosamente.</strong>
                     </div>
 
                     <p>Este es un correo de confirmación para informarte que la contraseña de tu cuenta de Sillage ha sido actualizada.</p>
@@ -303,8 +246,8 @@ class EmailService:
                     <p>Ya puedes iniciar sesión con tu nueva contraseña.</p>
 
                     <div class="warning">
-                        <strong>⚠️ ¿No realizaste este cambio?</strong>
-                        <p>Si no cambiaste tu contraseña, tu cuenta podría estar comprometida. Por favor, contacta con nuestro soporte inmediatamente en {settings.DEFAULT_FROM_EMAIL}</p>
+                        <strong>¿No realizaste este cambio?</strong>
+                        <p>Si no cambiaste tu contraseña, tu cuenta podría estar comprometida. Por favor, contacta con nuestro soporte inmediatamente en {settings.RESEND_FROM_EMAIL}</p>
                     </div>
 
                     <div class="footer">
@@ -330,13 +273,13 @@ class EmailService:
 
         ¿No realizaste este cambio?
         Si no cambiaste tu contraseña, tu cuenta podría estar comprometida.
-        Por favor, contacta con nuestro soporte inmediatamente en {settings.DEFAULT_FROM_EMAIL}
+        Por favor, contacta con nuestro soporte inmediatamente en {settings.RESEND_FROM_EMAIL}
 
         Saludos,
         El equipo de Sillage
         """
 
-        return EmailService.send_email(user_email, subject, html_content, text_content)
+        return await EmailService.send_email(user_email, subject, html_content, text_content)
 
 
 # Instancia global del servicio
