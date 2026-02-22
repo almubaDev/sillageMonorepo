@@ -3,7 +3,9 @@
 import { RecommendationResponse } from '../services/recommendationService';
 
 export type RecommendStackParamList = {
+  RecommendLanding: undefined;
   RecommendForm: undefined;
+  History: undefined;
   RecommendationResult: {
     recommendation: RecommendationResponse;
   };
@@ -11,7 +13,6 @@ export type RecommendStackParamList = {
 
 export type ProfileStackParamList = {
   ProfileMain: undefined;
-  History: undefined;
   RecommendationResult: {
     recommendation: RecommendationResponse;
   };

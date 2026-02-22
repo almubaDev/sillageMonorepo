@@ -60,10 +60,6 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     await logout();
   };
 
-  const handleGoToHistory = () => {
-    navigation.navigate('History');
-  };
-
   const handleLanguageChange = async (languageCode: string) => {
     await changeLanguage(languageCode);
     setLanguageModalVisible(false);
@@ -324,16 +320,6 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 
       {/* Acciones */}
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: colors.accent }]}
-          onPress={handleGoToHistory}
-        >
-          <MaterialCommunityIcons name="history" size={22} color={colors.bg} />
-          <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-            {t('profile:actions.viewHistory')}
-          </Text>
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={[styles.button, { backgroundColor: colors.accent }]}
           onPress={cyclePalette}

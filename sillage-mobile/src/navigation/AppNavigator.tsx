@@ -13,6 +13,7 @@ import { RecommendStackParamList, ProfileStackParamList, CollectionStackParamLis
 
 import { CollectionScreen } from '../screens/Collection/CollectionScreen';
 import { AddEditPerfumeScreen } from '../screens/Collection/AddEditPerfumeScreen';
+import { RecommendLanding } from '../screens/Recommend/RecommendLanding';
 import { RecommendScreen } from '../screens/Recommend/RecommendScreen';
 import { RecommendationResultScreen } from '../screens/Recommend/RecommendationResultScreen';
 import { ProfileScreen } from '../screens/Profile/ProfileScreen';
@@ -89,9 +90,22 @@ function RecommendStackNavigator() {
       }}
     >
       <RecommendStack.Screen
+        name="RecommendLanding"
+        component={RecommendLanding}
+        options={{ headerShown: false }}
+      />
+      <RecommendStack.Screen
         name="RecommendForm"
         component={RecommendScreen}
         options={{ headerShown: false }}
+      />
+      <RecommendStack.Screen
+        name="History"
+        component={HistoryScreen}
+        options={{
+          headerShown: true,
+          title: t('history:title'),
+        }}
       />
       <RecommendStack.Screen
         name="RecommendationResult"
@@ -130,14 +144,6 @@ function ProfileStackNavigator() {
         name="ProfileMain"
         component={ProfileScreen}
         options={{ headerShown: false }}
-      />
-      <ProfileStack.Screen
-        name="History"
-        component={HistoryScreen}
-        options={{
-          headerShown: true,
-          title: t('history:title'),
-        }}
       />
       <ProfileStack.Screen
         name="RecommendationResult"

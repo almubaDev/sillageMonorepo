@@ -1,6 +1,13 @@
 {
   "title": "Nueva Recomendación",
   "tabLabel": "Recomendador",
+  "landing": {
+    "title": "Recomendador",
+    "subtitle": "Encuentra el perfume perfecto para cada ocasión con ayuda de inteligencia artificial",
+    "queriesRemaining": "{{count}} consultas disponibles",
+    "newConsultation": "Nueva Consulta",
+    "viewHistory": "Ver Historial"
+  },
   "navigation": {
     "back": "Atrás",
     "continue": "Continuar",
