@@ -239,8 +239,16 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
                 style={[styles.contextValue, { color: colors.text, fontFamily: 'Lato-Bold' }]}
                 numberOfLines={0}
               >
-                {recommendation.lugar_descripcion || recommendation.lugar_nombre}
+                {recommendation.lugar_nombre}
               </Text>
+              {recommendation.lugar_descripcion && recommendation.lugar_descripcion !== recommendation.lugar_nombre && (
+                <Text
+                  style={[styles.contextValue, { color: colors.secondary, fontFamily: 'Lato-Regular', fontSize: 12, marginTop: 2 }]}
+                  numberOfLines={0}
+                >
+                  {recommendation.lugar_descripcion}
+                </Text>
+              )}
             </View>
           </View>
 
