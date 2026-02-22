@@ -69,8 +69,8 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
       days.push({ date: new Date(viewYear, viewMonth, d), inMonth: true });
     }
 
-    // Rellenar hasta completar 6 filas (42 celdas)
-    const remaining = 42 - days.length;
+    // Rellenar hasta completar la ultima fila (multiplo de 7)
+    const remaining = (7 - (days.length % 7)) % 7;
     for (let d = 1; d <= remaining; d++) {
       days.push({ date: new Date(viewYear, viewMonth + 1, d), inMonth: false });
     }
@@ -121,7 +121,7 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
     <View style={styles.container}>
       <MaterialCommunityIcons
         name="calendar-month"
-        size={64}
+        size={40}
         color={colors.accent}
         style={styles.icon}
       />
@@ -139,13 +139,13 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
           {/* Header del mes */}
           <View style={styles.calendarHeader}>
             <TouchableOpacity onPress={goToPrevMonth} style={[styles.navButton, !canGoPrev && { opacity: 0.2 }]} disabled={!canGoPrev}>
-              <MaterialCommunityIcons name="chevron-left" size={24} color={colors.text} />
+              <MaterialCommunityIcons name="chevron-left" size={18} color={colors.text} />
             </TouchableOpacity>
             <Text style={[styles.monthLabel, { color: colors.text, fontFamily: 'Lato-Bold' }]}>
               {monthLabel}
             </Text>
             <TouchableOpacity onPress={goToNextMonth} style={[styles.navButton, !canGoNext && { opacity: 0.2 }]} disabled={!canGoNext}>
-              <MaterialCommunityIcons name="chevron-right" size={24} color={colors.text} />
+              <MaterialCommunityIcons name="chevron-right" size={18} color={colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -159,7 +159,7 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
           </View>
 
           {/* Grilla de dias */}
-          {Array.from({ length: 6 }, (_, week) => (
+          {Array.from({ length: Math.ceil(calendarDays.length / 7) }, (_, week) => (
             <View key={week} style={styles.weekRow}>
               {calendarDays.slice(week * 7, week * 7 + 7).map(({ date, inMonth }, idx) => {
                 const enabled = inMonth && isDayEnabled(date);
@@ -171,8 +171,8 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
                     key={idx}
                     style={[
                       styles.dayCell,
-                      isSelected && { backgroundColor: colors.accent, borderRadius: 20 },
-                      isToday && !isSelected && { borderWidth: 1, borderColor: colors.accent, borderRadius: 20 },
+                      isSelected && { backgroundColor: colors.accent, borderRadius: 13 },
+                      isToday && !isSelected && { borderWidth: 1, borderColor: colors.accent, borderRadius: 13 },
                     ]}
                     onPress={() => inMonth && handleDayPress(date)}
                     disabled={!enabled}
@@ -229,7 +229,7 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
 
       {value && (
         <View style={[styles.selectedContainer, { backgroundColor: colors.accent + '10' }]}>
-          <MaterialCommunityIcons name="check-circle" size={24} color={colors.accent} />
+          <MaterialCommunityIcons name="check-circle" size={18} color={colors.accent} />
           <Text style={[styles.selectedText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
             {formatDate(value)}
           </Text>
@@ -242,62 +242,62 @@ export const Step1Date: React.FC<Step1DateProps> = ({ value, onChange }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    padding: 16,
     alignItems: 'center',
   },
   icon: {
-    marginTop: 20,
-    marginBottom: 24,
+    marginTop: 8,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 12,
+    fontSize: 20,
+    marginBottom: 6,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
-    marginBottom: 32,
+    fontSize: 13,
+    marginBottom: 16,
     textAlign: 'center',
   },
   calendarContainer: {
     width: '100%',
-    maxWidth: 320,
-    borderRadius: 12,
+    maxWidth: 230,
+    borderRadius: 10,
     borderWidth: 1,
-    padding: 12,
-    marginBottom: 16,
+    padding: 8,
+    marginBottom: 8,
   },
   calendarHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   navButton: {
-    padding: 4,
+    padding: 2,
   },
   monthLabel: {
-    fontSize: 16,
+    fontSize: 13,
   },
   weekRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
   dayLabel: {
-    width: 36,
+    width: 26,
     textAlign: 'center',
-    fontSize: 12,
-    marginBottom: 8,
+    fontSize: 10,
+    marginBottom: 4,
   },
   dayCell: {
-    width: 36,
-    height: 36,
+    width: 26,
+    height: 26,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 2,
+    marginVertical: 1,
   },
   dayText: {
-    fontSize: 14,
+    fontSize: 11,
     textAlign: 'center',
   },
   dateButton: {
@@ -320,13 +320,13 @@ const styles = StyleSheet.create({
   selectedContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginTop: 20,
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    marginTop: 10,
   },
   selectedText: {
-    fontSize: 14,
+    fontSize: 12,
   },
 });
