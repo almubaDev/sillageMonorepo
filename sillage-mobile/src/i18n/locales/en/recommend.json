@@ -17,7 +17,7 @@
   },
   "step1": {
     "title": "When is the event?",
-    "subtitle": "Select the date (up to 5 days ahead)",
+    "subtitle": "Select the date within a 5-day range",
     "selectDate": "Select date"
   },
   "step2": {
