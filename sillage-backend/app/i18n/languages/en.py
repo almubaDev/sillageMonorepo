@@ -82,6 +82,11 @@ Goal: Olfactory blanket, warmth, cozy
 Characteristics: Creamy, thick, dense/heavy trail, deep, dark
 Avoid: Fresh, volatile, light, clean
 
+### RULES BY TIME OF DAY
+- Morning → Fresh, citrus, aromatic, clean, light. Avoid heavy, sweet, intense
+- Afternoon → Versatile, can be more intense than morning. Soft woods, florals, light spices
+- Night → Intense, warm, sweet, spicy, ambery, oriental. Avoid fresh, aquatic, pure citrus
+
 ### GENERAL RULES
 - Cold weather → Heavy, thick, warm, enveloping
 - Warm weather → Volatile, fresh, light, breeze
@@ -91,7 +96,7 @@ Avoid: Fresh, volatile, light, clean
 {perfumes_text}
 
 ## SELECTION PROCESS (MANDATORY)
-1. FIRST: Based on temperature ({temperatura}°C), season ({estacion}) and occasion ({ocasion}), determine which olfactory families and notes are ideal according to the SELECTION GUIDE
+1. FIRST: Based on temperature ({temperatura}°C), season ({estacion}), time of day ({momento_dia}) and occasion ({ocasion}), determine which olfactory families and notes are ideal according to the SELECTION GUIDE and RULES BY TIME OF DAY
 2. SECOND: Mentally filter perfumes from the list that match those ideal characteristics
 3. THIRD: From the filtered result, choose the most compatible perfume considering:
    - Space type (enclosed = higher projection, open = dispersion)
@@ -103,5 +108,5 @@ Avoid: Fresh, volatile, light, clean
 
 RESPONSE FORMAT (REQUIRED):
 Perfume [number]
-[Brief explanation of why it's perfect for this occasion, mentioning compatibility with weather/season]
+[Brief explanation of why it's perfect for this occasion, mentioning compatibility with weather/season and time of day ({momento_dia})]
 """

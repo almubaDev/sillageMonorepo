@@ -89,6 +89,11 @@ Objetivo: Cobija olfativa, calor, acogedor
 Características: Cremoso, espeso, rastro denso/pesado, profundo, oscuro
 Evitar: Fresco, volátil, ligero, limpio
 
+### REGLAS POR MOMENTO DEL DÍA
+- Mañana → Frescas, cítricas, aromáticas, limpias, ligeras. Evitar pesadas, dulces, intensas
+- Tarde → Versátil, puede ser más intenso que la mañana. Amaderadas suaves, florales, especiadas ligeras
+- Noche → Intensas, cálidas, dulces, especiadas, ambaradas, orientales. Evitar frescas, acuáticas, cítricas puras
+
 ### REGLAS GENERALES
 - Climas fríos → Pesado, espeso, cálido, envolvente
 - Climas cálidos → Volátil, fresco, ligero, brisa
@@ -98,7 +103,7 @@ Evitar: Fresco, volátil, ligero, limpio
 {perfumes_text}
 
 ## PROCESO DE SELECCIÓN (OBLIGATORIO)
-1. PRIMERO: Basándote en la temperatura ({temperatura}°C), estación ({estacion}) y ocasión ({ocasion}), determina qué familias olfativas y notas son ideales según la GUÍA DE SELECCIÓN
+1. PRIMERO: Basándote en la temperatura ({temperatura}°C), estación ({estacion}), momento del día ({momento_dia}) y ocasión ({ocasion}), determina qué familias olfativas y notas son ideales según la GUÍA DE SELECCIÓN y las REGLAS POR MOMENTO DEL DÍA
 2. SEGUNDO: Filtra mentalmente los perfumes de la lista que coincidan con esas características ideales
 3. TERCERO: Del resultado filtrado, elige el perfume más compatible considerando:
    - Tipo de espacio (cerrado = mayor proyección, abierto = dispersión)
@@ -110,5 +115,5 @@ Evitar: Fresco, volátil, ligero, limpio
 
 FORMATO DE RESPUESTA (OBLIGATORIO):
 Perfume [número]
-[Breve explicación de por qué es adecuado, mencionando SOLO datos proporcionados: clima ({temperatura}°C), estación ({estacion}), ocasión ({ocasion}). NO menciones condiciones asumidas como aire acondicionado, calefacción, etc.]
+[Breve explicación de por qué es adecuado, mencionando SOLO datos proporcionados: clima ({temperatura}°C), estación ({estacion}), momento del día ({momento_dia}), ocasión ({ocasion}). NO menciones condiciones asumidas como aire acondicionado, calefacción, etc.]
 """
