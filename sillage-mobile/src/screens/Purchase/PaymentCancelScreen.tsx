@@ -22,16 +22,27 @@ export const PaymentCancelScreen = () => {
   // @ts-ignore - customId viene del WebView, ref viene del linking (URL directa)
   const customId = route.params?.customId || route.params?.ref;
 
+  const resetAndNavigate = (tab: string) => {
+    // Primero resetear el ProfileStack para limpiar PaymentCancel
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'ProfileMain' }],
+      })
+    );
+    // Luego navegar al tab deseado
+    setTimeout(() => {
+      // @ts-ignore
+      navigation.navigate(tab);
+    }, 50);
+  };
+
   const handleRetry = () => {
-    // Volver a la pantalla de compra
-    // @ts-ignore
-    navigation.navigate('Purchase');
+    resetAndNavigate('Comprar');
   };
 
   const handleGoBack = () => {
-    // Ir a Colección
-    // @ts-ignore
-    navigation.navigate('Colección');
+    resetAndNavigate('Colección');
   };
 
   return (

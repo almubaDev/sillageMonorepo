@@ -113,13 +113,17 @@ export const PaymentSuccessScreen = () => {
   };
 
   const handleContinue = () => {
-    // Reset del stack para volver a ProfileMain
+    // Resetear ProfileStack y navegar a Colección
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
         routes: [{ name: 'ProfileMain' }],
       })
     );
+    setTimeout(() => {
+      // @ts-ignore
+      navigation.navigate('Colección');
+    }, 50);
   };
 
   const handleRetry = () => {
