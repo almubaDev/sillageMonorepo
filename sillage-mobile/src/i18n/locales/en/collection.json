@@ -19,6 +19,9 @@
     "perfumes": "perfumes",
     "investment": "Investment"
   },
+  "search": {
+    "placeholder": "Search by name, brand, notes..."
+  },
   "card": {
     "ml": "ml",
     "rating": "/10",
