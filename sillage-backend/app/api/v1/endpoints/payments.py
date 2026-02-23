@@ -335,7 +335,7 @@ async def verificar_pago(
         )
 
 
-@router.api_route("/paypal-return", methods=["GET", "POST"], response_class=HTMLResponse)
+@router.api_route("/paypal-return", methods=["GET", "POST"])
 async def paypal_return(
     request: Request,
     ref: str = None,
@@ -345,127 +345,42 @@ async def paypal_return(
 ):
     """
     Endpoint de retorno exitoso de PayPal.
-    PayPal redirige aquí después de un pago exitoso.
-
-    Query Parameters:
-        - ref: custom_id del pago
-        - source: "paypal"
-        - status: "completed"
-
-    Returns:
-        HTML con redirect a la app móvil/web para mostrar éxito
+    Redirige directamente al frontend.
     """
     try:
         # Si viene por POST (rm=2), leer ref del form data
         if request.method == "POST" and not ref:
             form_data = await request.form()
-            ref = ref or form_data.get("custom") or form_data.get("ref")
+            ref = form_data.get("custom") or form_data.get("ref") or ""
             source = source or "paypal"
             status = status or "completed"
 
         logger.info(f"✅ PayPal return | Method: {request.method} | Ref: {ref} | Source: {source} | Status: {status}")
 
-        # Construir URL de redirección al frontend
         frontend_url = str(settings.FRONTEND_URL).rstrip('/')
-        app_url = f"{frontend_url}/payment/success?ref={ref}&source={source or 'paypal'}&status={status or 'completed'}"
+        redirect_url = f"{frontend_url}/payment/success?ref={ref}&source={source or 'paypal'}&status={status or 'completed'}"
 
-        # Retornar HTML con meta refresh y JavaScript redirect para máxima compatibilidad
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <meta http-equiv="refresh" content="0;url={app_url}">
-            <title>Procesando pago...</title>
-            <style>
-                body {{
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                    margin: 0;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                }}
-                .container {{
-                    text-align: center;
-                    padding: 20px;
-                }}
-                .spinner {{
-                    width: 50px;
-                    height: 50px;
-                    border: 5px solid rgba(255,255,255,0.3);
-                    border-top-color: white;
-                    border-radius: 50%;
-                    animation: spin 1s linear infinite;
-                    margin: 20px auto;
-                }}
-                @keyframes spin {{
-                    to {{ transform: rotate(360deg); }}
-                }}
-                h1 {{ margin: 10px 0; font-size: 24px; }}
-                p {{ margin: 5px 0; opacity: 0.9; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="spinner"></div>
-                <h1>¡Pago Exitoso!</h1>
-                <p>Procesando tu compra...</p>
-                <p style="font-size: 14px; margin-top: 20px;">Redirigiendo automáticamente...</p>
-            </div>
-            <script>
-                // JavaScript redirect como respaldo
-                setTimeout(function() {{
-                    window.location.href = '{app_url}';
-                }}, 100);
-            </script>
-        </body>
-        </html>
-        """
-
-        return HTMLResponse(content=html_content)
+        return RedirectResponse(url=redirect_url, status_code=302)
 
     except Exception as e:
         logger.error(f"💥 Error en PayPal return: {str(e)}")
-        # En caso de error, redirigir a la app con error
-        error_url = f"{str(settings.FRONTEND_URL).rstrip('/')}/payment/error?message=Error procesando el retorno de PayPal"
-        return HTMLResponse(content=f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta http-equiv="refresh" content="0;url={error_url}">
-        </head>
-        <body>
-            <p>Redirigiendo...</p>
-            <script>window.location.href = '{error_url}';</script>
-        </body>
-        </html>
-        """)
+        frontend_url = str(settings.FRONTEND_URL).rstrip('/')
+        return RedirectResponse(url=f"{frontend_url}/payment/error", status_code=302)
 
 
-@router.get("/paypal-cancel", response_class=HTMLResponse)
+@router.get("/paypal-cancel")
 async def paypal_cancel(
     ref: str,
     db: AsyncSession = Depends(get_db)
 ):
     """
     Endpoint de cancelación de PayPal.
-    PayPal redirige aquí cuando el usuario cancela el pago.
-
-    Query Parameters:
-        - ref: custom_id del pago
-
-    Returns:
-        HTML con redirect a la app móvil/web para mostrar cancelación
+    Redirige directamente al frontend.
     """
     try:
         logger.info(f"❌ PayPal cancel | Ref: {ref}")
 
-        # Opcional: Actualizar el estado del pago a "cancelado"
+        # Actualizar el estado del pago a "cancelado"
         try:
             result = await db.execute(
                 select(PagoConsultas).where(PagoConsultas.custom_id == ref)
@@ -484,80 +399,16 @@ async def paypal_cancel(
         except Exception as db_error:
             logger.error(f"Error actualizando pago cancelado: {db_error}")
             await db.rollback()
-            # Continuar con la redirección aunque falle la actualización
 
-        # Construir URL de redirección al frontend
         frontend_url = str(settings.FRONTEND_URL).rstrip('/')
-        app_url = f"{frontend_url}/payment/cancel?ref={ref}"
+        redirect_url = f"{frontend_url}/payment/cancel?ref={ref}"
 
-        # Retornar HTML con meta refresh y JavaScript redirect
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <meta http-equiv="refresh" content="0;url={app_url}">
-            <title>Pago cancelado</title>
-            <style>
-                body {{
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                    margin: 0;
-                    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                    color: white;
-                }}
-                .container {{
-                    text-align: center;
-                    padding: 20px;
-                }}
-                .icon {{
-                    font-size: 60px;
-                    margin: 20px auto;
-                }}
-                h1 {{ margin: 10px 0; font-size: 24px; }}
-                p {{ margin: 5px 0; opacity: 0.9; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="icon">✕</div>
-                <h1>Pago Cancelado</h1>
-                <p>Has cancelado el proceso de pago</p>
-                <p style="font-size: 14px; margin-top: 20px;">Redirigiendo a la aplicación...</p>
-            </div>
-            <script>
-                // JavaScript redirect como respaldo
-                setTimeout(function() {{
-                    window.location.href = '{app_url}';
-                }}, 100);
-            </script>
-        </body>
-        </html>
-        """
-
-        return HTMLResponse(content=html_content)
+        return RedirectResponse(url=redirect_url, status_code=302)
 
     except Exception as e:
         logger.error(f"💥 Error en PayPal cancel: {str(e)}")
-        # En caso de error, redirigir a la app con mensaje genérico
-        cancel_url = f"{str(settings.FRONTEND_URL).rstrip('/')}/payment/cancel?ref={ref or 'unknown'}"
-        return HTMLResponse(content=f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta http-equiv="refresh" content="0;url={cancel_url}">
-        </head>
-        <body>
-            <p>Redirigiendo...</p>
-            <script>window.location.href = '{cancel_url}';</script>
-        </body>
-        </html>
-        """)
+        frontend_url = str(settings.FRONTEND_URL).rstrip('/')
+        return RedirectResponse(url=f"{frontend_url}/payment/cancel?ref={ref or 'unknown'}", status_code=302)
 
 
 @router.get("/mis-consultas", response_model=Dict[str, Any])
