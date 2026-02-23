@@ -80,7 +80,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
           </Text>
 
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: colors.accent }]}
+            style={[styles.button, { backgroundColor: colors.accent, width: '100%' }]}
             onPress={() => navigation.navigate('Login')}
           >
             <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
@@ -197,7 +197,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    paddingVertical: 32,
+    paddingHorizontal: 40,
     maxWidth: 500,
     width: '100%',
     alignSelf: 'center',
