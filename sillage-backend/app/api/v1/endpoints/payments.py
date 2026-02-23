@@ -1,7 +1,7 @@
 """
 Endpoints para sistema de pagos con PayPal
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -218,7 +218,7 @@ async def generar_pago(
 async def verificar_pago(
     ref: str,  # custom_id
     source: str = None,  # "paypal"
-    status_param: str = None,  # "completed"
+    status_param: str = Query(None, alias="status"),  # "completed"
     db: AsyncSession = Depends(get_db)
 ):
     """
