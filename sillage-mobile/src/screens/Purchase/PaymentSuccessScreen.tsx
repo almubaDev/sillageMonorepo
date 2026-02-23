@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { paymentService, VerificarPagoResponse } from '../../services/paymentService';
@@ -113,9 +113,13 @@ export const PaymentSuccessScreen = () => {
   };
 
   const handleContinue = () => {
-    // Navegar de vuelta a la pantalla principal
-    // @ts-ignore
-    navigation.navigate('Perfil');
+    // Reset del stack para volver a ProfileMain
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'ProfileMain' }],
+      })
+    );
   };
 
   const handleRetry = () => {

@@ -8,7 +8,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -29,9 +29,13 @@ export const PaymentCancelScreen = () => {
   };
 
   const handleGoBack = () => {
-    // Volver al perfil
-    // @ts-ignore
-    navigation.navigate('Perfil');
+    // Reset del stack para volver a ProfileMain
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'ProfileMain' }],
+      })
+    );
   };
 
   return (
