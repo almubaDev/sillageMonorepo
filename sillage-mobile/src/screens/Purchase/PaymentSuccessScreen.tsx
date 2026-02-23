@@ -22,8 +22,8 @@ export const PaymentSuccessScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // @ts-ignore
-  const customId = route.params?.customId;
+  // @ts-ignore - customId viene del WebView, ref viene del linking (URL directa)
+  const customId = route.params?.customId || route.params?.ref;
 
   const [status, setStatus] = useState<'verifying' | 'completed' | 'error'>('verifying');
   const [paymentData, setPaymentData] = useState<VerificarPagoResponse | null>(null);

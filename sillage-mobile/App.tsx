@@ -56,6 +56,24 @@ function AppContent() {
             email: (email: string) => decodeURIComponent(email),
           },
         },
+        Perfil: {
+          screens: {
+            PaymentSuccess: {
+              path: 'payment/success',
+              parse: {
+                ref: (ref: string) => ref,
+                source: (source: string) => source,
+                status: (status: string) => status,
+              },
+            },
+            PaymentCancel: {
+              path: 'payment/cancel',
+              parse: {
+                ref: (ref: string) => ref,
+              },
+            },
+          },
+        },
       },
     },
   };

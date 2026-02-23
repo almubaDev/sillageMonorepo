@@ -19,8 +19,8 @@ export const PaymentCancelScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // @ts-ignore
-  const customId = route.params?.customId;
+  // @ts-ignore - customId viene del WebView, ref viene del linking (URL directa)
+  const customId = route.params?.customId || route.params?.ref;
 
   const handleRetry = () => {
     // Volver a la pantalla de compra

@@ -360,7 +360,8 @@ async def paypal_return(
         # Construir URL de redirección a la app
         # Para mobile WebView, detectará esta URL en onNavigationStateChange
         # Para web, redirigirá a la página de éxito
-        app_url = f"/payment/success?ref={ref}&source={source or 'paypal'}&status={status or 'completed'}"
+        frontend_url = str(settings.FRONTEND_URL).rstrip('/')
+        app_url = f"{frontend_url}/payment/success?ref={ref}&source={source or 'paypal'}&status={status or 'completed'}"
 
         # Retornar HTML con meta refresh y JavaScript redirect para máxima compatibilidad
         html_content = f"""
@@ -425,7 +426,7 @@ async def paypal_return(
     except Exception as e:
         logger.error(f"💥 Error en PayPal return: {str(e)}")
         # En caso de error, redirigir a la app con error
-        error_url = f"/payment/error?message=Error procesando el retorno de PayPal"
+        error_url = f"{str(settings.FRONTEND_URL).rstrip('/')}/payment/error?message=Error procesando el retorno de PayPal"
         return HTMLResponse(content=f"""
         <!DOCTYPE html>
         <html>
@@ -479,8 +480,9 @@ async def paypal_cancel(
             await db.rollback()
             # Continuar con la redirección aunque falle la actualización
 
-        # Construir URL de redirección a la app
-        app_url = f"/payment/cancel?ref={ref}"
+        # Construir URL de redirección al frontend
+        frontend_url = str(settings.FRONTEND_URL).rstrip('/')
+        app_url = f"{frontend_url}/payment/cancel?ref={ref}"
 
         # Retornar HTML con meta refresh y JavaScript redirect
         html_content = f"""
@@ -537,7 +539,7 @@ async def paypal_cancel(
     except Exception as e:
         logger.error(f"💥 Error en PayPal cancel: {str(e)}")
         # En caso de error, redirigir a la app con mensaje genérico
-        cancel_url = f"/payment/cancel?ref={ref or 'unknown'}"
+        cancel_url = f"{str(settings.FRONTEND_URL).rstrip('/')}/payment/cancel?ref={ref or 'unknown'}"
         return HTMLResponse(content=f"""
         <!DOCTYPE html>
         <html>
