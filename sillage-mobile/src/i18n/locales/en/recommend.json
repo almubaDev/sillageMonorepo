@@ -16,7 +16,7 @@
   "loading": {
     "title": "Generating your recommendation",
     "checkingWeather": "Checking weather...",
-    "analyzingAI": "Analyzing with AI...",
+    "analyzingAI": "Analyzing collection...",
     "selectingPerfume": "Selecting the perfect perfume..."
   },
   "error": {

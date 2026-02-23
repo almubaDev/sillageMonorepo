@@ -108,7 +108,8 @@ async def create_recommendation(
                     "marca": perfume.marca,
                     "perfumistas": perfume.perfumistas or [],
                     "notas": perfume.notas or [],
-                    "acordes": perfume.acordes or []
+                    "acordes": perfume.acordes or [],
+                    "imagen": perfume.imagen or ""
                 }
         
         return response_dict
@@ -175,7 +176,8 @@ async def get_recommendation_history(
                     "marca": perfume.marca,
                     "perfumistas": perfume.perfumistas or [],
                     "notas": perfume.notas or [],
-                    "acordes": perfume.acordes or []
+                    "acordes": perfume.acordes or [],
+                    "imagen": perfume.imagen or ""
                 }
 
         response_list.append(rec_dict)

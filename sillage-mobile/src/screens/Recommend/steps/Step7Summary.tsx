@@ -60,19 +60,19 @@ export const Step7Summary: React.FC<Step7SummaryProps> = ({ data, onEdit }) => {
       step: 4,
       icon: 'calendar-star',
       label: t('recommend:step7.fields.occasion'),
-      value: data.ocasion || t('recommend:step7.notDefined'),
+      value: data.ocasion ? data.ocasion.charAt(0).toUpperCase() + data.ocasion.slice(1) : t('recommend:step7.notDefined'),
     },
     {
       step: 5,
       icon: 'emoticon-happy',
       label: t('recommend:step7.fields.expectation'),
-      value: data.expectativa || t('recommend:step7.notDefined'),
+      value: data.expectativa ? data.expectativa.charAt(0).toUpperCase() + data.expectativa.slice(1) : t('recommend:step7.notDefined'),
     },
     {
       step: 6,
       icon: 'tshirt-crew',
       label: t('recommend:step7.fields.clothing'),
-      value: data.vestimenta || t('recommend:step7.notDefined'),
+      value: data.vestimenta ? data.vestimenta.charAt(0).toUpperCase() + data.vestimenta.slice(1) : t('recommend:step7.notDefined'),
     },
   ];
 
