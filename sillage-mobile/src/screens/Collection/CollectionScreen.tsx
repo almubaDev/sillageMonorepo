@@ -185,59 +185,41 @@ export const CollectionScreen = () => {
   }
 
   const renderHeader = () => (
-    <View>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={[styles.headerTitle, { color: colors.accent, fontFamily: 'AlanSans-Bold' }]}>
-            {stats?.nombre || t('collection:title')}
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <Text style={[styles.headerTitle, { color: colors.accent, fontFamily: 'AlanSans-Bold' }]}>
+          {stats?.nombre || t('collection:title')}
+        </Text>
+        <View style={styles.headerStats}>
+          <Text style={[styles.headerStat, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            {stats?.perfumes_count || 0} {t('collection:header.perfumes')}
           </Text>
-          <View style={styles.headerStats}>
-            <Text style={[styles.headerStat, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-              {stats?.perfumes_count || 0} {t('collection:header.perfumes')}
-            </Text>
-            <Text style={[styles.headerStat, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
-              {t('collection:header.investment')} {formatInversion(stats?.inversion_total || 0)}
-            </Text>
-          </View>
-        </View>
-        <View style={styles.headerButtons}>
-          {/* BOTON IMPORTAR - Descomentar para activar
-          <TouchableOpacity
-            style={[styles.importButton, { borderColor: colors.accent }]}
-            onPress={() => setImportModalVisible(true)}
-          >
-            <MaterialCommunityIcons name="database-import-outline" size={20} color={colors.accent} />
-            <Text style={[styles.addButtonText, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
-              {t('collection:import.button')}
-            </Text>
-          </TouchableOpacity>
-          */}
-          <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: colors.accent }]}
-            onPress={() => navigation.navigate('AddEditPerfume')}
-          >
-            <MaterialCommunityIcons name="plus" size={20} color={colors.bg} />
-            <Text style={[styles.addButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-              {t('collection:form.addTitle')}
-            </Text>
-          </TouchableOpacity>
+          <Text style={[styles.headerStat, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            {t('collection:header.investment')} {formatInversion(stats?.inversion_total || 0)}
+          </Text>
         </View>
       </View>
-      <View style={[styles.searchContainer, { backgroundColor: colors.bg, borderColor: colors.accent + '40' }]}>
-        <MaterialCommunityIcons name="magnify" size={20} color={colors.secondary} />
-        <TextInput
-          style={[styles.searchInput, { color: colors.text, fontFamily: 'Lato-Regular' }]}
-          placeholder={t('collection:search.placeholder')}
-          placeholderTextColor={colors.secondary}
-          value={searchText}
-          onChangeText={setSearchText}
-          autoCorrect={false}
-        />
-        {searchText.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchText('')}>
-            <MaterialCommunityIcons name="close-circle" size={18} color={colors.secondary} />
-          </TouchableOpacity>
-        )}
+      <View style={styles.headerButtons}>
+        {/* BOTON IMPORTAR - Descomentar para activar
+        <TouchableOpacity
+          style={[styles.importButton, { borderColor: colors.accent }]}
+          onPress={() => setImportModalVisible(true)}
+        >
+          <MaterialCommunityIcons name="database-import-outline" size={20} color={colors.accent} />
+          <Text style={[styles.addButtonText, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
+            {t('collection:import.button')}
+          </Text>
+        </TouchableOpacity>
+        */}
+        <TouchableOpacity
+          style={[styles.addButton, { backgroundColor: colors.accent }]}
+          onPress={() => navigation.navigate('AddEditPerfume')}
+        >
+          <MaterialCommunityIcons name="plus" size={20} color={colors.bg} />
+          <Text style={[styles.addButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
+            {t('collection:form.addTitle')}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -259,6 +241,24 @@ export const CollectionScreen = () => {
         </View>
       ) : (
         <View style={[styles.listContainer, isDesktop && styles.listContainerDesktop]}>
+          <View style={styles.searchWrapper}>
+            <View style={[styles.searchContainer, { backgroundColor: colors.bg, borderColor: colors.accent + '40' }]}>
+              <MaterialCommunityIcons name="magnify" size={20} color={colors.secondary} />
+              <TextInput
+                style={[styles.searchInput, { color: colors.text, fontFamily: 'Lato-Regular' }]}
+                placeholder={t('collection:search.placeholder')}
+                placeholderTextColor={colors.secondary}
+                value={searchText}
+                onChangeText={setSearchText}
+                autoCorrect={false}
+              />
+              {searchText.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchText('')}>
+                  <MaterialCommunityIcons name="close-circle" size={18} color={colors.secondary} />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
           <FlatList
             data={filteredPerfumes}
             keyExtractor={(item) => item.id.toString()}
@@ -403,6 +403,10 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 14,
   },
+  searchWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -411,13 +415,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
-    marginBottom: 12,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
     padding: 0,
-  },
+    outlineStyle: 'none',
+  } as any,
   listContainer: {
     flex: 1,
     alignSelf: 'center',
