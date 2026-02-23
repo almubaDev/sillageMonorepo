@@ -5,7 +5,7 @@ from pydantic import PostgresDsn, RedisDsn
 
 class Settings(BaseSettings):
     # Environment
-    ENVIRONMENT: str = "local"
+    ENVIRONMENT: str = "production"
     
     # Database
     DATABASE_URL: PostgresDsn
