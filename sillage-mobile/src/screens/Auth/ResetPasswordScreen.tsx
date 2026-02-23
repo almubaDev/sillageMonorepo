@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -34,6 +33,7 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   // Si no hay token o email, mostrar error
   if (!token || !email) {
@@ -63,6 +63,32 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
           >
             <MaterialCommunityIcons name="arrow-left" size={18} color={colors.accent} />
             <Text style={[styles.backToLoginText, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
+              {t('auth:forgotPassword.backToLogin')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  if (success) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.bg }]}>
+        <View style={styles.errorContent}>
+          <View style={[styles.iconContainer, { backgroundColor: '#10B98120' }]}>
+            <MaterialCommunityIcons name="check-circle" size={64} color="#10B981" />
+          </View>
+          <Text style={[styles.title, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+            {t('auth:resetPassword.success.title')}
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.secondary, fontFamily: 'Lato-Regular' }]}>
+            {t('auth:resetPassword.success.message')}
+          </Text>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: colors.accent }]}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={[styles.buttonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
               {t('auth:forgotPassword.backToLogin')}
             </Text>
           </TouchableOpacity>
@@ -104,39 +130,11 @@ export const ResetPasswordScreen: React.FC<Props> = ({ navigation, route }) => {
     try {
       setLoading(true);
       await authService.resetPassword(email, token, newPassword);
-
-      Alert.alert(
-        t('auth:resetPassword.success.title'),
-        t('auth:resetPassword.success.message'),
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('Login'),
-          },
-        ]
-      );
+      setSuccess(true);
     } catch (error: any) {
       console.error('Error restableciendo contraseña:', error);
-
       const errorMessage = error.response?.data?.detail || t('auth:resetPassword.errors.resetFailed');
-
-      if (errorMessage.toLowerCase().includes('expirado') || errorMessage.toLowerCase().includes('expired')) {
-        Alert.alert(
-          t('auth:resetPassword.errors.title'),
-          t('auth:resetPassword.errors.linkExpired'),
-          [
-            {
-              text: t('auth:resetPassword.requestNewLink'),
-              onPress: () => navigation.navigate('ForgotPassword'),
-            },
-          ]
-        );
-      } else {
-        Alert.alert(
-          t('auth:resetPassword.errors.title'),
-          errorMessage
-        );
-      }
+      setPasswordError(errorMessage);
     } finally {
       setLoading(false);
     }
