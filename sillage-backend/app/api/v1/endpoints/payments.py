@@ -335,9 +335,10 @@ async def verificar_pago(
         )
 
 
-@router.get("/paypal-return", response_class=HTMLResponse)
+@router.api_route("/paypal-return", methods=["GET", "POST"], response_class=HTMLResponse)
 async def paypal_return(
-    ref: str,
+    request: Request,
+    ref: str = None,
     source: str = None,
     status: str = None,
     db: AsyncSession = Depends(get_db)
@@ -355,11 +356,16 @@ async def paypal_return(
         HTML con redirect a la app móvil/web para mostrar éxito
     """
     try:
-        logger.info(f"✅ PayPal return | Ref: {ref} | Source: {source} | Status: {status}")
+        # Si viene por POST (rm=2), leer ref del form data
+        if request.method == "POST" and not ref:
+            form_data = await request.form()
+            ref = ref or form_data.get("custom") or form_data.get("ref")
+            source = source or "paypal"
+            status = status or "completed"
 
-        # Construir URL de redirección a la app
-        # Para mobile WebView, detectará esta URL en onNavigationStateChange
-        # Para web, redirigirá a la página de éxito
+        logger.info(f"✅ PayPal return | Method: {request.method} | Ref: {ref} | Source: {source} | Status: {status}")
+
+        # Construir URL de redirección al frontend
         frontend_url = str(settings.FRONTEND_URL).rstrip('/')
         app_url = f"{frontend_url}/payment/success?ref={ref}&source={source or 'paypal'}&status={status or 'completed'}"
 
