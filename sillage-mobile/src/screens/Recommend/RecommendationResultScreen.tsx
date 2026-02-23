@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
   useWindowDimensions,
   Platform,
 } from 'react-native';
@@ -138,9 +139,17 @@ export const RecommendationResultScreen: React.FC<Props> = ({ navigation, route 
           backgroundColor: colors.accent + '15',
           borderColor: colors.accent
         }]}>
-          <View style={styles.perfumeIcon}>
-            <MaterialCommunityIcons name="bottle-tonic-plus" size={48} color={colors.accent} />
-          </View>
+          {recommendation.perfume_recomendado.imagen ? (
+            <Image
+              source={{ uri: recommendation.perfume_recomendado.imagen }}
+              style={styles.perfumeImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={styles.perfumeIcon}>
+              <MaterialCommunityIcons name="bottle-tonic-plus" size={48} color={colors.accent} />
+            </View>
+          )}
           
           <Text style={[styles.perfumeName, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
             {formatPerfumeName(recommendation.perfume_recomendado.nombre)}
@@ -379,6 +388,12 @@ const styles = StyleSheet.create({
     padding: 30,
     alignItems: 'center',
     marginBottom: 24,
+  },
+  perfumeImage: {
+    width: 120,
+    height: 160,
+    marginBottom: 16,
+    borderRadius: 12,
   },
   perfumeIcon: {
     marginBottom: 16,

@@ -49,6 +49,7 @@ class PerfumeRecomendado(BaseModel):
     perfumistas: Optional[List[str]] = None
     notas: Optional[List[str]] = None
     acordes: Optional[List[str]] = None
+    imagen: Optional[str] = None
 
     class Config:
         from_attributes = True

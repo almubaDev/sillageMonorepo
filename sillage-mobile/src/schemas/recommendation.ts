@@ -20,6 +20,7 @@ export interface PerfumeRecomendado {
   perfumistas?: string[];
   notas: string[];
   acordes: string[];
+  imagen?: string;
 }
 
 export interface RecommendationResponse {
