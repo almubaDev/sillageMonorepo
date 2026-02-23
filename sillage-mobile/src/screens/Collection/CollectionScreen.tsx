@@ -15,7 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { ColeccionPerfumeCard } from '../../components/ColeccionPerfumeCard';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { coleccionService, ColeccionStats, PerfumeColeccionData } from '../../services/coleccionService';
+import { coleccionService, ColeccionStats, PerfumeColeccionData, ImportPerfumeItem } from '../../services/coleccionService';
+import coleccionData from '../../data/coleccion_data.json';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useLanguageChange } from '../../hooks/useLanguageChange';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -42,6 +43,7 @@ export const CollectionScreen = () => {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [perfumeToDelete, setPerfumeToDelete] = useState<PerfumeColeccionData | null>(null);
+  const [importModalVisible, setImportModalVisible] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -113,6 +115,24 @@ export const CollectionScreen = () => {
     }
   };
 
+  const handleImport = async () => {
+    try {
+      const perfumes = coleccionData.perfumes as unknown as ImportPerfumeItem[];
+      const result = await coleccionService.importPerfumes(perfumes);
+      setImportModalVisible(false);
+      Alert.alert(
+        t('collection:import.success'),
+        t('collection:import.successMessage', { count: result.imported })
+      );
+      await loadData();
+    } catch (error: any) {
+      Alert.alert(
+        t('collection:error.title'),
+        error.response?.data?.detail || t('collection:import.failed')
+      );
+    }
+  };
+
   const formatInversion = (value: number) => {
     return `$${Number(value).toLocaleString('es-CL')}`;
   };
@@ -165,15 +185,26 @@ export const CollectionScreen = () => {
           </Text>
         </View>
       </View>
-      <TouchableOpacity
-        style={[styles.addButton, { backgroundColor: colors.accent }]}
-        onPress={() => navigation.navigate('AddEditPerfume')}
-      >
-        <MaterialCommunityIcons name="plus" size={20} color={colors.bg} />
-        <Text style={[styles.addButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-          {t('collection:form.addTitle')}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.headerButtons}>
+        <TouchableOpacity
+          style={[styles.importButton, { borderColor: colors.accent }]}
+          onPress={() => setImportModalVisible(true)}
+        >
+          <MaterialCommunityIcons name="database-import-outline" size={20} color={colors.accent} />
+          <Text style={[styles.addButtonText, { color: colors.accent, fontFamily: 'Lato-Bold' }]}>
+            {t('collection:import.button')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.addButton, { backgroundColor: colors.accent }]}
+          onPress={() => navigation.navigate('AddEditPerfume')}
+        >
+          <MaterialCommunityIcons name="plus" size={20} color={colors.bg} />
+          <Text style={[styles.addButtonText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
+            {t('collection:form.addTitle')}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -247,6 +278,17 @@ export const CollectionScreen = () => {
         }}
       />
 
+      <ConfirmModal
+        visible={importModalVisible}
+        title={t('collection:import.title')}
+        message={t('collection:import.message')}
+        confirmText={t('collection:import.confirm')}
+        cancelText={t('collection:delete.cancel')}
+        type="info"
+        onConfirm={handleImport}
+        onCancel={() => setImportModalVisible(false)}
+      />
+
     </View>
   );
 };
@@ -302,6 +344,19 @@ const styles = StyleSheet.create({
   },
   headerStat: {
     fontSize: 13,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  importButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   addButton: {
     flexDirection: 'row',
