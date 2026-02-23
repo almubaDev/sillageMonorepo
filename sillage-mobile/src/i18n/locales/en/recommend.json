@@ -6,7 +6,10 @@
     "subtitle": "Find the perfect perfume for every occasion with the help of artificial intelligence",
     "queriesRemaining": "{{count}} queries available",
     "newConsultation": "New Consultation",
-    "viewHistory": "View History"
+    "viewHistory": "View History",
+    "minPerfumesTitle": "Complete your collection",
+    "minPerfumesDesc": "You need at least 2 perfumes with accords and notes registered to get recommendations. You currently have {{current}} valid perfume(s).",
+    "goToCollection": "Go to my collection"
   },
   "navigation": {
     "back": "Back",

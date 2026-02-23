@@ -6,7 +6,10 @@
     "subtitle": "Encuentra el perfume perfecto para cada ocasión con ayuda de inteligencia artificial",
     "queriesRemaining": "{{count}} consultas disponibles",
     "newConsultation": "Nueva Consulta",
-    "viewHistory": "Ver Historial"
+    "viewHistory": "Ver Historial",
+    "minPerfumesTitle": "Completa tu colección",
+    "minPerfumesDesc": "Necesitas al menos 2 perfumes con acordes y notas registradas para obtener recomendaciones. Actualmente tienes {{current}} perfume(s) válido(s).",
+    "goToCollection": "Ir a mi colección"
   },
   "navigation": {
     "back": "Atrás",
