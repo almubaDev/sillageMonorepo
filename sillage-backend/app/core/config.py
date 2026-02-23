@@ -61,7 +61,7 @@ class Settings(BaseSettings):
 
     # URLs
     BACKEND_URL: str = "http://localhost:8000"
-    FRONTEND_URL: str = "http://localhost:8081"
+    FRONTEND_URL: str = "https://www.sillage.pro"
 
     @property
     def PAYPAL_URL(self) -> str:
