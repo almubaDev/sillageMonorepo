@@ -64,7 +64,7 @@ async def register(
         is_active=True,
         is_verified=False,
         suscrito=False,
-        consultas_restantes=0
+        consultas_restantes=1  # Consulta de bienvenida gratis
     )
 
     db.add(db_user)

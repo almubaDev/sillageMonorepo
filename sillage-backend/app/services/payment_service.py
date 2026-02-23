@@ -160,9 +160,25 @@ class PaymentService:
             pago.estado = 'completado'
             await db.flush()
 
-            # PASO 2: Agregar consultas al usuario
+            # PASO 2: Agregar consultas al usuario (doble si es primera compra)
             consultas_antes = pago.user.consultas_restantes
-            consultas_a_agregar = pago.paquete_consultas.cantidad_consultas
+            consultas_base = pago.paquete_consultas.cantidad_consultas
+
+            # Verificar si es la primera compra del usuario
+            result_compras_previas = await db.execute(
+                select(TransaccionConsultas)
+                .where(
+                    TransaccionConsultas.user_id == pago.user_id,
+                    TransaccionConsultas.tipo == 'compra'
+                )
+            )
+            es_primera_compra = result_compras_previas.first() is None
+
+            if es_primera_compra:
+                consultas_a_agregar = consultas_base * 2
+                logger.info(f"🎁 Primera compra de usuario {pago.user.email}: {consultas_base} x2 = {consultas_a_agregar} consultas")
+            else:
+                consultas_a_agregar = consultas_base
 
             # Actualizar usando UPDATE directo (más confiable)
             await db.execute(
@@ -187,11 +203,15 @@ class PaymentService:
             transaccion_existente = result_transaccion.scalar_one_or_none()
 
             if not transaccion_existente:
+                descripcion_compra = f'Compra de {pago.paquete_consultas.nombre} vía {pago.metodo_pago} - Ref: {pago.custom_id}'
+                if es_primera_compra:
+                    descripcion_compra += f' (primera compra: x2 bonus)'
+
                 nueva_transaccion = TransaccionConsultas(
                     user_id=pago.user_id,
                     tipo='compra',
                     cantidad=consultas_a_agregar,
-                    descripcion=f'Compra de {pago.paquete_consultas.nombre} vía {pago.metodo_pago} - Ref: {pago.custom_id}',
+                    descripcion=descripcion_compra,
                     paquete_consultas_id=pago.paquete_consultas_id
                 )
                 db.add(nueva_transaccion)
