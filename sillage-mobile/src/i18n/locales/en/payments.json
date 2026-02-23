@@ -43,7 +43,7 @@
     "infoText": "The payment was not completed. No charges were made to your account. You can try again when you're ready.",
     "reference": "Transaction reference",
     "retry": "Try again",
-    "goBack": "Back to profile"
+    "goBack": "Go to collection"
   },
   "errors": {
     "title": "Payment Error",

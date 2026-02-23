@@ -29,13 +29,9 @@ export const PaymentCancelScreen = () => {
   };
 
   const handleGoBack = () => {
-    // Reset del stack para volver a ProfileMain
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'ProfileMain' }],
-      })
-    );
+    // Ir a Colección
+    // @ts-ignore
+    navigation.navigate('Colección');
   };
 
   return (

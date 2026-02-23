@@ -43,7 +43,7 @@
     "infoText": "El pago no se completó. No se realizó ningún cargo a tu cuenta. Puedes intentar nuevamente cuando estés listo.",
     "reference": "Referencia de transacción",
     "retry": "Intentar nuevamente",
-    "goBack": "Volver al perfil"
+    "goBack": "Ir a colección"
   },
   "errors": {
     "title": "Error en el Pago",
