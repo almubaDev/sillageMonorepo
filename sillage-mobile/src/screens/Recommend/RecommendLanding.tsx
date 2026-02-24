@@ -14,13 +14,14 @@ interface Props {
 export const RecommendLanding: React.FC<Props> = ({ navigation }) => {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { user } = useAuthContext();
+  const { user, refreshUser } = useAuthContext();
   const [loading, setLoading] = useState(true);
   const [validPerfumes, setValidPerfumes] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       checkCollection();
+      refreshUser();
     }, [])
   );
 

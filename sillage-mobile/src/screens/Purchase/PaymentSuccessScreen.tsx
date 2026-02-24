@@ -15,12 +15,14 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../theme/ThemeProvider';
 import { paymentService, VerificarPagoResponse } from '../../services/paymentService';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAuthContext } from '../../utils/AuthContext';
 
 export const PaymentSuccessScreen = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation();
   const route = useRoute();
+  const { refreshUser } = useAuthContext();
 
   // @ts-ignore - customId viene del WebView, ref viene del linking (URL directa)
   const customId = route.params?.customId || route.params?.ref;
@@ -54,6 +56,7 @@ export const PaymentSuccessScreen = () => {
         // console.log('✅ Pago completado exitosamente');
         setPaymentData(response);
         setStatus('completed');
+        refreshUser();
 
         // Animar el check
         Animated.parallel([
