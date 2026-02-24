@@ -169,8 +169,8 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       // console.log('❌ Validación fallida: código vacío');
       setCouponMessage({
         type: 'error',
-        title: 'Error',
-        message: 'Por favor ingresa un código de cupón'
+        title: t('profile:password.error'),
+        message: t('profile:coupon.emptyCode')
       });
       return;
     }
@@ -189,8 +189,8 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       // Mostrar mensaje de éxito
       setCouponMessage({
         type: 'success',
-        title: '¡Felicidades!',
-        message: `Tienes ${result.consultations_added} consultas nuevas para utilizar.\n\nTotal disponible: ${result.new_total} consultas`
+        title: t('profile:coupon.successTitle'),
+        message: t('profile:coupon.successMessage', { added: result.consultations_added, total: result.new_total })
       });
 
       // Limpiar código
@@ -200,21 +200,21 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       console.error('Error response:', error.response?.data);
       console.error('Error message:', error.message);
 
-      const errorDetail = error.response?.data?.detail || error.message || 'No se pudo canjear el cupón';
+      const errorDetail = error.response?.data?.detail || error.message || t('profile:deleteAccount.failed');
 
       // Mensajes personalizados según el error
-      let title = 'Error';
+      let title = t('profile:password.error');
       let message = errorDetail;
 
-      if (errorDetail.includes('ya fue utilizado') || errorDetail.includes('Ya has utilizado')) {
-        title = 'Cupón ya utilizado';
-        message = 'Este cupón ya fue canjeado anteriormente.';
-      } else if (errorDetail.includes('ha expirado')) {
-        title = 'Cupón expirado';
-        message = 'Este cupón ha caducado y ya no es válido. Por favor verifica la fecha de expiración.';
-      } else if (errorDetail.includes('no encontrado')) {
-        title = 'Cupón no encontrado';
-        message = 'El código ingresado no existe. Verifica que esté escrito correctamente.';
+      if (errorDetail.includes('ya fue utilizado') || errorDetail.includes('Ya has utilizado') || errorDetail.includes('already')) {
+        title = t('profile:coupon.alreadyUsedTitle');
+        message = t('profile:coupon.alreadyUsedMessage');
+      } else if (errorDetail.includes('ha expirado') || errorDetail.includes('expired')) {
+        title = t('profile:coupon.expiredTitle');
+        message = t('profile:coupon.expiredMessage');
+      } else if (errorDetail.includes('no encontrado') || errorDetail.includes('not found')) {
+        title = t('profile:coupon.notFoundTitle');
+        message = t('profile:coupon.notFoundMessage');
       }
 
       // Mostrar mensaje de error en la interfaz
@@ -243,13 +243,13 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     // Validaciones
     if (!deleteEmail || !deletePassword) {
       // console.log('❌ Validación fallida: campos vacíos');
-      setDeleteAccountError('Por favor ingresa tu email y contraseña para confirmar');
+      setDeleteAccountError(t('profile:deleteAccount.emptyFields'));
       return;
     }
 
     if (deleteEmail !== user?.email) {
       // console.log('❌ Validación fallida: email no coincide');
-      setDeleteAccountError(`El email ingresado no coincide con el de tu cuenta (${user?.email})`);
+      setDeleteAccountError(t('profile:deleteAccount.emailMismatch', { email: user?.email }));
       return;
     }
 
@@ -279,7 +279,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       console.error('Error completo:', JSON.stringify(error, null, 2));
       console.error('Response:', error.response?.data);
 
-      const errorMessage = error.response?.data?.detail || error.message || 'No se pudo eliminar la cuenta';
+      const errorMessage = error.response?.data?.detail || error.message || t('profile:deleteAccount.failed');
 
       setDeleteAccountError(errorMessage);
       setShowDeleteConfirmation(false);
@@ -341,7 +341,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         >
           <MaterialCommunityIcons name="ticket-percent" size={22} color="#FFFFFF" />
           <Text style={[styles.buttonText, { color: '#FFFFFF', fontFamily: 'Lato-Bold' }]}>
-            Canjear Cupón
+            {t('profile:coupon.title')}
           </Text>
         </TouchableOpacity>
 
@@ -361,7 +361,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         >
           <MaterialCommunityIcons name="delete-forever" size={22} color="#EF4444" />
           <Text style={[styles.buttonText, { color: '#EF4444', fontFamily: 'Lato-Bold' }]}>
-            Eliminar Cuenta
+            {t('profile:deleteAccount.button')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -622,10 +622,10 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <Text style={[styles.modalTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
-                Canjear Cupón
+                {t('profile:coupon.title')}
               </Text>
               <Text style={[styles.modalSubtitle, { color: colors.secondary, fontFamily: 'Lato-Regular', marginBottom: 20 }]}>
-                Ingresa tu código de cupón para obtener consultas gratuitas
+                {t('profile:coupon.subtitle')}
               </Text>
 
               {/* Mensaje de resultado */}
@@ -660,7 +660,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               {/* Input de código */}
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-                  Código de cupón
+                  {t('profile:coupon.codeLabel')}
                 </Text>
                 <TextInput
                   style={[styles.couponInput, {
@@ -691,7 +691,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                   disabled={isRedeemingCoupon}
                 >
                   <Text style={[styles.modalButtonText, { color: colors.secondary, fontFamily: 'Lato-Bold' }]}>
-                    Cancelar
+                    {t('profile:coupon.cancel')}
                   </Text>
                 </TouchableOpacity>
 
@@ -701,7 +701,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                   disabled={isRedeemingCoupon}
                 >
                   <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontFamily: 'Lato-Bold' }]}>
-                    {isRedeemingCoupon ? 'Canjeando...' : 'Canjear'}
+                    {isRedeemingCoupon ? t('profile:coupon.redeeming') : t('profile:coupon.redeem')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -729,16 +729,16 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <Text style={[styles.modalTitle, { color: '#EF4444', fontFamily: 'AlanSans-Bold' }]}>
-                ⚠️ Eliminar Cuenta
+                {t('profile:deleteAccount.title')}
               </Text>
               <Text style={[styles.modalSubtitle, { color: colors.secondary, fontFamily: 'Lato-Regular', marginBottom: 20 }]}>
-                Esta acción es PERMANENTE e IRREVERSIBLE. Se eliminarán todos tus datos, consultas restantes e historial.
+                {t('profile:deleteAccount.warning')}
               </Text>
 
               {/* Email */}
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-                  Confirma tu email
+                  {t('profile:deleteAccount.confirmEmail')}
                 </Text>
                 <TextInput
                   style={[
@@ -763,7 +763,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               {/* Contraseña */}
               <View style={styles.inputContainer}>
                 <Text style={[styles.inputLabel, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-                  Confirma tu contraseña
+                  {t('profile:deleteAccount.confirmPassword')}
                 </Text>
                 <View style={styles.passwordContainer}>
                   <TextInput
@@ -776,7 +776,7 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                         fontFamily: 'Lato-Regular',
                       },
                     ]}
-                    placeholder="Tu contraseña"
+                    placeholder={t('profile:deleteAccount.passwordPlaceholder')}
                     placeholderTextColor={colors.secondary}
                     value={deletePassword}
                     onChangeText={setDeletePassword}
@@ -829,10 +829,10 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                   <MaterialCommunityIcons name="alert" size={24} color="#EF4444" />
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text style={[styles.messageTitle, { color: '#EF4444', fontFamily: 'Lato-Bold' }]}>
-                      ¿Estás COMPLETAMENTE seguro?
+                      {t('profile:deleteAccount.finalConfirmTitle')}
                     </Text>
                     <Text style={[styles.messageText, { color: colors.text, fontFamily: 'Lato-Regular' }]}>
-                      Esta acción NO se puede deshacer. Pulsa 'Sí, eliminar mi cuenta' para confirmar.
+                      {t('profile:deleteAccount.finalConfirmMessage')}
                     </Text>
                   </View>
                 </View>
@@ -852,27 +852,23 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                   disabled={isDeletingAccount}
                 >
                   <Text style={[styles.modalButtonText, { color: colors.secondary, fontFamily: 'Lato-Bold' }]}>
-                    Cancelar
+                    {t('profile:deleteAccount.cancel')}
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.modalButton, styles.modalButtonConfirm, { backgroundColor: '#EF4444' }]}
                   onPress={() => {
-                    // console.log('🔴🔴🔴 TOUCHABLE PRESIONADO');
-                    // console.log('showDeleteConfirmation:', showDeleteConfirmation);
                     if (showDeleteConfirmation) {
-                      // console.log('Llamando a confirmDeleteAccount');
                       confirmDeleteAccount();
                     } else {
-                      // console.log('Llamando a handleDeleteAccount');
                       handleDeleteAccount();
                     }
                   }}
                   disabled={isDeletingAccount}
                 >
                   <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontFamily: 'Lato-Bold' }]}>
-                    {isDeletingAccount ? 'Eliminando...' : showDeleteConfirmation ? 'Sí, eliminar mi cuenta' : 'Eliminar Permanentemente'}
+                    {isDeletingAccount ? t('profile:deleteAccount.deleting') : showDeleteConfirmation ? t('profile:deleteAccount.confirmButton') : t('profile:deleteAccount.deleteButton')}
                   </Text>
                 </TouchableOpacity>
               </View>

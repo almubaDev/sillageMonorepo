@@ -1,6 +1,6 @@
 // sillage-mobile/src/navigation/AppNavigator.tsx
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Platform, useWindowDimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -9,6 +9,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../theme/ThemeProvider';
+import { useAuthContext } from '../utils/AuthContext';
 import { RecommendStackParamList, ProfileStackParamList, CollectionStackParamList, RootTabParamList } from './types';
 
 import { CollectionScreen } from '../screens/Collection/CollectionScreen';
@@ -22,7 +23,6 @@ import { PurchaseScreen } from '../screens/Purchase/PurchaseScreen';
 import { PaymentSuccessScreen } from '../screens/Purchase/PaymentSuccessScreen';
 import { PaymentCancelScreen } from '../screens/Purchase/PaymentCancelScreen';
 import AdminScreen from '../screens/Admin/AdminScreen';
-import { authService, User } from '../services/authService';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const Drawer = createDrawerNavigator<RootTabParamList>();
@@ -186,23 +186,7 @@ function ProfileStackNavigator() {
 function DesktopDrawerNavigator() {
   const { colors } = useTheme();
   const { t } = useTranslation();
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    loadUser();
-
-    // Recargar usuario cada 2 segundos para detectar cambios
-    const interval = setInterval(() => {
-      loadUser();
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadUser = async () => {
-    const userData = await authService.getUserFromStorage();
-    setUser(userData);
-  };
+  const { user } = useAuthContext();
 
   return (
     <Drawer.Navigator
@@ -334,23 +318,7 @@ function MobileTabNavigator() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    loadUser();
-
-    // Recargar usuario cada 2 segundos para detectar cambios
-    const interval = setInterval(() => {
-      loadUser();
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadUser = async () => {
-    const userData = await authService.getUserFromStorage();
-    setUser(userData);
-  };
+  const { user } = useAuthContext();
 
   return (
     <Tab.Navigator

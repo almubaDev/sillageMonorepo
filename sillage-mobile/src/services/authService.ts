@@ -76,10 +76,28 @@ export const authService = {
     return response.data;
   },
 
-  // Verificar si hay sesión activa
+  // Verificar si hay sesión activa (incluye validación de expiración)
   async isAuthenticated(): Promise<boolean> {
     const token = await AsyncStorage.getItem('access_token');
-    return !!token;
+    if (!token) return false;
+
+    // Decodificar JWT y verificar expiración
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        // Token expirado - limpiar storage
+        await AsyncStorage.removeItem('access_token');
+        await AsyncStorage.removeItem('user');
+        return false;
+      }
+    } catch {
+      // Si no se puede decodificar, eliminar token inválido
+      await AsyncStorage.removeItem('access_token');
+      await AsyncStorage.removeItem('user');
+      return false;
+    }
+
+    return true;
   },
 
   // Obtener usuario del storage
@@ -102,11 +120,6 @@ export const authService = {
       // console.log('✅ AuthService: Respuesta exitosa:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('❌ AuthService: Error en la petición');
-      console.error('❌ Error completo:', error);
-      console.error('❌ Response:', error.response);
-      console.error('❌ Status:', error.response?.status);
-      console.error('❌ Data:', error.response?.data);
       throw error;
     }
   },

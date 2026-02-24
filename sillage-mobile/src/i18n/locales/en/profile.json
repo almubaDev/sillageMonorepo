@@ -48,5 +48,39 @@
     "requireNumber": "Password must contain at least one number",
     "passwordChanged": "Your password has been updated successfully",
     "changeFailed": "Error changing password. Please try again."
+  },
+  "coupon": {
+    "title": "Redeem Coupon",
+    "subtitle": "Enter your coupon code to get free consultations",
+    "codeLabel": "Coupon code",
+    "redeem": "Redeem",
+    "redeeming": "Redeeming...",
+    "cancel": "Cancel",
+    "emptyCode": "Please enter a coupon code",
+    "successTitle": "Congratulations!",
+    "successMessage": "You have {{added}} new consultations available.\n\nTotal available: {{total}} consultations",
+    "alreadyUsedTitle": "Coupon already used",
+    "alreadyUsedMessage": "This coupon has already been redeemed.",
+    "expiredTitle": "Coupon expired",
+    "expiredMessage": "This coupon has expired and is no longer valid.",
+    "notFoundTitle": "Coupon not found",
+    "notFoundMessage": "The code entered does not exist. Please verify it is correct."
+  },
+  "deleteAccount": {
+    "button": "Delete Account",
+    "title": "Delete Account",
+    "warning": "This action is PERMANENT and IRREVERSIBLE. All your data, remaining consultations and history will be deleted.",
+    "confirmEmail": "Confirm your email",
+    "confirmPassword": "Confirm your password",
+    "passwordPlaceholder": "Your password",
+    "emptyFields": "Please enter your email and password to confirm",
+    "emailMismatch": "The email entered does not match your account ({{email}})",
+    "finalConfirmTitle": "Are you COMPLETELY sure?",
+    "finalConfirmMessage": "This action CANNOT be undone. Press 'Yes, delete my account' to confirm.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "confirmButton": "Yes, delete my account",
+    "deleteButton": "Delete Permanently",
+    "failed": "Could not delete account"
   }
 }

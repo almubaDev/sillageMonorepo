@@ -76,9 +76,9 @@ class EmailService:
             <style>
                 body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
                 .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .header {{ background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
                 .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-                .button {{ display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                .button {{ display: inline-block; padding: 12px 30px; background: #D4AF37; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
                 .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 12px; }}
             </style>
         </head>
@@ -94,8 +94,7 @@ class EmailService:
                     <h3>¿Qué puedes hacer en Sillage?</h3>
                     <ul>
                         <li>Gestionar tu colección personal de perfumes</li>
-                        <li>Obtener recomendaciones personalizadas con IA</li>
-                        <li>Recomendaciones basadas en clima y ubicación</li>
+                        <li>Obtener recomendaciones personalizadas basadas en clima, ocasión, vestimenta, actitud y lugar</li>
                         <li>Consultar tu historial de recomendaciones</li>
                         <li>Disponible en múltiples idiomas</li>
                     </ul>
@@ -104,7 +103,7 @@ class EmailService:
 
                     <div class="footer">
                         <p>Este es un email automático, por favor no respondas a este mensaje.</p>
-                        <p>&copy; 2025 Sillage. Todos los derechos reservados.</p>
+                        <p>&copy; 2026 Sillage. Todos los derechos reservados.</p>
                     </div>
                 </div>
             </div>
@@ -121,8 +120,7 @@ class EmailService:
 
         ¿Qué puedes hacer en Sillage?
         - Gestionar tu colección personal de perfumes
-        - Obtener recomendaciones personalizadas con IA
-        - Recomendaciones basadas en clima y ubicación
+        - Obtener recomendaciones personalizadas basadas en clima, ocasión, vestimenta, actitud y lugar
         - Consultar tu historial de recomendaciones
         - Disponible en múltiples idiomas
 
@@ -146,12 +144,12 @@ class EmailService:
             <style>
                 body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
                 .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .header {{ background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
                 .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-                .reset-button {{ display: inline-block; padding: 14px 32px; background: #667eea; color: white !important; text-decoration: none; border-radius: 8px; margin: 24px 0; font-size: 16px; font-weight: bold; }}
+                .reset-button {{ display: inline-block; padding: 14px 32px; background: #D4AF37; color: white !important; text-decoration: none; border-radius: 8px; margin: 24px 0; font-size: 16px; font-weight: bold; }}
                 .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
                 .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 12px; }}
-                .url-fallback {{ word-break: break-all; font-size: 12px; color: #667eea; margin-top: 8px; }}
+                .url-fallback {{ word-break: break-all; font-size: 12px; color: #D4AF37; margin-top: 8px; }}
             </style>
         </head>
         <body>
@@ -181,7 +179,7 @@ class EmailService:
 
                     <div class="footer">
                         <p>Si no solicitaste restablecer tu contraseña, puedes ignorar este mensaje de forma segura.</p>
-                        <p>&copy; 2025 Sillage. Todos los derechos reservados.</p>
+                        <p>&copy; 2026 Sillage. Todos los derechos reservados.</p>
                     </div>
                 </div>
             </div>
@@ -222,7 +220,7 @@ class EmailService:
             <style>
                 body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
                 .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .header {{ background: linear-gradient(135deg, #D4AF37 0%, #B8960C 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
                 .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
                 .success-box {{ background: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; }}
                 .warning {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
@@ -252,7 +250,7 @@ class EmailService:
 
                     <div class="footer">
                         <p>Este es un email de seguridad automático.</p>
-                        <p>&copy; 2025 Sillage. Todos los derechos reservados.</p>
+                        <p>&copy; 2026 Sillage. Todos los derechos reservados.</p>
                     </div>
                 </div>
             </div>

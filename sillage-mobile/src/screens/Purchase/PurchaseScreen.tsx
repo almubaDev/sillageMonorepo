@@ -53,7 +53,7 @@ export const PurchaseScreen = () => {
       Alert.alert(
         t('payments:errors.title'),
         t('payments:errors.loadingPackages'),
-        [{ text: t('common:ok'), onPress: () => navigation.goBack() }]
+        [{ text: t('common:buttons.confirm'), onPress: () => navigation.goBack() }]
       );
     } finally {
       setLoading(false);
@@ -204,7 +204,7 @@ export const PurchaseScreen = () => {
             <View style={styles.webviewLoading}>
               <ActivityIndicator size="large" color={colors.accent} />
               <Text style={[styles.loadingText, { color: colors.text }]}>
-                {t('payments:redirecting')}
+                {t('payments:purchase.redirecting')}
               </Text>
             </View>
           )}
@@ -218,7 +218,7 @@ export const PurchaseScreen = () => {
       <View style={[styles.container, styles.centered, { backgroundColor: colors.bg }]}>
         <ActivityIndicator size="large" color={colors.accent} />
         <Text style={[styles.loadingText, { color: colors.text }]}>
-          {t('payments:loadingPackages')}
+          {t('payments:purchase.loadingPackages')}
         </Text>
       </View>
     );

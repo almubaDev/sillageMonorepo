@@ -142,7 +142,7 @@ export const RecommendScreen: React.FC<Props> = ({ navigation }) => {
       console.error('❌ Error en recomendación:', error);
       
       // Mostrar error al usuario - asegurar que siempre sea string
-      const rawMessage = error.detail || error.message || 'Hubo un problema al generar tu recomendación. Intenta nuevamente.';
+      const rawMessage = error.response?.data?.detail || error.message || t('recommend:error.missingData');
       const errorMessage = typeof rawMessage === 'string' ? rawMessage : JSON.stringify(rawMessage);
       setError(errorMessage);
       

@@ -286,7 +286,7 @@ export const PaymentSuccessScreen = () => {
             onPress={() => navigation.goBack()}
           >
             <Text style={[styles.backButtonText, { color: colors.accent }]}>
-              {t('common:back')}
+              {t('common:buttons.back')}
             </Text>
           </TouchableOpacity>
         </View>

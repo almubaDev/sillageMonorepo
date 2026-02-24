@@ -1,7 +1,7 @@
 """
 Endpoints para gestión de contraseñas
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
@@ -18,13 +18,16 @@ from app.schemas.password import (
 )
 from app.services.email import email_service
 from app.api import deps
+from app.core.rate_limit import limiter
 
 router = APIRouter()
 
 
 @router.post("/request-reset", response_model=PasswordResetResponse)
+@limiter.limit("5/hour")
 async def request_password_reset(
-    request: PasswordResetRequest,
+    request: Request,
+    body: PasswordResetRequest,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -36,7 +39,7 @@ async def request_password_reset(
 
     # Buscar usuario por email
     result = await db.execute(
-        select(User).where(User.email == request.email)
+        select(User).where(User.email == body.email)
     )
     user = result.scalar_one_or_none()
 
@@ -44,7 +47,7 @@ async def request_password_reset(
     if not user:
         return PasswordResetResponse(
             message="Si el email existe, recibirás un enlace de recuperación",
-            email=request.email
+            email=body.email
         )
 
     # Invalidar tokens anteriores del usuario
@@ -95,13 +98,15 @@ async def request_password_reset(
 
     return PasswordResetResponse(
         message="Si el email existe, recibirás un enlace de recuperación",
-        email=request.email
+        email=body.email
     )
 
 
 @router.post("/reset-password", response_model=PasswordChangeResponse)
+@limiter.limit("10/hour")
 async def reset_password(
-    request: PasswordResetVerify,
+    request: Request,
+    body: PasswordResetVerify,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -109,7 +114,7 @@ async def reset_password(
     """
     # Buscar usuario
     result = await db.execute(
-        select(User).where(User.email == request.email)
+        select(User).where(User.email == body.email)
     )
     user = result.scalar_one_or_none()
 
@@ -123,7 +128,7 @@ async def reset_password(
     result = await db.execute(
         select(PasswordResetToken).where(
             PasswordResetToken.user_id == user.id,
-            PasswordResetToken.token == request.token,
+            PasswordResetToken.token == body.token,
             PasswordResetToken.used == False
         )
     )
@@ -143,7 +148,7 @@ async def reset_password(
         )
 
     # Cambiar contraseña
-    user.hashed_password = get_password_hash(request.new_password)
+    user.hashed_password = get_password_hash(body.new_password)
 
     # Marcar token como usado
     reset_token.used = True
@@ -157,79 +162,40 @@ async def reset_password(
 
 
 @router.post("/change-password", response_model=PasswordChangeResponse)
+@limiter.limit("5/minute")
 async def change_password(
-    request: PasswordChange,
+    request: Request,
+    body: PasswordChange,
     current_user: User = Depends(deps.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Cambiar contraseña (usuario autenticado)
     """
-    try:
-        print(f"🔒 [1/5] Solicitud de cambio de contraseña para usuario: {current_user.email}")
-        print(f"    ID del usuario: {current_user.id}")
-
-        # Verificar contraseña actual
-        print(f"🔒 [2/5] Verificando contraseña actual...")
-        if not verify_password(request.current_password, current_user.hashed_password):
-            print(f"❌ Contraseña actual incorrecta para {current_user.email}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Contraseña actual incorrecta"
-            )
-        print(f"✅ Contraseña actual verificada")
-
-        # Verificar que la nueva contraseña sea diferente
-        print(f"🔒 [3/5] Verificando que la nueva contraseña sea diferente...")
-        if verify_password(request.new_password, current_user.hashed_password):
-            print(f"❌ Nueva contraseña igual a la actual")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="La nueva contraseña debe ser diferente a la actual"
-            )
-        print(f"✅ Nueva contraseña es diferente")
-
-        # Actualizar contraseña
-        print(f"🔒 [4/5] Actualizando contraseña en BD...")
-        new_hash = get_password_hash(request.new_password)
-        print(f"    Nuevo hash generado: {new_hash[:50]}...")
-
-        # Actualizar usando UPDATE directo
-        from sqlalchemy import update as sql_update
-        await db.execute(
-            sql_update(User)
-            .where(User.id == current_user.id)
-            .values(hashed_password=new_hash)
-        )
-        print(f"    UPDATE ejecutado")
-
-        await db.commit()
-        print(f"✅ Commit ejecutado")
-
-        # Verificar que se guardó
-        print(f"🔒 [5/5] Verificando cambio...")
-        result = await db.execute(select(User).where(User.id == current_user.id))
-        updated_user = result.scalar_one()
-        print(f"    Hash en BD: {updated_user.hashed_password[:50]}...")
-        print(f"    Hash esperado: {new_hash[:50]}...")
-        if updated_user.hashed_password == new_hash:
-            print(f"✅ Verificación EXITOSA - Hash coincide")
-        else:
-            print(f"❌ Verificación FALLIDA - Hash NO coincide")
-
-        print(f"✅✅✅ Contraseña cambiada exitosamente para {current_user.email}")
-
-        return PasswordChangeResponse(
-            message="Contraseña actualizada exitosamente"
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"❌❌❌ ERROR INESPERADO: {str(e)}")
-        print(f"❌ Tipo: {type(e)}")
-        import traceback
-        traceback.print_exc()
+    # Verificar contraseña actual
+    if not verify_password(body.current_password, current_user.hashed_password):
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error interno: {str(e)}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Contraseña actual incorrecta"
         )
+
+    # Verificar que la nueva contraseña sea diferente
+    if verify_password(body.new_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="La nueva contraseña debe ser diferente a la actual"
+        )
+
+    # Actualizar contraseña
+    new_hash = get_password_hash(body.new_password)
+    from sqlalchemy import update as sql_update
+    await db.execute(
+        sql_update(User)
+        .where(User.id == current_user.id)
+        .values(hashed_password=new_hash)
+    )
+    await db.commit()
+
+    return PasswordChangeResponse(
+        message="Contraseña actualizada exitosamente"
+    )

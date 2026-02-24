@@ -48,5 +48,39 @@
     "requireNumber": "La contraseña debe contener al menos un número",
     "passwordChanged": "Tu contraseña ha sido actualizada exitosamente",
     "changeFailed": "Error al cambiar la contraseña. Intenta nuevamente."
+  },
+  "coupon": {
+    "title": "Canjear Cupón",
+    "subtitle": "Ingresa tu código de cupón para obtener consultas gratuitas",
+    "codeLabel": "Código de cupón",
+    "redeem": "Canjear",
+    "redeeming": "Canjeando...",
+    "cancel": "Cancelar",
+    "emptyCode": "Por favor ingresa un código de cupón",
+    "successTitle": "¡Felicidades!",
+    "successMessage": "Tienes {{added}} consultas nuevas para utilizar.\n\nTotal disponible: {{total}} consultas",
+    "alreadyUsedTitle": "Cupón ya utilizado",
+    "alreadyUsedMessage": "Este cupón ya fue canjeado anteriormente.",
+    "expiredTitle": "Cupón expirado",
+    "expiredMessage": "Este cupón ha caducado y ya no es válido.",
+    "notFoundTitle": "Cupón no encontrado",
+    "notFoundMessage": "El código ingresado no existe. Verifica que esté escrito correctamente."
+  },
+  "deleteAccount": {
+    "button": "Eliminar Cuenta",
+    "title": "Eliminar Cuenta",
+    "warning": "Esta acción es PERMANENTE e IRREVERSIBLE. Se eliminarán todos tus datos, consultas restantes e historial.",
+    "confirmEmail": "Confirma tu email",
+    "confirmPassword": "Confirma tu contraseña",
+    "passwordPlaceholder": "Tu contraseña",
+    "emptyFields": "Por favor ingresa tu email y contraseña para confirmar",
+    "emailMismatch": "El email ingresado no coincide con el de tu cuenta ({{email}})",
+    "finalConfirmTitle": "¿Estás COMPLETAMENTE seguro?",
+    "finalConfirmMessage": "Esta acción NO se puede deshacer. Pulsa 'Sí, eliminar mi cuenta' para confirmar.",
+    "cancel": "Cancelar",
+    "deleting": "Eliminando...",
+    "confirmButton": "Sí, eliminar mi cuenta",
+    "deleteButton": "Eliminar Permanentemente",
+    "failed": "No se pudo eliminar la cuenta"
   }
 }

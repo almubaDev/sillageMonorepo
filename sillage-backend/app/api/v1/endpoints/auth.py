@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
@@ -12,6 +12,7 @@ from app.core.security import verify_password, get_password_hash, create_access_
 from app.models.user import User
 from app.schemas.user import Token, UserCreate, User as UserSchema
 from app.services.email import email_service
+from app.core.rate_limit import limiter
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -39,7 +40,9 @@ def get_token_expiration(user_agent: Optional[str] = None) -> int:
 
 
 @router.post("/register", response_model=Token)
+@limiter.limit("5/minute")
 async def register(
+    request: Request,
     user_data: UserCreate,
     db: AsyncSession = Depends(get_db),
     user_agent: Optional[str] = Header(None)
@@ -78,12 +81,10 @@ async def register(
             user_name=db_user.first_name or "Usuario"
         )
     except Exception as e:
-        print(f"⚠️ Error enviando email de bienvenida: {str(e)}")
+        pass  # No bloquear registro si falla el email
 
     # Determinar tiempo de expiración según cliente
     expire_minutes = get_token_expiration(user_agent)
-    print(f"🔑 Registro - User-Agent: {user_agent}, Token expira en: {expire_minutes} minutos")
-
     # Crear token
     access_token = create_access_token(
         subject=db_user.id,
@@ -98,7 +99,9 @@ async def register(
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit("10/minute")
 async def login(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
     user_agent: Optional[str] = Header(None)
@@ -133,8 +136,6 @@ async def login(
 
     # Determinar tiempo de expiración según cliente
     expire_minutes = get_token_expiration(user_agent)
-    print(f"🔑 Login - User-Agent: {user_agent}, Token expira en: {expire_minutes} minutos")
-
     # Crear token
     access_token = create_access_token(
         subject=user.id,

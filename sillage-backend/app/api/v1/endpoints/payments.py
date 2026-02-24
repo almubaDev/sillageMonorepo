@@ -219,6 +219,7 @@ async def verificar_pago(
     ref: str,  # custom_id
     source: str = None,  # "paypal"
     status_param: str = Query(None, alias="status"),  # "completed"
+    current_user: User = Depends(deps.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -261,6 +262,14 @@ async def verificar_pago(
                 estado='no_encontrado',
                 error='Pago no encontrado',
                 mensaje='No se encontró un pago con esta referencia'
+            )
+
+        # Verificar que el pago pertenece al usuario autenticado
+        if pago.user_id != current_user.id:
+            logger.warning(f"⚠️ Usuario {current_user.id} intentó verificar pago de usuario {pago.user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permiso para verificar este pago"
             )
 
         # ===================================================================

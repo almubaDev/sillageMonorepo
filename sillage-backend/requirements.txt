@@ -38,3 +38,6 @@ pytest-asyncio
 
 # CORS
 fastapi-cors
+
+# Rate limiting
+slowapi
