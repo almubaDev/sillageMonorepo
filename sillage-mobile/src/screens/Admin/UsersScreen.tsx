@@ -4,10 +4,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, TextInput, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { adminStyles, AdminColors } from './adminStyles';
 import { adminService, AdminUser } from '../../services/adminService';
+import { AdminStackParamList } from './AdminScreen';
+
+type NavigationProp = NativeStackNavigationProp<AdminStackParamList>;
 
 export default function UsersScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState('');
@@ -66,19 +72,27 @@ export default function UsersScreen() {
         )}
 
         {users.map((user) => (
-          <View key={user.id} style={adminStyles.card}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-              <Text style={adminStyles.cardTitle}>{user.first_name} {user.last_name}</Text>
-              {user.is_superuser && (
-                <View style={[adminStyles.badge, adminStyles.badgeError]}>
-                  <Text style={[adminStyles.badgeText, adminStyles.badgeErrorText]}>SUPERUSER</Text>
-                </View>
-              )}
-              {user.is_admin && !user.is_superuser && (
-                <View style={[adminStyles.badge, adminStyles.badgeWarning]}>
-                  <Text style={[adminStyles.badgeText, adminStyles.badgeWarningText]}>ADMIN</Text>
-                </View>
-              )}
+          <TouchableOpacity
+            key={user.id}
+            style={adminStyles.card}
+            onPress={() => navigation.navigate('UserDetail', { userId: user.id })}
+            activeOpacity={0.7}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 8 }}>
+                <Text style={adminStyles.cardTitle}>{user.first_name} {user.last_name}</Text>
+                {user.is_superuser && (
+                  <View style={[adminStyles.badge, adminStyles.badgeError]}>
+                    <Text style={[adminStyles.badgeText, adminStyles.badgeErrorText]}>SUPERUSER</Text>
+                  </View>
+                )}
+                {user.is_admin && !user.is_superuser && (
+                  <View style={[adminStyles.badge, adminStyles.badgeWarning]}>
+                    <Text style={[adminStyles.badgeText, adminStyles.badgeWarningText]}>ADMIN</Text>
+                  </View>
+                )}
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color={AdminColors.gray400} />
             </View>
             <Text style={adminStyles.cardSubtitle}>{user.email}</Text>
             <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
@@ -98,7 +112,7 @@ export default function UsersScreen() {
                 </Text>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>

@@ -3,14 +3,17 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func, and_
 from sqlalchemy.orm import selectinload
+from pydantic import BaseModel
 
 from app.api.deps import get_db
 from app.models.user import User
 from app.models.role import Role
+from app.core.security import get_password_hash, verify_password
 from app.core.permissions import (
     Permission,
     require_permission,
     require_admin,
+    require_superuser,
     log_admin_action
 )
 from app.schemas.admin import (
@@ -19,6 +22,14 @@ from app.schemas.admin import (
     UserListFilter,
     PaginatedResponse
 )
+
+
+class AdminResetPasswordRequest(BaseModel):
+    new_password: str
+
+
+class AdminPromoteSuperuserRequest(BaseModel):
+    admin_password: str
 
 router = APIRouter(prefix="/admin/users", tags=["Admin - Users"])
 
@@ -260,3 +271,92 @@ async def delete_user(
     )
 
     return None
+
+
+@router.post("/{user_id}/reset-password", dependencies=[Depends(require_superuser)])
+async def admin_reset_password(
+    user_id: int,
+    body: AdminResetPasswordRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_superuser)
+):
+    """
+    Resetear la contraseña de un usuario (solo superusuarios).
+    """
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    user.hashed_password = get_password_hash(body.new_password)
+    await db.commit()
+
+    await log_admin_action(
+        db=db,
+        admin_id=current_user.id,
+        action="RESET_PASSWORD",
+        resource="users",
+        resource_id=user_id,
+        details={"email": user.email},
+        ip_address=request.client.host if request.client else None
+    )
+
+    return {"message": "Contraseña reseteada exitosamente"}
+
+
+@router.post("/{user_id}/promote-superuser", dependencies=[Depends(require_superuser)])
+async def promote_to_superuser(
+    user_id: int,
+    body: AdminPromoteSuperuserRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_superuser)
+):
+    """
+    Promover un usuario a superusuario.
+    Requiere verificación de contraseña del admin que ejecuta la acción.
+    """
+    # Verificar contraseña del admin
+    if not verify_password(body.admin_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Contraseña incorrecta"
+        )
+
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    if user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El usuario ya es superusuario"
+        )
+
+    user.is_superuser = True
+    user.is_admin = True
+    await db.commit()
+
+    await log_admin_action(
+        db=db,
+        admin_id=current_user.id,
+        action="PROMOTE_SUPERUSER",
+        resource="users",
+        resource_id=user_id,
+        details={"email": user.email},
+        ip_address=request.client.host if request.client else None
+    )
+
+    return {"message": f"Usuario {user.email} promovido a superusuario"}

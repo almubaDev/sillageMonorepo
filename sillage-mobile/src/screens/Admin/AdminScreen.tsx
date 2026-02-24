@@ -14,12 +14,14 @@ import CouponsScreen from './CouponsScreen';
 import PaymentPackagesScreen from './PaymentPackagesScreen';
 import APIUsageScreen from './APIUsageScreen';
 import AdminToolsScreen from './AdminToolsScreen';
+import UserDetailScreen from './UserDetailScreen';
 import { AdminColors } from './adminStyles';
 
 export type AdminStackParamList = {
   AdminMenu: undefined;
   Dashboard: undefined;
   Users: undefined;
+  UserDetail: { userId: number };
   Perfumes: undefined;
   Consultations: undefined;
   FinancialReports: undefined;
@@ -60,6 +62,11 @@ export default function AdminScreen() {
         name="Users"
         component={UsersScreen}
         options={{ title: 'Gestión de Usuarios' }}
+      />
+      <Stack.Screen
+        name="UserDetail"
+        component={UserDetailScreen}
+        options={{ title: 'Detalle de Usuario' }}
       />
       <Stack.Screen
         name="Perfumes"

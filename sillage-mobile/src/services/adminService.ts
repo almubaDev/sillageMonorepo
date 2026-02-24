@@ -280,6 +280,18 @@ export const adminService = {
     await api.delete(`/admin/users/${id}`);
   },
 
+  async adminResetPassword(userId: number, newPassword: string): Promise<void> {
+    await api.post(`/admin/users/${userId}/reset-password`, {
+      new_password: newPassword,
+    });
+  },
+
+  async promoteSuperuser(userId: number, adminPassword: string): Promise<void> {
+    await api.post(`/admin/users/${userId}/promote-superuser`, {
+      admin_password: adminPassword,
+    });
+  },
+
   // ========== PERFUMES ==========
   async listPerfumes(params: ListParams = {}): Promise<ListResponse<AdminPerfume>> {
     const response = await api.get<ListResponse<AdminPerfume>>('/admin/perfumes', { params });
