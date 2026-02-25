@@ -200,7 +200,7 @@ export const CollectionScreen = () => {
         </View>
       </View>
       <View style={styles.headerButtons}>
-        {/* BOTON IMPORTAR - Descomentar para activar*/}
+        {/* BOTON IMPORTAR - Descomentar para activar
         <TouchableOpacity
           style={[styles.importButton, { borderColor: colors.accent }]}
           onPress={() => setImportModalVisible(true)}
@@ -210,7 +210,7 @@ export const CollectionScreen = () => {
             {t('collection:import.button')}
           </Text>
         </TouchableOpacity>
-        
+        */}
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: colors.accent }]}
           onPress={() => navigation.navigate('AddEditPerfume')}
