@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -46,6 +46,8 @@ export const CollectionScreen = () => {
   const [perfumeToDelete, setPerfumeToDelete] = useState<PerfumeColeccionData | null>(null);
   const [importModalVisible, setImportModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const flatListRef = useRef<FlatList>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -260,6 +262,7 @@ export const CollectionScreen = () => {
             </View>
           </View>
           <FlatList
+            ref={flatListRef}
             data={filteredPerfumes}
             keyExtractor={(item) => item.id.toString()}
             ListHeaderComponent={renderHeader}
@@ -278,18 +281,22 @@ export const CollectionScreen = () => {
                 tintColor={colors.accent}
               />
             }
+            onScroll={(e) => {
+              setShowScrollTop(e.nativeEvent.contentOffset.y > 300);
+            }}
+            scrollEventThrottle={200}
           />
         </View>
       )}
 
-      {/* FAB para agregar (solo mobile, en desktop hay boton en header) */}
-      {!isDesktop && perfumes.length > 0 && (
+      {/* Botón scroll to top (solo mobile, visible al hacer scroll) */}
+      {!isDesktop && showScrollTop && (
         <View style={styles.fab}>
           <TouchableOpacity
             style={[styles.fabButton, { backgroundColor: colors.accent }]}
-            onPress={() => navigation.navigate('AddEditPerfume')}
+            onPress={() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true })}
           >
-            <MaterialCommunityIcons name="plus" size={28} color={colors.bg} />
+            <MaterialCommunityIcons name="triangle" size={18} color={colors.bg} />
           </TouchableOpacity>
         </View>
       )}
@@ -460,9 +467,9 @@ const styles = StyleSheet.create({
     right: 20,
   },
   fabButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
