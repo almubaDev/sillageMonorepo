@@ -73,7 +73,7 @@ export const PerfumeImagePicker: React.FC<PerfumeImagePickerProps> = ({
         <View style={styles.previewContainer}>
           <Image
             source={{ uri: imageUrl }}
-            style={[styles.preview, { borderColor: colors.secondary + '40' }]}
+            style={[styles.preview, { borderColor: colors.secondary + '90' }]}
           />
           <View style={styles.previewActions}>
             <TouchableOpacity
@@ -100,7 +100,7 @@ export const PerfumeImagePicker: React.FC<PerfumeImagePickerProps> = ({
         </View>
       ) : (
         <TouchableOpacity
-          style={[styles.uploadButton, { borderColor: colors.secondary + '40' }]}
+          style={[styles.uploadButton, { borderColor: colors.secondary + '90' }]}
           onPress={pickImage}
           disabled={uploading}
         >

@@ -39,7 +39,7 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onChange, placeholder 
             styles.input,
             {
               color: colors.text,
-              borderColor: colors.secondary + '40',
+              borderColor: colors.secondary + '90',
               fontFamily: 'Lato-Regular',
             },
           ]}

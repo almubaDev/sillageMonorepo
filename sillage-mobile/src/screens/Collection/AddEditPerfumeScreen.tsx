@@ -202,7 +202,7 @@ export const AddEditPerfumeScreen = () => {
           styles.input,
           {
             color: colors.text,
-            borderColor: options?.error ? '#EF4444' : colors.secondary + '40',
+            borderColor: options?.error ? '#EF4444' : colors.secondary + '90',
             fontFamily: 'Lato-Regular',
           },
           options?.multiline && styles.inputMultiline,
@@ -351,7 +351,7 @@ export const AddEditPerfumeScreen = () => {
 
             <View style={styles.repoAddRow}>
               <TextInput
-                style={[styles.repoInput, { color: colors.text, borderColor: colors.secondary + '40', fontFamily: 'Lato-Regular' }]}
+                style={[styles.repoInput, { color: colors.text, borderColor: colors.secondary + '90', fontFamily: 'Lato-Regular' }]}
                 placeholder={t('collection:reposicion.mlPlaceholder')}
                 placeholderTextColor={colors.secondary}
                 value={newRepoMl}
@@ -359,7 +359,7 @@ export const AddEditPerfumeScreen = () => {
                 keyboardType="numeric"
               />
               <TextInput
-                style={[styles.repoInput, { color: colors.text, borderColor: colors.secondary + '40', fontFamily: 'Lato-Regular' }]}
+                style={[styles.repoInput, { color: colors.text, borderColor: colors.secondary + '90', fontFamily: 'Lato-Regular' }]}
                 placeholder={t('collection:reposicion.costPlaceholder')}
                 placeholderTextColor={colors.secondary}
                 value={newRepoCosto}
