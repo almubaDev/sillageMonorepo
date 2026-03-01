@@ -6,7 +6,7 @@ import { useTheme } from '../theme/ThemeProvider';
 interface TagInputProps {
   tags: string[];
   onChange: (tags: string[]) => void;
-  placeholder: string;
+  placeholder?: string;
 }
 
 export const TagInput: React.FC<TagInputProps> = ({ tags, onChange, placeholder }) => {

@@ -19,6 +19,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StarRating } from '../../components/StarRating';
 import { MultiSelectIcons, MOMENTO_OPTIONS, ESTACION_OPTIONS } from '../../components/MultiSelectIcons';
 import { TagInput } from '../../components/TagInput';
+import { PerfumeImagePicker } from '../../components/PerfumeImagePicker';
 import {
   coleccionService,
   PerfumeColeccionData,
@@ -292,7 +293,10 @@ export const AddEditPerfumeScreen = () => {
         </View>
 
         {/* Imagen */}
-        {renderInput(t('collection:form.imageUrl'), imagen, setImagen, 'image')}
+        <View style={styles.fieldContainer}>
+          {renderLabel(t('collection:form.imageUrl'), 'image')}
+          <PerfumeImagePicker imageUrl={imagen} onImageChange={setImagen} />
+        </View>
 
         {/* Perfumistas */}
         <View style={styles.fieldContainer}>
