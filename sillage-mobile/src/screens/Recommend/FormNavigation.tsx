@@ -49,14 +49,12 @@ export const FormNavigation: React.FC<FormNavigationProps> = ({
         onPress={isLastStep ? onSubmit : onNext}
         disabled={!canGoNext}
       >
-        <View style={styles.buttonContent}>
-          <Text style={[styles.nextText, { color: colors.bg, fontFamily: 'Lato-Bold' }]}>
-            {isLastStep ? t('recommend:navigation.submit') : t('recommend:navigation.continue')}
-          </Text>
-          {!isLastStep && (
-            <MaterialCommunityIcons name="arrow-right" size={20} color={colors.bg} />
-          )}
-        </View>
+        <Text style={[styles.nextText, { color: colors.bg, fontFamily: 'Lato-Bold', textAlign: 'center' }]}>
+          {isLastStep ? t('recommend:navigation.submit') : t('recommend:navigation.continue')}
+        </Text>
+        {!isLastStep && (
+          <MaterialCommunityIcons name="arrow-right" size={20} color={colors.bg} style={{ position: 'absolute', right: 16 }} />
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -75,12 +73,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     borderRadius: 12,
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
   },
   backButton: {
     backgroundColor: 'transparent',
