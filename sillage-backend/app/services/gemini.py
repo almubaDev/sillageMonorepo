@@ -21,6 +21,8 @@ def build_prompt(
     temperatura: float,
     humedad: float,
     clima_descripcion: str,
+    latitud: float = None,
+    longitud: float = None,
     idioma: str = "es"
 ) -> tuple[str, List[PerfumeColeccion]]:
     """
@@ -97,6 +99,8 @@ def build_prompt(
         proximidad=proximidad,
         expectativa=expectativa,
         vestimenta=vestimenta,
+        latitud=latitud or 0,
+        longitud=longitud or 0,
         perfumes_text=perfumes_text
     )
 

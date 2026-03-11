@@ -124,6 +124,8 @@ async def generate_recommendation(
         temperatura=weather_data['temperatura'],
         humedad=weather_data['humedad'],
         clima_descripcion=weather_data['descripcion'],
+        latitud=latitud,
+        longitud=longitud,
         idioma=idioma
     )
 

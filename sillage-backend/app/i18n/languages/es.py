@@ -32,6 +32,7 @@ PROMPT_TEMPLATE = """Eres un experto perfumista. Recomienda el perfume MÁS ADEC
 
 ## CONTEXTO DEL EVENTO
 - Dirección: {direccion}
+- Coordenadas GPS: {latitud}, {longitud}
 - Lugar: {lugar_descripcion}
 - Tipo de espacio: {tipo_espacio_desc}
 - Fecha y hora: {fecha_evento} {hora_evento} ({momento_dia})
@@ -42,12 +43,11 @@ PROMPT_TEMPLATE = """Eres un experto perfumista. Recomienda el perfume MÁS ADEC
 - Vestimenta: {vestimenta}
 
 ## REGLA CRÍTICA: DETERMINAR ESTACIÓN DEL AÑO
-- A partir de la DIRECCIÓN proporcionada, identifica el país y la región geográfica exacta
-- Usa la FECHA, la TEMPERATURA REAL ({temperatura}°C) y la DESCRIPCIÓN DEL CLIMA ({clima_descripcion}) como evidencia principal para determinar la estación
+- Usa las COORDENADAS GPS ({latitud}, {longitud}) y la DIRECCIÓN para identificar el país y región geográfica exacta
+- Con esa ubicación geográfica + la FECHA ({fecha_evento}), determina la estación del año correcta para ese lugar específico
 - NO asumas la estación solo por hemisferio + mes. Diferentes países en el mismo hemisferio pueden tener climas muy distintos (ej: Colombia tropical vs Chile templado, ambos en hemisferio sur)
-- Si la dirección indica un país tropical (entre trópicos de Cáncer y Capricornio): NO tienen 4 estaciones tradicionales, tienen temporada seca/lluviosa. Basa tu selección en la temperatura y clima REAL proporcionados
-- Si la dirección indica una zona templada: determina la estación considerando la ubicación geográfica específica + fecha + clima real reportado
-- La temperatura y clima REALES siempre tienen prioridad sobre cualquier cálculo teórico de estación
+- Si las coordenadas indican zona tropical (latitud entre -23.5° y 23.5°): NO tienen 4 estaciones tradicionales. Basa tu selección en el clima real proporcionado
+- Si las coordenadas indican zona templada: determina la estación según la ubicación geográfica específica + fecha
 - USA la estación/contexto climático que determines como factor clave en tu selección
 
 ## REGLA CRÍTICA: NO HACER SUPOSICIONES
@@ -181,7 +181,7 @@ Notas ideales: Bergamota, Lima, Toronja, Menta, Eucalipto, Lavanda, Agua de mar,
 {perfumes_text}
 
 ## PROCESO DE SELECCIÓN (OBLIGATORIO)
-1. PRIMERO: Determina la estación del año (o temporada climática) a partir de la dirección, fecha, temperatura real y clima reportado. NO uses solo hemisferio + mes
+1. PRIMERO: Determina la estación del año (o temporada climática) a partir de las coordenadas GPS, la dirección y la fecha. NO uses solo hemisferio + mes
 2. SEGUNDO: Cruza los acordes ideales de las 5 dimensiones (estación + lugar + ocasión + expectativa + vestimenta). Identifica los acordes que aparecen en MÚLTIPLES dimensiones — esos son los más importantes
 3. TERCERO: Filtra los perfumes cuyos ACORDES tengan mayor coincidencia con los acordes ideales cruzados
 4. CUARTO: Si hay empate o ambigüedad entre perfumes con acordes similares, DESEMPATA POR NOTAS — elige el perfume que tenga más notas presentes en las listas de notas ideales del contexto

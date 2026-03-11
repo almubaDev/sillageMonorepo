@@ -32,6 +32,7 @@ PROMPT_TEMPLATE = """You are an expert perfumer. Recommend the MOST SUITABLE per
 
 ## EVENT CONTEXT
 - Address: {direccion}
+- GPS Coordinates: {latitud}, {longitud}
 - Place: {lugar_descripcion}
 - Space type: {tipo_espacio_desc}
 - Date and time: {fecha_evento} {hora_evento} ({momento_dia})
@@ -42,12 +43,11 @@ PROMPT_TEMPLATE = """You are an expert perfumer. Recommend the MOST SUITABLE per
 - Attire: {vestimenta}
 
 ## CRITICAL RULE: DETERMINE SEASON
-- From the ADDRESS provided, identify the exact country and geographic region
-- Use the DATE, ACTUAL TEMPERATURE ({temperatura}°C) and WEATHER DESCRIPTION ({clima_descripcion}) as primary evidence to determine the season
+- Use the GPS COORDINATES ({latitud}, {longitud}) and the ADDRESS to identify the exact country and geographic region
+- With that geographic location + the DATE ({fecha_evento}), determine the correct season for that specific place
 - DO NOT assume the season based solely on hemisphere + month. Different countries in the same hemisphere can have very different climates (e.g., tropical Colombia vs temperate Chile, both in the southern hemisphere)
-- If the address indicates a tropical country (between Tropic of Cancer and Capricorn): They DO NOT have 4 traditional seasons, they have dry/rainy seasons. Base your selection on the ACTUAL temperature and weather provided
-- If the address indicates a temperate zone: determine the season considering the specific geographic location + date + actual reported weather
-- ACTUAL temperature and weather always take priority over any theoretical season calculation
+- If coordinates indicate tropical zone (latitude between -23.5° and 23.5°): They DO NOT have 4 traditional seasons. Base your selection on the actual weather provided
+- If coordinates indicate temperate zone: determine the season based on the specific geographic location + date
 - USE the season/climate context you determine as a key factor in your selection
 
 ## CRITICAL RULE: DO NOT ASSUME
@@ -181,7 +181,7 @@ Ideal notes: Bergamot, Lime, Grapefruit, Mint, Eucalyptus, Lavender, Sea water, 
 {perfumes_text}
 
 ## SELECTION PROCESS (MANDATORY)
-1. FIRST: Determine the season (or climate period) from the address, date, actual temperature and reported weather. DO NOT use hemisphere + month alone
+1. FIRST: Determine the season (or climate period) from the GPS coordinates, address and date. DO NOT use hemisphere + month alone
 2. SECOND: Cross-reference the ideal accords from all 5 dimensions (season + space + occasion + expectation + attire). Identify accords that appear in MULTIPLE dimensions — those are the most important
 3. THIRD: Filter perfumes whose ACCORDS have the highest overlap with the cross-referenced ideal accords
 4. FOURTH: If there is a tie or ambiguity between perfumes with similar accords, BREAK THE TIE BY NOTES — choose the perfume with the most notes present in the ideal notes lists for the context
