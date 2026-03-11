@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,12 +19,14 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StarRating } from '../../components/StarRating';
 import { MultiSelectIcons, MOMENTO_OPTIONS, ESTACION_OPTIONS } from '../../components/MultiSelectIcons';
 import { TagInput } from '../../components/TagInput';
+import { AutocompleteInput } from '../../components/AutocompleteInput';
 import { PerfumeImagePicker } from '../../components/PerfumeImagePicker';
 import {
   coleccionService,
   PerfumeColeccionData,
   ReposicionData,
 } from '../../services/coleccionService';
+import { catalogService } from '../../services/catalogService';
 import type { CollectionStackParamList } from '../../navigation/types';
 
 type RouteType = RouteProp<CollectionStackParamList, 'AddEditPerfume'>;
@@ -64,6 +66,50 @@ export const AddEditPerfumeScreen = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ nombre?: string }>({});
+
+  // Autocomplete: buscar marcas
+  const fetchBrands = useCallback(async (q: string) => {
+    return catalogService.searchBrands(q);
+  }, []);
+
+  // Autocomplete: buscar perfumes (filtrado por marca si existe)
+  const fetchPerfumes = useCallback(async (q: string) => {
+    const results = await catalogService.searchPerfumes(q, marca || undefined);
+    return results.map(r => marca ? r.nombre : `${r.nombre} — ${r.marca}`);
+  }, [marca]);
+
+  // Cuando selecciona una marca de las sugerencias
+  const handleBrandSelect = useCallback((selected: string) => {
+    setMarca(selected);
+  }, []);
+
+  // Cuando selecciona un perfume de las sugerencias
+  const handlePerfumeSelect = useCallback(async (selected: string) => {
+    let perfumeName = selected;
+    let brandName = marca;
+
+    // Si viene con formato "nombre — marca" (cuando no hay marca seleccionada)
+    if (selected.includes(' — ')) {
+      const parts = selected.split(' — ');
+      perfumeName = parts[0];
+      brandName = parts[1];
+      setMarca(brandName);
+    }
+    setNombre(perfumeName);
+
+    // Buscar match exacto para auto-llenar notas y acordes
+    if (brandName) {
+      try {
+        const match = await catalogService.matchPerfume(perfumeName, brandName);
+        if (match) {
+          setAcordes(match.acordes || []);
+          setNotas(match.notas || []);
+        }
+      } catch {
+        // silencioso
+      }
+    }
+  }, [marca]);
 
   useEffect(() => {
     if (isEditing && perfumeId) {
@@ -234,12 +280,30 @@ export const AddEditPerfumeScreen = () => {
         keyboardShouldPersistTaps="handled"
       >
         {/* Marca */}
-        {renderInput(t('collection:form.brand'), marca, setMarca, 'brand')}
+        <View style={styles.fieldContainer}>
+          {renderLabel(t('collection:form.brand'), 'brand')}
+          <AutocompleteInput
+            value={marca}
+            onChangeText={setMarca}
+            onSelect={handleBrandSelect}
+            fetchSuggestions={fetchBrands}
+          />
+        </View>
 
         {/* Nombre */}
-        {renderInput(t('collection:form.name'), nombre, setNombre, 'name', {
-          error: errors.nombre,
-        })}
+        <View style={styles.fieldContainer}>
+          {renderLabel(t('collection:form.name'), 'name')}
+          <AutocompleteInput
+            value={nombre}
+            onChangeText={(text) => {
+              setNombre(text);
+              if (errors.nombre) setErrors({});
+            }}
+            onSelect={handlePerfumeSelect}
+            fetchSuggestions={fetchPerfumes}
+            error={errors.nombre}
+          />
+        </View>
 
         {/* Concentracion */}
         {renderInput(t('collection:form.concentration'), concentracion, setConcentracion, 'concentration')}

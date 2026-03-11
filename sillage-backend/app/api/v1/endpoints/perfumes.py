@@ -13,6 +13,57 @@ from typing import List, Optional
 router = APIRouter()
 
 
+@router.get("/brands")
+async def search_brands(
+    q: str = Query("", description="Búsqueda parcial de marca"),
+    limit: int = Query(20, le=50),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Buscar marcas distintas en el catálogo"""
+    query = select(func.distinct(Perfume.marca)).where(
+        or_(
+            Perfume.is_private.is_(False),
+            Perfume.created_by == current_user.id
+        )
+    )
+    if q.strip():
+        query = query.where(Perfume.marca.ilike(f"%{q.strip()}%"))
+    query = query.order_by(Perfume.marca).limit(limit)
+    result = await db.execute(query)
+    return [row[0] for row in result.all()]
+
+
+@router.get("/match")
+async def match_perfume(
+    nombre: str = Query(..., description="Nombre exacto del perfume"),
+    marca: str = Query(..., description="Marca exacta"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Buscar perfume exacto por nombre+marca para auto-completar datos"""
+    query = select(Perfume).where(
+        and_(
+            func.lower(Perfume.nombre) == nombre.strip().lower(),
+            func.lower(Perfume.marca) == marca.strip().lower(),
+            or_(
+                Perfume.is_private.is_(False),
+                Perfume.created_by == current_user.id
+            )
+        )
+    ).limit(1)
+    result = await db.execute(query)
+    perfume = result.scalar_one_or_none()
+    if not perfume:
+        return None
+    return {
+        "nombre": perfume.nombre,
+        "marca": perfume.marca,
+        "acordes": perfume.acordes or [],
+        "notas": perfume.notas or [],
+    }
+
+
 @router.get("/search", response_model=List[PerfumeSchema])
 async def search_perfumes(
     q: Optional[str] = Query(None, description="Búsqueda por nombre"),
