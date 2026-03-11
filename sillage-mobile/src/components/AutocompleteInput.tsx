@@ -28,8 +28,8 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   onSelect,
   fetchSuggestions,
   renderSuggestion,
-  debounceMs = 300,
-  minChars = 2,
+  debounceMs = 150,
+  minChars = 1,
   error,
   keyboardType = 'default',
 }) => {
