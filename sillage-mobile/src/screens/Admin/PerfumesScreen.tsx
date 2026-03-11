@@ -983,6 +983,31 @@ export default function PerfumesScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Modal de carga CSV */}
+      <Modal
+        isVisible={csvUploading}
+        onBackdropPress={() => {}}
+        onBackButtonPress={() => {}}
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+      >
+        <View style={{
+          backgroundColor: AdminColors.white,
+          borderRadius: 16,
+          padding: 32,
+          alignItems: 'center',
+          marginHorizontal: 40,
+        }}>
+          <ActivityIndicator size="large" color={AdminColors.primary} />
+          <Text style={[adminStyles.pageTitle, { marginTop: 20, textAlign: 'center', fontSize: 18 }]}>
+            {t('admin:tools.uploadCsvSimple.uploading', { defaultValue: 'Cargando perfumes...' })}
+          </Text>
+          <Text style={[adminStyles.cardSubtitle, { marginTop: 8, textAlign: 'center' }]}>
+            {t('admin:tools.uploadCsvSimple.uploadingMessage', { defaultValue: 'Este proceso puede tardar unos momentos. No cierres la aplicación.' })}
+          </Text>
+        </View>
+      </Modal>
     </View>
   );
 }

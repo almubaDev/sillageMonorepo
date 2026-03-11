@@ -23,7 +23,6 @@ def test_get_language_module_spanish():
     module = loader.get_language_module("es")
 
     assert module is not None
-    assert hasattr(module, "SEASONS")
     assert hasattr(module, "TIME_OF_DAY")
     assert hasattr(module, "PERFUME_LABELS")
     assert hasattr(module, "PROMPT_TEMPLATE")
@@ -36,7 +35,6 @@ def test_get_language_module_english():
     module = loader.get_language_module("en")
 
     assert module is not None
-    assert hasattr(module, "SEASONS")
     assert hasattr(module, "TIME_OF_DAY")
     assert hasattr(module, "PERFUME_LABELS")
     assert hasattr(module, "PROMPT_TEMPLATE")
@@ -66,37 +64,7 @@ def test_get_language_module_unsupported_language():
 
     # Should fallback to default language (es)
     assert module is not None
-    assert hasattr(module, "SEASONS")
-
-
-def test_get_seasons_spanish():
-    """Test getting seasons dictionary in Spanish"""
-    loader = LanguageLoader()
-
-    seasons = loader.get_seasons("es")
-
-    assert isinstance(seasons, dict)
-    assert len(seasons) == 12  # All 12 months
-
-    # Test some specific months (Southern Hemisphere)
-    assert seasons[1] == "verano"  # January = Summer
-    assert seasons[7] == "invierno"  # July = Winter
-    assert seasons[3] == "otoño"  # March = Autumn
-    assert seasons[9] == "primavera"  # September = Spring
-
-
-def test_get_seasons_english():
-    """Test getting seasons dictionary in English"""
-    loader = LanguageLoader()
-
-    seasons = loader.get_seasons("en")
-
-    assert isinstance(seasons, dict)
-    assert len(seasons) == 12
-
-    # Test some specific months (Southern Hemisphere)
-    assert seasons[1] == "summer"
-    assert seasons[7] == "winter"
+    assert hasattr(module, "TIME_OF_DAY")
 
 
 def test_get_time_of_day_spanish():
@@ -163,7 +131,7 @@ def test_get_prompt_template_spanish():
 
     assert isinstance(template, str)
     assert len(template) > 0
-    assert "{lugar_nombre}" in template
+    assert "{direccion}" in template
     assert "{fecha_evento}" in template
     assert "{perfumes_text}" in template
     assert "perfumista" in template  # Spanish word
@@ -177,8 +145,7 @@ def test_get_prompt_template_english():
 
     assert isinstance(template, str)
     assert len(template) > 0
-    assert "{lugar_nombre}" in template or "{place_name}" in template
-    # English template should have English words
+    assert "{direccion}" in template
 
 
 def test_multiple_languages_loaded():
@@ -196,17 +163,6 @@ def test_multiple_languages_loaded():
 
     # Should be different modules
     assert es_module is not en_module
-
-
-def test_get_seasons_all_months():
-    """Test that all 12 months have season definitions"""
-    loader = LanguageLoader()
-
-    seasons = loader.get_seasons("es")
-
-    for month in range(1, 13):
-        assert month in seasons
-        assert seasons[month] in ["verano", "otoño", "invierno", "primavera"]
 
 
 def test_language_loader_global_instance():
@@ -243,7 +199,7 @@ def test_fallback_to_default_language():
         module = loader.get_language_module(lang_code)
         # Should get a valid module (the default one)
         assert module is not None
-        assert hasattr(module, "SEASONS")
+        assert hasattr(module, "TIME_OF_DAY")
 
 
 def test_prompt_template_formatting():
@@ -254,40 +210,27 @@ def test_prompt_template_formatting():
 
     # Test that template can be formatted with all required fields
     formatted = template.format(
+        direccion="Av. Providencia 1234, Santiago, Chile",
         lugar_nombre="Test Place",
         lugar_tipo="cerrado",
-        lugar_descripcion="Description",
+        lugar_descripcion="Av. Providencia 1234, Santiago, Chile",
         fecha_evento="2025-03-15",
         hora_evento="18:00",
+        tipo_espacio_desc="Espacio cerrado (interior)",
         momento_dia="noche",
         clima_descripcion="despejado",
         temperatura=22,
         humedad=65,
-        estacion="verano",
         ocasion="cena",
+        proximidad="media",
         expectativa="elegancia",
         vestimenta="formal",
         perfumes_text="Test perfumes"
     )
 
     assert "Test Place" in formatted
-    assert "cerrado" in formatted
+    assert "Santiago, Chile" in formatted
     assert "Test perfumes" in formatted
-
-
-def test_seasons_southern_hemisphere():
-    """Test that seasons follow Southern Hemisphere calendar"""
-    loader = LanguageLoader()
-    seasons = loader.get_seasons("es")
-
-    # Southern Hemisphere: December-February = Summer
-    assert seasons[12] in ["verano", "summer"]
-    assert seasons[1] in ["verano", "summer"]
-    assert seasons[2] in ["verano", "summer"]
-
-    # June-August = Winter
-    assert seasons[6] in ["invierno", "winter"]
-    assert seasons[7] in ["invierno", "winter"]
 
 
 def test_language_module_structure():
@@ -298,19 +241,16 @@ def test_language_module_structure():
         module = loader.get_language_module(lang_code)
 
         # Check all required attributes exist
-        assert hasattr(module, "SEASONS")
         assert hasattr(module, "TIME_OF_DAY")
         assert hasattr(module, "PERFUME_LABELS")
         assert hasattr(module, "PROMPT_TEMPLATE")
 
         # Check types
-        assert isinstance(module.SEASONS, dict)
         assert isinstance(module.TIME_OF_DAY, dict)
         assert isinstance(module.PERFUME_LABELS, dict)
         assert isinstance(module.PROMPT_TEMPLATE, str)
 
         # Check required keys
-        assert len(module.SEASONS) == 12
         assert "morning" in module.TIME_OF_DAY
         assert "perfumer" in module.PERFUME_LABELS
 
@@ -320,7 +260,7 @@ def test_cache_persistence():
     loader = LanguageLoader()
 
     # First call
-    loader.get_seasons("es")
+    loader.get_time_of_day("es")
     cache_size_1 = len(loader._cache)
 
     # More calls
@@ -332,7 +272,7 @@ def test_cache_persistence():
     assert cache_size_1 == cache_size_2 == 1
 
     # Load different language
-    loader.get_seasons("en")
+    loader.get_time_of_day("en")
     cache_size_3 = len(loader._cache)
 
     # Cache size should increase

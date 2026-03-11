@@ -19,6 +19,7 @@ from app.schemas.coleccion import (
     ImportColeccionRequest,
     ImportColeccionResponse,
 )
+from app.i18n.normalizer import normalize_acordes, normalize_notas
 
 router = APIRouter()
 
@@ -136,9 +137,13 @@ async def create_perfume(
 ):
     coleccion = await get_or_create_coleccion(db, current_user)
 
+    perfume_data = data.model_dump()
+    perfume_data["acordes"] = normalize_acordes(perfume_data.get("acordes"))
+    perfume_data["notas"] = normalize_notas(perfume_data.get("notas"))
+
     perfume = PerfumeColeccion(
         coleccion_id=coleccion.id,
-        **data.model_dump(),
+        **perfume_data,
     )
     db.add(perfume)
     await db.commit()
@@ -190,6 +195,10 @@ async def update_perfume(
         raise HTTPException(status_code=404, detail="Perfume no encontrado")
 
     update_data = data.model_dump(exclude_unset=True)
+    if "acordes" in update_data:
+        update_data["acordes"] = normalize_acordes(update_data["acordes"])
+    if "notas" in update_data:
+        update_data["notas"] = normalize_notas(update_data["notas"])
     for field, value in update_data.items():
         setattr(perfume, field, value)
 
@@ -237,8 +246,8 @@ async def import_perfumes(
             nombre=item.nombre,
             marca=item.marca or "",
             perfumistas=item.perfumistas or [],
-            acordes=item.acordes or [],
-            notas=item.notas or [],
+            acordes=normalize_acordes(item.acordes) or [],
+            notas=normalize_notas(item.notas) or [],
             familia_olfativa=item.familia_olfativa or "",
             concentracion=item.concentracion or "",
             momento_dia=item.momento_dia or "",

@@ -37,11 +37,6 @@ class LanguageLoader:
                 return self.get_language_module(DEFAULT_LANGUAGE)
             raise
 
-    def get_seasons(self, lang_code: str) -> Dict[int, str]:
-        """Obtiene diccionario de estaciones para el idioma"""
-        module = self.get_language_module(lang_code)
-        return module.SEASONS
-
     def get_time_of_day(self, lang_code: str) -> Dict[str, str]:
         """Obtiene diccionario de momentos del día"""
         module = self.get_language_module(lang_code)

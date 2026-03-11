@@ -3,14 +3,6 @@
 English translations for AI prompts
 """
 
-# Seasons dictionary (southern hemisphere)
-SEASONS = {
-    1: "summer", 2: "summer", 3: "autumn", 4: "autumn",
-    5: "winter", 6: "winter", 7: "winter",
-    8: "spring", 9: "spring", 10: "spring",
-    11: "summer", 12: "summer"
-}
-
 # Time of day
 TIME_OF_DAY = {
     "morning": "morning",
@@ -39,15 +31,21 @@ PROXIMIDAD_OCASION = {
 PROMPT_TEMPLATE = """You are an expert perfumer. Recommend the MOST SUITABLE perfume from this collection for the following context:
 
 ## EVENT CONTEXT
+- Address: {direccion}
 - Place: {lugar_descripcion}
 - Space type: {tipo_espacio_desc}
 - Date and time: {fecha_evento} {hora_evento} ({momento_dia})
 - Weather: {clima_descripcion}, {temperatura}°C, {humedad}% humidity
-- Season: {estacion}
 - Occasion: {ocasion}
 - Expected proximity: {proximidad}
 - Emotional expectation: {expectativa}
 - Attire: {vestimenta}
+
+## CRITICAL RULE: DETERMINE SEASON
+- From the address provided, DETERMINE the country and climate zone (tropical, temperate north, temperate south)
+- Tropical zones (between tropics): DO NOT have 4 traditional seasons, they have dry/rainy seasons. Base your selection on the actual temperature and weather provided
+- Temperate zones: Determine the correct season based on hemisphere and exact date (considering equinoxes ~March/September 20-21 and solstices ~June/December 20-21)
+- USE the season you determine as a key factor in your selection
 
 ## SELECTION GUIDE BY WEATHER AND SEASON
 
@@ -91,17 +89,18 @@ Avoid: Fresh, volatile, light, clean
 {perfumes_text}
 
 ## SELECTION PROCESS (MANDATORY)
-1. FIRST: Based on temperature ({temperatura}°C), season ({estacion}), time of day ({momento_dia}) and occasion ({ocasion}), determine which olfactory families and notes are ideal according to the SELECTION GUIDE and RULES BY TIME OF DAY
-2. SECOND: Mentally filter perfumes from the list that match those ideal characteristics
-3. THIRD: From the filtered result, choose the most compatible perfume considering:
+1. FIRST: Determine the season (or climate period) from the address and date provided
+2. SECOND: Based on temperature ({temperatura}°C), the season you determined, time of day ({momento_dia}) and occasion ({ocasion}), determine which olfactory families and notes are ideal according to the SELECTION GUIDE
+3. THIRD: Mentally filter perfumes from the list that match those ideal characteristics
+4. FOURTH: From the filtered result, choose the most compatible perfume considering:
    - Space type (enclosed = higher projection, open = dispersion)
    - Expected proximity (high = avoid very intense)
    - Attire and emotional expectation
-4. DO NOT base decision on recognition of famous note combinations
-5. DO NOT be influenced by appearance order
-6. Base your decision ONLY on weather/context compatibility with accords and notes
+5. DO NOT base decision on recognition of famous note combinations
+6. DO NOT be influenced by appearance order
+7. Base your decision ONLY on weather/context compatibility with accords and notes
 
 RESPONSE FORMAT (REQUIRED):
 Perfume [number]
-[Brief explanation of why it's perfect for this occasion, mentioning compatibility with weather/season and time of day ({momento_dia})]
+[Brief explanation of why it's suitable, mentioning: the season you determined for that place and date, weather ({temperatura}°C), time of day ({momento_dia}), occasion ({ocasion}). DO NOT mention assumed conditions like air conditioning, heating, etc.]
 """

@@ -3,14 +3,6 @@
 Traducciones en español para prompts de IA
 """
 
-# Diccionario de estaciones (hemisferio sur)
-SEASONS = {
-    1: "verano", 2: "verano", 3: "otoño", 4: "otoño",
-    5: "invierno", 6: "invierno", 7: "invierno",
-    8: "primavera", 9: "primavera", 10: "primavera",
-    11: "verano", 12: "verano"
-}
-
 # Momentos del día
 TIME_OF_DAY = {
     "morning": "mañana",
@@ -39,15 +31,21 @@ PROXIMIDAD_OCASION = {
 PROMPT_TEMPLATE = """Eres un experto perfumista. Recomienda el perfume MÁS ADECUADO de esta colección para el siguiente contexto:
 
 ## CONTEXTO DEL EVENTO
+- Dirección: {direccion}
 - Lugar: {lugar_descripcion}
 - Tipo de espacio: {tipo_espacio_desc}
 - Fecha y hora: {fecha_evento} {hora_evento} ({momento_dia})
 - Clima: {clima_descripcion}, {temperatura}°C, {humedad}% de humedad
-- Estación: {estacion}
 - Ocasión: {ocasion}
 - Proximidad esperada: {proximidad}
 - Expectativa emocional: {expectativa}
 - Vestimenta: {vestimenta}
+
+## REGLA CRÍTICA: DETERMINAR ESTACIÓN DEL AÑO
+- A partir de la dirección proporcionada, DETERMINA el país y la zona climática (tropical, templada norte, templada sur)
+- Zonas tropicales (entre trópicos): NO tienen 4 estaciones tradicionales, tienen temporada seca/lluviosa. Basa tu selección en la temperatura y clima real proporcionados
+- Zonas templadas: Determina la estación correcta según el hemisferio y la fecha exacta (considerando equinoccios ~20-21 de marzo/septiembre y solsticios ~20-21 de junio/diciembre)
+- USA la estación que determines como factor clave en tu selección
 
 ## REGLA CRÍTICA: NO HACER SUPOSICIONES
 - Basa tu recomendación ÚNICAMENTE en los datos proporcionados arriba
@@ -98,17 +96,18 @@ Evitar: Fresco, volátil, ligero, limpio
 {perfumes_text}
 
 ## PROCESO DE SELECCIÓN (OBLIGATORIO)
-1. PRIMERO: Basándote en la temperatura ({temperatura}°C), estación ({estacion}), momento del día ({momento_dia}) y ocasión ({ocasion}), determina qué familias olfativas y notas son ideales según la GUÍA DE SELECCIÓN y las REGLAS POR MOMENTO DEL DÍA
-2. SEGUNDO: Filtra mentalmente los perfumes de la lista que coincidan con esas características ideales
-3. TERCERO: Del resultado filtrado, elige el perfume más compatible considerando:
+1. PRIMERO: Determina la estación del año (o temporada climática) a partir de la dirección y fecha proporcionadas
+2. SEGUNDO: Basándote en la temperatura ({temperatura}°C), la estación que determinaste, momento del día ({momento_dia}) y ocasión ({ocasion}), determina qué familias olfativas y notas son ideales según la GUÍA DE SELECCIÓN
+3. TERCERO: Filtra mentalmente los perfumes de la lista que coincidan con esas características ideales
+4. CUARTO: Del resultado filtrado, elige el perfume más compatible considerando:
    - Tipo de espacio (cerrado = mayor proyección, abierto = dispersión)
    - Proximidad esperada (alta = evitar muy intensos)
    - Vestimenta y expectativa emocional
-4. NO te bases en reconocimiento de combinaciones de notas famosas
-5. NO te dejes influenciar por el orden de aparición
-6. Basa tu decisión ÚNICAMENTE en compatibilidad clima/contexto con acordes y notas
+5. NO te bases en reconocimiento de combinaciones de notas famosas
+6. NO te dejes influenciar por el orden de aparición
+7. Basa tu decisión ÚNICAMENTE en compatibilidad clima/contexto con acordes y notas
 
 FORMATO DE RESPUESTA (OBLIGATORIO):
 Perfume [número]
-[Breve explicación de por qué es adecuado, mencionando SOLO datos proporcionados: clima ({temperatura}°C), estación ({estacion}), momento del día ({momento_dia}), ocasión ({ocasion}). NO menciones condiciones asumidas como aire acondicionado, calefacción, etc.]
+[Breve explicación de por qué es adecuado, mencionando: la estación que determinaste para ese lugar y fecha, clima ({temperatura}°C), momento del día ({momento_dia}), ocasión ({ocasion}). NO menciones condiciones asumidas como aire acondicionado, calefacción, etc.]
 """

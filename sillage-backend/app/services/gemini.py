@@ -35,15 +35,10 @@ def build_prompt(
     """
 
     # Cargar traducciones del idioma
-    seasons = language_loader.get_seasons(idioma)
     time_of_day_dict = language_loader.get_time_of_day(idioma)
     perfume_labels = language_loader.get_perfume_labels(idioma)
     prompt_template = language_loader.get_prompt_template(idioma)
     proximidad_dict = language_loader.get_proximidad_ocasion(idioma)
-
-    # Determinar estación (hemisferio sur)
-    mes = fecha_evento.month
-    estacion = seasons.get(mes, "desconocida")
 
     # Determinar momento del día
     hora = hora_evento.hour
@@ -88,6 +83,7 @@ def build_prompt(
 
     # Construir prompt usando el template del idioma
     prompt = prompt_template.format(
+        direccion=lugar_descripcion,
         lugar_nombre=lugar_nombre,
         lugar_descripcion=lugar_descripcion,
         tipo_espacio_desc=tipo_espacio_desc,
@@ -97,7 +93,6 @@ def build_prompt(
         clima_descripcion=clima_descripcion,
         temperatura=temperatura,
         humedad=humedad,
-        estacion=estacion,
         ocasion=ocasion,
         proximidad=proximidad,
         expectativa=expectativa,

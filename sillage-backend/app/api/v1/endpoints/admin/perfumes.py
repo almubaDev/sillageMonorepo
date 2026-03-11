@@ -23,6 +23,7 @@ from app.schemas.admin import (
     PaginatedResponse
 )
 from app.schemas.perfume import PerfumeResponse
+from app.i18n.normalizer import normalize_acordes, normalize_notas
 
 logger = logging.getLogger(__name__)
 
@@ -141,13 +142,13 @@ async def create_perfume(
             detail=f"Ya existe un perfume con el nombre '{perfume_data.nombre}' de la marca '{perfume_data.marca}'"
         )
 
-    # Crear perfume - usar campos directos del modelo
+    # Crear perfume - normalizar notas/acordes a español
     new_perfume = Perfume(
         nombre=perfume_data.nombre,
         marca=perfume_data.marca,
         perfumista=perfume_data.perfumista,
-        notas=perfume_data.notas,  # Ya es dict o lista según schema
-        acordes=perfume_data.acordes,  # Ya es lista según schema
+        notas=normalize_notas(perfume_data.notas),
+        acordes=normalize_acordes(perfume_data.acordes),
         is_private=perfume_data.is_private,
         created_by=current_user.id
     )
@@ -208,13 +209,13 @@ async def bulk_import_perfumes(
                 })
                 continue
 
-            # Crear perfume - usar campos directos del modelo
+            # Crear perfume - normalizar notas/acordes a español
             new_perfume = Perfume(
                 nombre=perfume_data.nombre,
                 marca=perfume_data.marca,
                 perfumista=perfume_data.perfumista,
-                notas=perfume_data.notas,
-                acordes=perfume_data.acordes,
+                notas=normalize_notas(perfume_data.notas),
+                acordes=normalize_acordes(perfume_data.acordes),
                 is_private=perfume_data.is_private,
                 created_by=current_user.id
             )
@@ -267,7 +268,7 @@ async def upload_perfumes_csv(
 ):
     """
     Upload CSV file with perfumes (simple format).
-    Expected columns: Perfume, Marca, URL, Acordes, Notas
+    Expected columns: Perfume, Marca, Acordes, Notas
     Requiere permiso: PERFUMES_WRITE
     """
     # Validar extensión
@@ -293,14 +294,12 @@ async def upload_perfumes_csv(
 
         for idx, row in enumerate(reader):
             try:
-                # Parse acordes y notas (strings delimitados por comas → arrays)
-                acordes_str = row.get('Acordes', '').strip('"')  # Remover comillas externas
+                acordes_str = row.get('Acordes', '').strip('"')
                 notas_str = row.get('Notas', '').strip('"')
 
                 acordes = [a.strip() for a in acordes_str.split(',') if a.strip()]
                 notas = [n.strip() for n in notas_str.split(',') if n.strip()]
 
-                # Validar campos obligatorios
                 nombre = row.get('Perfume', '').strip()
                 marca = row.get('Marca', '').strip()
 
@@ -308,13 +307,12 @@ async def upload_perfumes_csv(
                     logger.warning(f"Fila {idx+2}: nombre o marca vacíos, saltando...")
                     continue
 
-                perfumes_data.append(PerfumeAdminCreate(
-                    nombre=nombre,
-                    marca=marca,
-                    acordes=acordes if acordes else None,
-                    notas=notas if notas else None,
-                    is_private=False
-                ))
+                perfumes_data.append({
+                    "nombre": nombre,
+                    "marca": marca,
+                    "acordes": acordes if acordes else None,
+                    "notas": notas if notas else None,
+                })
 
             except Exception as e:
                 logger.warning(f"Error parsing fila {idx+2}: {e}")
@@ -326,41 +324,107 @@ async def upload_perfumes_csv(
                 detail="No se encontraron perfumes válidos en el archivo CSV"
             )
 
-        # Procesar en lotes de 100 perfumes (límite del bulk endpoint)
-        BATCH_SIZE = 100
+        # Dedup en memoria: solo quedarse con la primera ocurrencia de (nombre, marca)
+        seen = set()
+        unique_perfumes = []
+        csv_dupes = 0
+        for p in perfumes_data:
+            key = (p["nombre"], p["marca"])
+            if key in seen:
+                csv_dupes += 1
+                continue
+            seen.add(key)
+            unique_perfumes.append(p)
+
+        if csv_dupes:
+            logger.info(f"CSV: {csv_dupes} duplicados internos descartados")
+
+        # Obtener perfumes existentes en BD para dedup
+        existing_result = await db.execute(
+            select(Perfume.nombre, Perfume.marca)
+        )
+        existing_keys = {(r.nombre, r.marca) for r in existing_result.all()}
+
+        # Filtrar los que ya existen en BD
+        db_dupes = 0
+        to_insert = []
+        for p in unique_perfumes:
+            key = (p["nombre"], p["marca"])
+            if key in existing_keys:
+                db_dupes += 1
+                continue
+            to_insert.append(p)
+
+        if db_dupes:
+            logger.info(f"CSV: {db_dupes} perfumes ya existentes en BD, saltando")
+
+        total_dupes = csv_dupes + db_dupes
+
+        # Insertar en batches con savepoints para aislar errores
+        BATCH_SIZE = 500
         total_success = 0
         total_errors = 0
         all_errors = []
+        total_batches = (len(to_insert) + BATCH_SIZE - 1) // BATCH_SIZE if to_insert else 0
 
-        logger.info(f"📦 Procesando {len(perfumes_data)} perfumes en lotes de {BATCH_SIZE}")
+        logger.info(f"Procesando {len(to_insert)} perfumes nuevos en {total_batches} lotes de {BATCH_SIZE}")
 
-        for i in range(0, len(perfumes_data), BATCH_SIZE):
-            batch = perfumes_data[i:i + BATCH_SIZE]
+        for i in range(0, len(to_insert), BATCH_SIZE):
+            batch = to_insert[i:i + BATCH_SIZE]
             batch_num = (i // BATCH_SIZE) + 1
-            total_batches = (len(perfumes_data) + BATCH_SIZE - 1) // BATCH_SIZE
-
-            logger.info(f"📦 Procesando lote {batch_num}/{total_batches} ({len(batch)} perfumes)")
 
             try:
-                bulk_data = PerfumeBulkImport(perfumes=batch)
-                result = await bulk_import_perfumes(bulk_data, request, db, current_user)
+                # Usar savepoint para aislar cada batch
+                async with db.begin_nested():
+                    for p in batch:
+                        perfume = Perfume(
+                            nombre=p["nombre"],
+                            marca=p["marca"],
+                            notas=normalize_notas(p["notas"]),
+                            acordes=normalize_acordes(p["acordes"]),
+                            is_private=False,
+                            created_by=current_user.id
+                        )
+                        db.add(perfume)
 
-                total_success += result.success_count
-                total_errors += result.error_count
-                if result.errors:
-                    all_errors.extend(result.errors)
+                total_success += len(batch)
+                logger.info(f"Lote {batch_num}/{total_batches} OK ({len(batch)} perfumes)")
 
             except Exception as e:
-                logger.error(f"Error procesando lote {batch_num}: {e}")
+                logger.error(f"Error lote {batch_num}: {e}")
                 total_errors += len(batch)
-                all_errors.append(f"Lote {batch_num}: {str(e)}")
+                all_errors.append({
+                    "batch": batch_num,
+                    "error": str(e),
+                    "count": len(batch)
+                })
 
-        logger.info(f"✅ CSV procesado: {total_success} éxitos, {total_errors} errores")
+        # Commit final de todos los savepoints exitosos
+        await db.commit()
+
+        # Registrar acción
+        await log_admin_action(
+            db=db,
+            admin_id=current_user.id,
+            action="CSV_IMPORT",
+            resource="perfumes",
+            details={
+                "archivo": file.filename,
+                "total_csv": len(perfumes_data),
+                "duplicados_csv": csv_dupes,
+                "duplicados_bd": db_dupes,
+                "insertados": total_success,
+                "errores": total_errors
+            },
+            ip_address=request.client.host if request.client else None
+        )
+
+        logger.info(f"CSV procesado: {total_success} insertados, {total_dupes} duplicados, {total_errors} errores")
 
         return PerfumeBulkImportResponse(
             success_count=total_success,
-            error_count=total_errors,
-            errors=all_errors if all_errors else None
+            error_count=total_errors + total_dupes,
+            errors=all_errors
         )
 
     except HTTPException:
@@ -396,7 +460,7 @@ async def update_perfume(
             detail="Perfume no encontrado"
         )
 
-    # Actualizar campos - usar campos del modelo base
+    # Actualizar campos - normalizar notas/acordes a español
     if perfume_update.nombre is not None:
         perfume.nombre = perfume_update.nombre
     if perfume_update.marca is not None:
@@ -404,9 +468,9 @@ async def update_perfume(
     if perfume_update.perfumista is not None:
         perfume.perfumista = perfume_update.perfumista
     if perfume_update.notas is not None:
-        perfume.notas = perfume_update.notas
+        perfume.notas = normalize_notas(perfume_update.notas)
     if perfume_update.acordes is not None:
-        perfume.acordes = perfume_update.acordes
+        perfume.acordes = normalize_acordes(perfume_update.acordes)
     if perfume_update.is_private is not None:
         perfume.is_private = perfume_update.is_private
 
