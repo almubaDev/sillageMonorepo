@@ -7,9 +7,10 @@ interface TagInputProps {
   tags: string[];
   onChange: (tags: string[]) => void;
   placeholder?: string;
+  color?: string;
 }
 
-export const TagInput: React.FC<TagInputProps> = ({ tags, onChange, placeholder }) => {
+export const TagInput: React.FC<TagInputProps> = ({ tags, onChange, placeholder, color }) => {
   const { colors } = useTheme();
   const [inputValue, setInputValue] = useState('');
 
@@ -65,13 +66,13 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onChange, placeholder 
           {tags.map((tag, index) => (
             <View
               key={`${tag}-${index}`}
-              style={[styles.tag, { backgroundColor: colors.accent + '20', borderColor: colors.accent + '40' }]}
+              style={[styles.tag, { backgroundColor: (color || colors.accent) + '20', borderColor: (color || colors.accent) + '40' }]}
             >
-              <Text style={[styles.tagText, { color: colors.accent, fontFamily: 'Lato-Regular' }]}>
+              <Text style={[styles.tagText, { color: color || colors.accent, fontFamily: 'Lato-Regular' }]}>
                 {tag}
               </Text>
               <TouchableOpacity onPress={() => removeTag(index)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <MaterialCommunityIcons name="close" size={14} color={colors.accent} />
+                <MaterialCommunityIcons name="close" size={14} color={color || colors.accent} />
               </TouchableOpacity>
             </View>
           ))}

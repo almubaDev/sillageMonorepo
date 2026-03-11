@@ -386,6 +386,7 @@ export const AddEditPerfumeScreen = () => {
           <TagInput
             tags={notas}
             onChange={setNotas}
+            color="#4ADE80"
           />
         </View>
 
