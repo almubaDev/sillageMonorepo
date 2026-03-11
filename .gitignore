@@ -3,6 +3,7 @@
 !README.md
 perfumes_A_basic.csv
 render.yaml
+data/
 
 # --- Claude Code ---
 .claude/
