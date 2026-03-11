@@ -187,6 +187,6 @@ Ideal notes: Bergamot, Lime, Grapefruit, Mint, Eucalyptus, Lavender, Sea water, 
 
 RESPONSE FORMAT (REQUIRED):
 Perfume [number]
-Season: {estacion} | Temperature: {temperatura}°C
+Season: {estacion} | Temperature: {temperatura}°C | {momento_dia}
 [Explain why this perfume is ideal for the context. For each relevant accord and note of the perfume, explain WHY it is suitable for this specific situation. Mention the season and temperature to give context and validity to your explanation. DO NOT reveal the internal workings of the app, how you obtained the information, or how you reached the decision. DO NOT list ideal accords or mention the selection process. DO NOT repeat context data the user already knows. Write as an expert perfumer speaking to the user, NOT as a system explaining its logic.]
 """

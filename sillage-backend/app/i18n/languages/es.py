@@ -187,6 +187,6 @@ Notas ideales: Bergamota, Lima, Toronja, Menta, Eucalipto, Lavanda, Agua de mar,
 
 FORMATO DE RESPUESTA (OBLIGATORIO):
 Perfume [número]
-Estación: {estacion} | Temperatura: {temperatura}°C
+Estación: {estacion} | Temperatura: {temperatura}°C | {momento_dia}
 [Explica por qué este perfume es ideal para el contexto. Para cada acorde y nota relevante del perfume, explica POR QUÉ es adecuado para esta situación específica. Menciona la estación y temperatura para dar contexto y validez a tu explicación. NO reveles el funcionamiento interno de la app, cómo obtuviste la información, ni cómo llegaste a la decisión. NO listes acordes ideales ni menciones el proceso de selección. NO repitas los datos del contexto que el usuario ya conoce. Escribe como un perfumista experto hablándole al usuario, NO como un sistema explicando su lógica.]
 """
