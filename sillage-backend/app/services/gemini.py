@@ -1,11 +1,47 @@
 import httpx
 import random
 import time as time_module
+from datetime import date
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.coleccion import PerfumeColeccion
 from app.i18n.loader import language_loader
+
+
+def determine_season(latitud: float, fecha: date, idioma: str = "es") -> str:
+    """
+    Determina la estación del año basándose en la latitud y la fecha.
+    - Zona tropical (entre -23.5° y 23.5°): no tiene estaciones tradicionales
+    - Zona templada norte (> 23.5°): estaciones estándar
+    - Zona templada sur (< -23.5°): estaciones invertidas
+    """
+    month = fecha.month
+    day = fecha.day
+
+    # Zona tropical: no hay estaciones tradicionales
+    if -23.5 <= latitud <= 23.5:
+        return "tropical (sin estaciones tradicionales)" if idioma == "es" else "tropical (no traditional seasons)"
+
+    # Determinar estación astronómica por fecha
+    # Primavera: 21 mar - 20 jun | Verano: 21 jun - 22 sep | Otoño: 23 sep - 20 dic | Invierno: 21 dic - 20 mar
+    if (month == 3 and day >= 21) or (month in [4, 5]) or (month == 6 and day <= 20):
+        northern_season = "primavera" if idioma == "es" else "spring"
+        southern_season = "otoño" if idioma == "es" else "autumn"
+    elif (month == 6 and day >= 21) or (month in [7, 8]) or (month == 9 and day <= 22):
+        northern_season = "verano" if idioma == "es" else "summer"
+        southern_season = "invierno" if idioma == "es" else "winter"
+    elif (month == 9 and day >= 23) or (month in [10, 11]) or (month == 12 and day <= 20):
+        northern_season = "otoño" if idioma == "es" else "autumn"
+        southern_season = "primavera" if idioma == "es" else "spring"
+    else:  # 21 dic - 20 mar
+        northern_season = "invierno" if idioma == "es" else "winter"
+        southern_season = "verano" if idioma == "es" else "summer"
+
+    if latitud > 23.5:
+        return northern_season
+    else:
+        return southern_season
 
 
 def build_prompt(
@@ -54,6 +90,9 @@ def build_prompt(
     # Determinar proximidad esperada según ocasión
     proximidad = proximidad_dict.get(ocasion, "media")
 
+    # Determinar estación del año por latitud + fecha
+    estacion = determine_season(latitud or 0, fecha_evento, idioma)
+
     # Descripción del tipo de espacio
     if idioma == "es":
         tipo_espacio_desc = "Espacio cerrado (interior, aire acondicionado/calefacción)" if lugar_tipo == "cerrado" else "Espacio abierto (exterior, ventilación natural)"
@@ -101,6 +140,7 @@ def build_prompt(
         vestimenta=vestimenta,
         latitud=latitud or 0,
         longitud=longitud or 0,
+        estacion=estacion,
         perfumes_text=perfumes_text
     )
 

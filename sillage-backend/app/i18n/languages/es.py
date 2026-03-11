@@ -35,20 +35,13 @@ PROMPT_TEMPLATE = """Eres un experto perfumista. Recomienda el perfume MÁS ADEC
 - Coordenadas GPS: {latitud}, {longitud}
 - Lugar: {lugar_descripcion}
 - Tipo de espacio: {tipo_espacio_desc}
+- Estación del año: {estacion}
 - Fecha y hora: {fecha_evento} {hora_evento} ({momento_dia})
 - Clima: {clima_descripcion}, {temperatura}°C, {humedad}% de humedad
 - Ocasión: {ocasion}
 - Proximidad esperada: {proximidad}
 - Expectativa emocional: {expectativa}
 - Vestimenta: {vestimenta}
-
-## REGLA CRÍTICA: DETERMINAR ESTACIÓN DEL AÑO
-- Usa las COORDENADAS GPS ({latitud}, {longitud}) y la DIRECCIÓN para identificar el país y región geográfica exacta
-- Con esa ubicación geográfica + la FECHA ({fecha_evento}), determina la estación del año correcta para ese lugar específico
-- NO asumas la estación solo por hemisferio + mes. Diferentes países en el mismo hemisferio pueden tener climas muy distintos (ej: Colombia tropical vs Chile templado, ambos en hemisferio sur)
-- Si las coordenadas indican zona tropical (latitud entre -23.5° y 23.5°): NO tienen 4 estaciones tradicionales. Basa tu selección en el clima real proporcionado
-- Si las coordenadas indican zona templada: determina la estación según la ubicación geográfica específica + fecha
-- USA la estación/contexto climático que determines como factor clave en tu selección
 
 ## REGLA CRÍTICA: NO HACER SUPOSICIONES
 - Basa tu recomendación ÚNICAMENTE en los datos proporcionados arriba
@@ -181,19 +174,19 @@ Notas ideales: Bergamota, Lima, Toronja, Menta, Eucalipto, Lavanda, Agua de mar,
 {perfumes_text}
 
 ## PROCESO DE SELECCIÓN (OBLIGATORIO)
-1. PRIMERO: Determina la estación del año (o temporada climática) a partir de las coordenadas GPS, la dirección y la fecha. NO uses solo hemisferio + mes
-2. SEGUNDO: Cruza los acordes ideales de las 5 dimensiones (estación + lugar + ocasión + expectativa + vestimenta). Identifica los acordes que aparecen en MÚLTIPLES dimensiones — esos son los más importantes
-3. TERCERO: Filtra los perfumes cuyos ACORDES tengan mayor coincidencia con los acordes ideales cruzados
-4. CUARTO: Si hay empate o ambigüedad entre perfumes con acordes similares, DESEMPATA POR NOTAS — elige el perfume que tenga más notas presentes en las listas de notas ideales del contexto
-5. QUINTO: Consideraciones finales de ajuste:
+1. Cruza los acordes ideales de las 5 dimensiones (estación + lugar + ocasión + expectativa + vestimenta). Identifica los acordes que aparecen en MÚLTIPLES dimensiones — esos son los más importantes
+2. Filtra los perfumes cuyos ACORDES tengan mayor coincidencia con los acordes ideales cruzados
+3. Si hay empate o ambigüedad entre perfumes con acordes similares, DESEMPATA POR NOTAS — elige el perfume que tenga más notas presentes en las listas de notas ideales del contexto
+4. Consideraciones finales de ajuste:
    - Tipo de espacio (cerrado = moderar proyección, abierto = se puede ser audaz)
    - Proximidad esperada (alta = evitar muy intensos)
    - Temperatura real ({temperatura}°C) como validación final
-6. NO te bases en reconocimiento de combinaciones de notas famosas
-7. NO te dejes influenciar por el orden de aparición
-8. Basa tu decisión ÚNICAMENTE en compatibilidad contexto/acordes/notas
+5. NO te bases en reconocimiento de combinaciones de notas famosas
+6. NO te dejes influenciar por el orden de aparición
+7. Basa tu decisión ÚNICAMENTE en compatibilidad contexto/acordes/notas
 
 FORMATO DE RESPUESTA (OBLIGATORIO):
 Perfume [número]
-[Breve explicación de por qué es adecuado, mencionando: la estación que determinaste para ese lugar y fecha, clima ({temperatura}°C), momento del día ({momento_dia}), ocasión ({ocasion}). NO menciones condiciones asumidas como aire acondicionado, calefacción, etc.]
+Estación: {estacion} | Temperatura: {temperatura}°C
+[Explica por qué este perfume es ideal para el contexto. Para cada acorde y nota relevante del perfume, explica POR QUÉ es adecuado para esta situación específica. Menciona la estación y temperatura para dar contexto y validez a tu explicación. NO reveles el funcionamiento interno de la app, cómo obtuviste la información, ni cómo llegaste a la decisión. NO listes acordes ideales ni menciones el proceso de selección. NO repitas los datos del contexto que el usuario ya conoce. Escribe como un perfumista experto hablándole al usuario, NO como un sistema explicando su lógica.]
 """
