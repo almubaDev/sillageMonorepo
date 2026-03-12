@@ -12,6 +12,8 @@ import {
   Image,
   useWindowDimensions,
   ScrollView,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +39,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const isWeb = Platform.OS === 'web';
   const isDesktop = width >= 1024;
@@ -115,11 +118,45 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const VideoModal = () => (
+    <Modal
+      visible={showVideoModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowVideoModal(false)}
+    >
+      <Pressable
+        style={styles.modalOverlay}
+        onPress={() => setShowVideoModal(false)}
+      >
+        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+          <TouchableOpacity
+            style={styles.modalClose}
+            onPress={() => setShowVideoModal(false)}
+          >
+            <MaterialCommunityIcons name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+          <View style={[styles.videoContainer, isDesktop && styles.videoContainerDesktop]}>
+            {Platform.OS === 'web' ? (
+              <iframe
+                src="https://www.youtube.com/embed/xyW51z5uhPs?autoplay=1"
+                style={{ width: '100%', height: '100%', border: 'none', borderRadius: 16 } as any}
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              />
+            ) : null}
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+
   if (isWeb && isDesktop) {
     // DISEÑO WEB DESKTOP (2 COLUMNAS)
     return (
       <View style={[styles.webContainer, { backgroundColor: colors.bg }]}>
         <LanguageSelector position="top-right" />
+        <VideoModal />
         {/* COLUMNA IZQUIERDA - BRANDING */}
         <View style={[styles.brandingSection, { backgroundColor: colors.accent }]}>
           <View style={styles.brandingContent}>
@@ -135,6 +172,15 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={[styles.webBrandDescription, { color: colors.bg, opacity: 0.9 }]}>
               {t('auth:login.description')}
             </Text>
+            <TouchableOpacity
+              style={styles.aboutUsButton}
+              onPress={() => setShowVideoModal(true)}
+            >
+              <MaterialCommunityIcons name="play-circle-outline" size={20} color={colors.bg} />
+              <Text style={[styles.aboutUsButtonText, { color: colors.bg }]}>
+                {t('auth:login.aboutUs')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -267,6 +313,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       style={[styles.container, { backgroundColor: colors.bg }]}
     >
       <LanguageSelector position="top-right" />
+      <VideoModal />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.logoContainer}>
@@ -281,6 +328,16 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={[styles.subtitle, { color: colors.secondary }]}>
             {t('auth:login.tagline')}
           </Text>
+
+          <TouchableOpacity
+            style={styles.aboutUsMobile}
+            onPress={() => setShowVideoModal(true)}
+          >
+            <MaterialCommunityIcons name="play-circle-outline" size={14} color={colors.accent} />
+            <Text style={[styles.aboutUsMobileText, { color: colors.accent }]}>
+              {t('auth:login.aboutUs')}
+            </Text>
+          </TouchableOpacity>
 
           {errorMessage ? (
             <View style={[styles.errorBox, { backgroundColor: '#EF444410', borderColor: '#EF4444' }]}>
@@ -591,5 +648,66 @@ const styles = StyleSheet.create({
     right: 16,
     top: 16,
     padding: 4,
+  },
+
+  // Botón Conócenos - Web
+  aboutUsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 28,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
+    gap: 8,
+  },
+  aboutUsButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+
+  // Botón Conócenos - Mobile (sutil)
+  aboutUsMobile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    gap: 4,
+  },
+  aboutUsMobileText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+
+  // Modal de video
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    maxWidth: 400,
+    aspectRatio: 9 / 16,
+    position: 'relative',
+  },
+  modalClose: {
+    position: 'absolute',
+    top: -40,
+    right: 0,
+    zIndex: 10,
+    padding: 8,
+  },
+  videoContainer: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#000',
+  },
+  videoContainerDesktop: {
+    maxWidth: 360,
   },
 });
