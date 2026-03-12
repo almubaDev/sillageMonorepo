@@ -316,28 +316,27 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <VideoModal />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <View style={styles.logoContainer}>
+          <View style={styles.logoRow}>
             <Image
               source={require('../../../assets/logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
+            <TouchableOpacity
+              style={styles.aboutUsMobile}
+              onPress={() => setShowVideoModal(true)}
+            >
+              <MaterialCommunityIcons name="play-circle-outline" size={14} color={colors.accent} />
+              <Text style={[styles.aboutUsMobileText, { color: colors.accent }]}>
+                {t('auth:login.aboutUs')}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <Text style={[styles.title, { color: colors.text }]}>{t('auth:login.welcome')}</Text>
           <Text style={[styles.subtitle, { color: colors.secondary }]}>
             {t('auth:login.tagline')}
           </Text>
-
-          <TouchableOpacity
-            style={styles.aboutUsMobile}
-            onPress={() => setShowVideoModal(true)}
-          >
-            <MaterialCommunityIcons name="play-circle-outline" size={14} color={colors.accent} />
-            <Text style={[styles.aboutUsMobileText, { color: colors.accent }]}>
-              {t('auth:login.aboutUs')}
-            </Text>
-          </TouchableOpacity>
 
           {errorMessage ? (
             <View style={[styles.errorBox, { backgroundColor: '#EF444410', borderColor: '#EF4444' }]}>
@@ -540,6 +539,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    gap: 12,
+  },
   logo: {
     width: 100,
     height: 100,
@@ -671,8 +677,6 @@ const styles = StyleSheet.create({
   aboutUsMobile: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
     gap: 4,
   },
   aboutUsMobileText: {
