@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, perfumes, recommendations, password, payments, coupons, admin_payments, perfume_reports, coleccion
+from app.api.v1.endpoints import auth, users, perfumes, recommendations, password, payments, coupons, admin_payments, perfume_reports, coleccion, public_perfumes
 from app.api.v1.endpoints.admin import users as admin_users
 from app.api.v1.endpoints.admin import perfumes as admin_perfumes
 from app.api.v1.endpoints.admin import consultations as admin_consultations
@@ -119,5 +119,9 @@ api_router.include_router(
     tags=["API Usage"]
 )
 
-# Aquí agregaremos más routers después:
-# api_router.include_router(subscriptions.router, prefix="/subscriptions", tags=["Suscripciones"])
+# API pública (autenticación por API key)
+api_router.include_router(
+    public_perfumes.router,
+    prefix="/public/perfumes",
+    tags=["API Pública - Perfumes"]
+)
