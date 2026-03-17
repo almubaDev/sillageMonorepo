@@ -502,4 +502,12 @@ export const adminService = {
     });
     return response.data;
   },
+
+  // ========== COLLECTION EXPORT ==========
+  async exportUserCollectionCsv(userId: number): Promise<string> {
+    const response = await api.get(`/admin/users/${userId}/collection-csv`, {
+      responseType: 'text',
+    });
+    return response.data;
+  },
 };

@@ -1,5 +1,8 @@
+import csv
+import io
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func, and_
 from sqlalchemy.orm import selectinload
@@ -8,6 +11,7 @@ from pydantic import BaseModel
 from app.api.deps import get_db
 from app.models.user import User
 from app.models.role import Role
+from app.models.coleccion import Coleccion, PerfumeColeccion
 from app.core.security import get_password_hash, verify_password
 from app.core.permissions import (
     Permission,
@@ -360,3 +364,63 @@ async def promote_to_superuser(
     )
 
     return {"message": f"Usuario {user.email} promovido a superusuario"}
+
+
+@router.get("/{user_id}/collection-csv", dependencies=[Depends(require_permission(Permission.USERS_READ))])
+async def export_user_collection_csv(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """
+    Descargar la colección de un usuario como CSV.
+    Columnas: Nombre, Marca, Notas, Acordes
+    """
+    # Verificar que el usuario existe
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Obtener colección
+    stmt = select(Coleccion).where(Coleccion.usuario_id == user_id)
+    result = await db.execute(stmt)
+    coleccion = result.scalar_one_or_none()
+
+    if not coleccion:
+        raise HTTPException(status_code=404, detail="El usuario no tiene colección")
+
+    # Obtener perfumes de la colección
+    stmt = select(PerfumeColeccion).where(
+        PerfumeColeccion.coleccion_id == coleccion.id
+    ).order_by(PerfumeColeccion.nombre)
+    result = await db.execute(stmt)
+    perfumes = result.scalars().all()
+
+    if not perfumes:
+        raise HTTPException(status_code=404, detail="La colección está vacía")
+
+    # Generar CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Nombre", "Marca", "Notas", "Acordes"])
+
+    for p in perfumes:
+        notas = p.notas if isinstance(p.notas, list) else []
+        acordes = p.acordes if isinstance(p.acordes, list) else []
+        writer.writerow([
+            p.nombre,
+            p.marca,
+            ", ".join(str(n) for n in notas),
+            ", ".join(str(a) for a in acordes),
+        ])
+
+    output.seek(0)
+    filename = f"coleccion_{user.first_name}_{user.last_name}_{user_id}.csv"
+
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )

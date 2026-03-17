@@ -2,7 +2,7 @@
  * UsersScreen - Gestión de usuarios (versión simplificada)
  */
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,6 +18,28 @@ export default function UsersScreen() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+
+  const handleDownloadCollection = async (user: AdminUser) => {
+    try {
+      setDownloadingId(user.id);
+      const csvData = await adminService.exportUserCollectionCsv(user.id);
+      const filename = `coleccion_${user.first_name}_${user.last_name}_${user.id}.csv`;
+
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || 'Error al descargar colección';
+      Alert.alert('Error', msg);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     loadUsers();
@@ -112,6 +134,20 @@ export default function UsersScreen() {
                 </Text>
               </View>
             </View>
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, paddingVertical: 6, paddingHorizontal: 10, backgroundColor: AdminColors.primary + '10', borderRadius: 6, alignSelf: 'flex-start' }}
+              onPress={(e) => { e.stopPropagation(); handleDownloadCollection(user); }}
+              disabled={downloadingId === user.id}
+            >
+              {downloadingId === user.id ? (
+                <ActivityIndicator size="small" color={AdminColors.primary} />
+              ) : (
+                <MaterialCommunityIcons name="download" size={16} color={AdminColors.primary} />
+              )}
+              <Text style={{ fontSize: 12, color: AdminColors.primary, fontWeight: '500' }}>
+                Descargar colección
+              </Text>
+            </TouchableOpacity>
           </TouchableOpacity>
         ))}
       </ScrollView>
