@@ -87,6 +87,14 @@ const menuItems: MenuItem[] = [
     screen: 'APIUsage',
   },
   {
+    id: 'reviews',
+    title: 'Calificaciones',
+    description: 'Ver opiniones y calificaciones de usuarios',
+    icon: 'star',
+    iconColor: '#F59E0B',
+    screen: 'Reviews',
+  },
+  {
     id: 'admin-tools',
     title: 'Herramientas',
     description: 'Acciones de reseteo y mantenimiento',

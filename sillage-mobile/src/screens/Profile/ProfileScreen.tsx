@@ -10,6 +10,7 @@ import { useAuthContext } from '../../utils/AuthContext';
 import { changeLanguage } from '../../i18n';
 import { authService } from '../../services/authService';
 import { couponService } from '../../services/couponService';
+import { reviewService } from '../../services/reviewService';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileMain'>;
 
@@ -46,6 +47,10 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteAccountError, setDeleteAccountError] = useState('');
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
@@ -288,8 +293,29 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const handleSubmitReview = async () => {
+    if (!reviewRating) {
+      Alert.alert(t('profile:review.error'), t('profile:review.selectRating'));
+      return;
+    }
+    try {
+      setIsSubmittingReview(true);
+      await reviewService.submitReview({ rating: reviewRating, comment: reviewComment.trim() });
+      setReviewModalVisible(false);
+      setReviewRating(0);
+      setReviewComment('');
+      setTimeout(() => {
+        Alert.alert(t('profile:review.successTitle'), t('profile:review.successMessage'));
+      }, 100);
+    } catch (error: any) {
+      Alert.alert(t('profile:review.error'), error.response?.data?.detail || t('profile:review.failed'));
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
   return (
-    <ScrollView 
+    <ScrollView
       style={[styles.container, { backgroundColor: colors.bg }]}
       contentContainerStyle={styles.content}
     >
@@ -342,6 +368,16 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           <MaterialCommunityIcons name="ticket-percent" size={22} color="#FFFFFF" />
           <Text style={[styles.buttonText, { color: '#FFFFFF', fontFamily: 'Lato-Bold' }]}>
             {t('profile:coupon.title')}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#F59E0B' }]}
+          onPress={() => setReviewModalVisible(true)}
+        >
+          <MaterialCommunityIcons name="star" size={22} color="#FFFFFF" />
+          <Text style={[styles.buttonText, { color: '#FFFFFF', fontFamily: 'Lato-Bold' }]}>
+            {t('profile:review.title')}
           </Text>
         </TouchableOpacity>
 
@@ -872,6 +908,81 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
                   </Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* Modal de calificación */}
+      <Modal
+        visible={reviewModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setReviewModalVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setReviewModalVisible(false)}
+        >
+          <Pressable style={[styles.modalContent, { backgroundColor: colors.bg, maxWidth: 340 }]}>
+            <Text style={[styles.modalTitle, { color: colors.text, fontFamily: 'AlanSans-Bold' }]}>
+              {t('profile:review.modalTitle')}
+            </Text>
+
+            {/* Estrellas */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity key={star} onPress={() => setReviewRating(star)}>
+                  <MaterialCommunityIcons
+                    name={star <= reviewRating ? 'star' : 'star-outline'}
+                    size={36}
+                    color={star <= reviewRating ? '#F59E0B' : colors.secondary}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Comentario */}
+            <TextInput
+              style={[styles.modalInput, {
+                backgroundColor: colors.bg,
+                borderColor: colors.secondary + '40',
+                color: colors.text,
+                fontFamily: 'Lato-Regular',
+                height: 80,
+                textAlignVertical: 'top',
+              }]}
+              placeholder={t('profile:review.commentPlaceholder')}
+              placeholderTextColor={colors.secondary}
+              value={reviewComment}
+              onChangeText={setReviewComment}
+              multiline
+              maxLength={1000}
+            />
+
+            {/* Botones */}
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
+              <TouchableOpacity
+                style={[styles.modalButton, { flex: 1, backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.secondary }]}
+                onPress={() => {
+                  setReviewModalVisible(false);
+                  setReviewRating(0);
+                  setReviewComment('');
+                }}
+              >
+                <Text style={[styles.modalButtonText, { color: colors.secondary, fontFamily: 'Lato-Bold' }]}>
+                  {t('common:cancel')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, { flex: 1, backgroundColor: '#F59E0B', opacity: isSubmittingReview ? 0.6 : 1 }]}
+                onPress={handleSubmitReview}
+                disabled={isSubmittingReview}
+              >
+                <Text style={[styles.modalButtonText, { color: '#FFFFFF', fontFamily: 'Lato-Bold' }]}>
+                  {isSubmittingReview ? '...' : t('profile:review.submit')}
+                </Text>
+              </TouchableOpacity>
             </View>
           </Pressable>
         </Pressable>

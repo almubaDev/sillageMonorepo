@@ -66,6 +66,17 @@
     "notFoundTitle": "Coupon not found",
     "notFoundMessage": "The code entered does not exist. Please verify it is correct."
   },
+  "review": {
+    "title": "Rate Us",
+    "modalTitle": "How would you rate Sillage?",
+    "commentPlaceholder": "Leave a comment (optional)",
+    "submit": "Submit",
+    "error": "Error",
+    "selectRating": "Please select a rating",
+    "successTitle": "Thank you!",
+    "successMessage": "Your review has been submitted",
+    "failed": "Could not submit review"
+  },
   "deleteAccount": {
     "button": "Delete Account",
     "title": "Delete Account",

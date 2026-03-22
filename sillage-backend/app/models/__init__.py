@@ -17,6 +17,7 @@ from app.models.coupon import Coupon, CouponBatch, CouponType
 from app.models.api_usage import APIUsageLog, APIDailyUsage, APIUsageConfig
 from app.models.financial_snapshot import DailyFinancialSnapshot
 from app.models.coleccion import Coleccion, PerfumeColeccion, Reposicion
+from app.models.review import Review
 
 # Esto es importante para que Alembic detecte todos los modelos
 __all__ = [
@@ -48,4 +49,5 @@ __all__ = [
     "Coleccion",
     "PerfumeColeccion",
     "Reposicion",
+    "Review",
 ]

@@ -66,6 +66,17 @@
     "notFoundTitle": "Cupón no encontrado",
     "notFoundMessage": "El código ingresado no existe. Verifica que esté escrito correctamente."
   },
+  "review": {
+    "title": "Calificar",
+    "modalTitle": "¿Cómo calificarías Sillage?",
+    "commentPlaceholder": "Deja tu comentario (opcional)",
+    "submit": "Enviar",
+    "error": "Error",
+    "selectRating": "Selecciona una calificación",
+    "successTitle": "¡Gracias!",
+    "successMessage": "Tu calificación ha sido enviada",
+    "failed": "No se pudo enviar la calificación"
+  },
   "deleteAccount": {
     "button": "Eliminar Cuenta",
     "title": "Eliminar Cuenta",

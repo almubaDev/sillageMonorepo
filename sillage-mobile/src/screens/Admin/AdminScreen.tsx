@@ -14,6 +14,7 @@ import CouponsScreen from './CouponsScreen';
 import PaymentPackagesScreen from './PaymentPackagesScreen';
 import APIUsageScreen from './APIUsageScreen';
 import AdminToolsScreen from './AdminToolsScreen';
+import ReviewsScreen from './ReviewsScreen';
 import UserDetailScreen from './UserDetailScreen';
 import { AdminColors } from './adminStyles';
 
@@ -28,6 +29,7 @@ export type AdminStackParamList = {
   Coupons: undefined;
   PaymentPackages: undefined;
   APIUsage: undefined;
+  Reviews: undefined;
   AdminTools: undefined;
 };
 
@@ -97,6 +99,11 @@ export default function AdminScreen() {
         name="APIUsage"
         component={APIUsageScreen}
         options={{ title: 'Uso de APIs' }}
+      />
+      <Stack.Screen
+        name="Reviews"
+        component={ReviewsScreen}
+        options={{ title: 'Calificaciones' }}
       />
       <Stack.Screen
         name="AdminTools"
